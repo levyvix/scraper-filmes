@@ -9,3 +9,4 @@ Este projeto foi criado com o intuito de criar um script para raspar um site de 
 - Sinopse
 
 
+
