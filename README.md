@@ -25,3 +25,7 @@ Site utilizado: [comando torrents](https://comando.to/)
 - O arquivo `filmes.json` será gerado com os dados do site
 
 
+## Postagem sobre o projeto
+
+[Web Scraping em um site de filmes online](https://medium.com/@levyvix/como-fazer-raspagem-de-dados-em-sites-com-scrapy-e-python-1cc315f301fb)
+
