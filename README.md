@@ -14,7 +14,7 @@ Este projeto foi criado com o intuito de criar um script para raspar um site de 
 - Sinopse
 
 
-Site utilizado: [comando torrents](comando.to/)
+Site utilizado: [comando torrents](https://comando.to/)
 
 
 ## Como rodar o projeto
