@@ -17,4 +17,11 @@ Este projeto foi criado com o intuito de criar um script para raspar um site de 
 Site utilizado: [comando torrents](comando.to/)
 
 
+## Como rodar o projeto
+
+- Clone o repositório
+- Instale as dependências com o comando `pip install -r requirements.txt`
+- Entre na pasta do projeto `filmes` e execute o comando `scrapy crawl filmes -o filmes.json`
+- O arquivo `filmes.json` será gerado com os dados do site
+
 
