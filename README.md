@@ -6,7 +6,15 @@ Este projeto foi criado com o intuito de criar um script para raspar um site de 
 - Nome do filme
 - Ano de lançamento
 - Nota IMDB
+- Gênero
+- Tamanho
+- Duração
+- Qualidade de vídeo
+- Se tem a opção dublado
 - Sinopse
+
+
+Site utilizado: comando.to/
 
 
 
