@@ -16,6 +16,7 @@ class FilmesSpider(scrapy.Spider):
                 callback=self.parse_detail
             )
 
+        # pega a próxima página
         next_page = response.xpath(
             '//html/body/div[1]/div[2]/div[1]/div[2]/div/a[7]/@href').extract_first()
         if next_page is not None:
@@ -50,7 +51,6 @@ class FilmesSpider(scrapy.Spider):
 
         dublado = bool(tem_dublado)
 
-        # nome de hoje
         yield {
             'nome': titulo,
             'imdb': imdb,
