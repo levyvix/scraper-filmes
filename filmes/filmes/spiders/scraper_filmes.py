@@ -51,6 +51,14 @@ class FilmesSpider(scrapy.Spider):
 
         dublado = bool(tem_dublado)
 
+        ano = ano.replace(':', '').strip()
+        sinopse = sinopse.replace(':', '').strip()
+        titulo = titulo.replace(':', '').strip()
+        imdb = imdb.replace(':', '').strip()
+        genero = genero.replace(':', '').strip()
+        tamanho = tamanho.replace(':', '').strip()
+        duracao = duracao.replace(':', '').strip()
+        qualidade = qualidade.replace(':', '').strip()
         yield {
             'nome': titulo,
             'imdb': imdb,
