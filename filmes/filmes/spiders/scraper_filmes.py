@@ -1,5 +1,7 @@
 import scrapy
 import logging
+# stop scrap log
+logging.getLogger('scrapy').propagate = False
 
 
 class FilmesSpider(scrapy.Spider):
@@ -15,7 +17,7 @@ class FilmesSpider(scrapy.Spider):
             yield scrapy.Request(
                 url=url,
                 callback=self.parse_detail,
-                meta = {'url': url}
+                meta={'url': url}
             )
 
         # pega a próxima página
@@ -32,7 +34,7 @@ class FilmesSpider(scrapy.Spider):
         # se nao tem espaço, entao tem informações
         infos = [i for i in informacoes if i not in ['\n', ' ', '/10']]
         # self.log(infos)
-        logging.info(infos)
+        # logging.info(infos)
 
         if 'MKV' in infos[8]:
             del infos[8]
@@ -40,24 +42,23 @@ class FilmesSpider(scrapy.Spider):
         titulo_dublado = infos[0]
         titulo = infos[1]
 
-        try: #tenta achar o imdb com o link
+        try:
             imdb = response.xpath(
-            '//html/body/div/div[2]/div[1]/article/div[2]/p[1]/a/text()').extract()[0]
+                '//html/body/div/div[2]/div[1]/article/div[2]/p[1]/a/text()').extract()[0]
 
             if str(imdb).startswith('20'):
                 # not a imdb link, thats a year link
                 imdb = infos[2]
                 imdb = imdb.replace(':', '').strip()
 
-        except:
+        except Exception:
             imdb = infos[2]
-            
 
         genero = infos[3]
 
         # if genero.startswith('/10'):
         #     genero = infos[4]
-        
+
         tamanho = infos[8]
         duracao = infos[9]
         qualidade = infos[10]
@@ -66,12 +67,8 @@ class FilmesSpider(scrapy.Spider):
         ano = response.xpath(
             '//html/body/div/div[2]/div[1]/article/div[2]/p[1]/a/text()').extract()
 
-        if len(ano) > 1:
-            ano = ano[1]
-        else:
-            ano = ano[0]
+        ano = ano[1] if len(ano) > 1 else ano[0]
 
-        
         if ',' in ano:
             # not a year link, thats a imdb link
             ano = None
@@ -89,7 +86,6 @@ class FilmesSpider(scrapy.Spider):
 
         dublado = bool(tem_dublado)
 
-        
         titulo_dublado = titulo_dublado.replace(':', '').strip()
         titulo = titulo.replace(':', '').strip()
         ano = ano.replace(':', '').strip()
@@ -110,5 +106,5 @@ class FilmesSpider(scrapy.Spider):
             'qualidade': qualidade,
             'dublado': dublado,
             'sinopse': sinopse,
-            'link':link
+            'link': link
         }
