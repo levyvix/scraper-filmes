@@ -14,7 +14,13 @@ Este projeto foi criado com o intuito de criar um script para raspar um site de 
 - Sinopse
 
 
-Site utilizado: [comando torrents](https://comando.to/)
+Site utilizado: [comando torrents](https://comando.la/)
+
+
+### TODO list
+- Pegar imagem do filme
+- enviar email diariamente sobre os novos filmes adicionados
+- agendar o download de filmes remotamente para meu servidor local
 
 
 ## Como rodar o projeto
