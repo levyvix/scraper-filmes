@@ -17,11 +17,11 @@ Este projeto foi criado com o intuito de criar um script para raspar um site de 
 Site utilizado: [comando torrents](https://comando.la/)
 
 
-### TODO list
-- Pegar imagem do filme
-- enviar email diariamente sobre os novos filmes adicionados
-- agendar o download de filmes remotamente para meu servidor local
+## Tecnologias 
 
+- Scrapy: Usando este framework para realizar as chamadas HTTP, tratanto e carregando os dados em uma base.
+- Scrapyd: Interface web para rodar as `spiders`.
+- SQLite: Base de dados para persistir as informações dos filmes.
 
 ## Como rodar o projeto
 
@@ -35,3 +35,7 @@ Site utilizado: [comando torrents](https://comando.la/)
 
 [Web Scraping em um site de filmes online](https://medium.com/@levyvix/como-fazer-raspagem-de-dados-em-sites-com-scrapy-e-python-1cc315f301fb)
 
+### TODO list
+- Pegar imagem do filme
+- enviar email diariamente sobre os novos filmes adicionados
+- agendar o download de filmes remotamente para meu servidor local
