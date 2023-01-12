@@ -1,7 +1,7 @@
 import scrapy
 import logging
 # stop scrap log
-logging.getLogger('scrapy').propagate = False
+logging.getLogger('scrapy').propagate = True
 
 
 class FilmesSpider(scrapy.Spider):
