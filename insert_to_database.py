@@ -6,8 +6,8 @@ engine = create_engine('sqlite:///data.db', echo=False)
 # create cursor
 
 
-def create_cursor():
-    return engine.connect()
+# def create_cursor():
+#     return engine.connect()
 
 
 def create_database():
