@@ -1,0 +1,1 @@
+python ingest_to_database.py --data filmes/results.json
