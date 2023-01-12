@@ -1,12 +1,3 @@
-# Define your item pipelines here
-#
-# Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-
-
-# useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-
 import sqlite3
 
 
@@ -36,8 +27,13 @@ class FilmesPipeline:
 
     def process_item(self, item, spider):
         self.cur.execute(
-            """INSERT OR IGNORE INTO data (titulo_dublado, titulo, imdb, ano, genero, tamanho, duracao, qualidade, dublado, sinopse, link) 
-                VALUES (:titulo_dublado, :titulo_original, :imdb, :ano, :genero, :tamanho, :duracao, :qualidade, :dublado, :sinopse, :link)""",
+            """INSERT OR IGNORE INTO data 
+            (titulo_dublado, titulo, imdb, ano, 
+            genero, tamanho, duracao, qualidade, 
+            dublado, sinopse, link) 
+            VALUES (:titulo_dublado, :titulo_original, 
+            :imdb, :ano, :genero, :tamanho, :duracao, 
+            :qualidade, :dublado, :sinopse, :link)""",
             item)
         self.con.commit()
 

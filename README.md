@@ -12,9 +12,10 @@ Este projeto foi criado com o intuito de criar um script para raspar um site de 
 - Qualidade de vídeo
 - Se tem a opção dublado
 - Sinopse
+- Link
 
 
-Site utilizado: [comando torrents](https://comando.la/)
+Site utilizado: [Comando Torrents](https://comando.la/)
 
 
 ## Tecnologias 
@@ -29,6 +30,7 @@ Site utilizado: [comando torrents](https://comando.la/)
 - Instale as dependências com o comando `pip install -r requirements.txt`
 - Entre na pasta do projeto `filmes` e execute o comando `scrapy crawl filmes -o filmes.json`
 - O arquivo `filmes.json` será gerado com os dados do site
+- Se rodar apendas `scrapy crawl filmes`, ele vai escrever os dados em um arquivo chamado `data.db`, que pode ser aberto usando um Browser de SQLite, como o DBeaver (Database -> New Database Conection -> SQLITE -> "Open..." -> Finish)
 
 
 ## Postagem sobre o projeto
