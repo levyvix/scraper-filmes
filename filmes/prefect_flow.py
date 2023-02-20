@@ -1,0 +1,62 @@
+from prefect import flow, task
+from prefect.tasks import task_input_hash
+from insert_to_database import create_and_insert
+from send_email.send_email import send_email
+import os
+import pandas as pd
+from sqlalchemy import create_engine
+
+from datetime import timedelta, datetime
+
+
+@task(
+    name="Run the spider",
+    log_prints=True,
+    retries=3,
+    retry_delay_seconds=10,
+    # cache_key_fn=task_input_hash,  # https://docs.prefect.io/tutorials/flow-task-config/#task-input-hash
+    # cache_expiration=timedelta(minutes=10),
+)
+def run_spider():
+
+    try:
+        os.remove("filmes.json")
+    except FileNotFoundError:
+        print("filmes.json already deleted")
+
+    # scrapy crawl filmes_spider -O filmes.json
+    os.system("scrapy crawl filmes -O filmes.json")
+
+
+@task(
+    name="Insert into database",
+    log_prints=True,
+    retries=3,
+    retry_delay_seconds=10,
+)
+def insert(path):
+    create_and_insert(path)
+
+
+@task(name="Send Email")
+def send():
+    # sql fetch last 10 movies
+    engine = create_engine("sqlite:///movie_database.db")
+
+    df = pd.read_sql_query("SELECT * FROM movies ORDER BY id DESC LIMIT 10", engine)
+
+    send_email(
+        df,
+        subject=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+    )
+
+
+@flow(name="Comando Flow", log_prints=True)
+def comandola_filmes():
+    run_spider()
+    insert("filmes.json")
+    send()
+
+
+if __name__ == "__main__":
+    comandola_filmes()

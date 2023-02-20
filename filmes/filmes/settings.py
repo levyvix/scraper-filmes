@@ -12,7 +12,7 @@ BOT_NAME = "filmes"
 SPIDER_MODULES = ["filmes.spiders"]
 NEWSPIDER_MODULE = "filmes.spiders"
 
-CLOSESPIDER_ITEMCOUNT = 50
+CLOSESPIDER_ITEMCOUNT = 20
 FEED_EXPORT_ENCODING = "utf-8"
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 # USER_AGENT = 'filmes (+http://www.yourdomain.com)'
@@ -21,7 +21,7 @@ FEED_EXPORT_ENCODING = "utf-8"
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay

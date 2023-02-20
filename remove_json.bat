@@ -1,1 +1,0 @@
-python remove_json.py

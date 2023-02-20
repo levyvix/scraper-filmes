@@ -1,1 +1,0 @@
-python send_top_films.py

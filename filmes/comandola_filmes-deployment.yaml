@@ -1,0 +1,40 @@
+###
+### A complete description of a Prefect Deployment for flow 'Comando Flow'
+###
+name: mail_df
+description: null
+version: 9caea36c0367a654632509a10536d772
+# The work queue that will handle this deployment's runs
+work_queue_name: dev
+work_pool_name: null
+tags: []
+parameters: {}
+schedule: null
+is_schedule_active: null
+infra_overrides: {}
+infrastructure:
+  type: process
+  env: {}
+  labels: {}
+  name: null
+  command: null
+  stream_output: true
+  working_dir: null
+  block_type_slug: process
+  _block_type_slug: process
+
+###
+### DO NOT EDIT BELOW THIS LINE
+###
+flow_name: Comando Flow
+manifest_path: null
+storage: null
+path: G:\My Drive\projetos github\scraper-filmes\filmes
+entrypoint: prefect_flow.py:comandola_filmes
+parameter_openapi_schema:
+  title: Parameters
+  type: object
+  properties: {}
+  required: null
+  definitions: null
+timestamp: '2023-02-20T21:13:11.499004+00:00'

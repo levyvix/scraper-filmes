@@ -1,1 +1,0 @@
-scrapy crawl filmes -O results.json

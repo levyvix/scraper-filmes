@@ -89,7 +89,7 @@ class FilmesSpider(scrapy.Spider):
         ano = ano.replace(":", "").strip()
         sinopse = sinopse.replace(":", "").strip()
         genero = genero.replace(":", "").strip()
-        tamanho = GB_to_MB(tamanho.replace(":", "").strip().split("|")[0].strip())
+        tamanho = GB_to_MB(tamanho.replace(":", "").strip().split(" | ")[0])
         duracao = split_duracao(duracao.replace(":", "").strip())
         qualidade = float(qualidade.replace(":", "").strip().replace(",", "."))
 
@@ -115,7 +115,7 @@ def GB_to_MB(tamanho):
     else:
         tamanho = tamanho.replace("MB", "").strip()
         tamanho = float(tamanho)
-        
+
     return tamanho
 
 
