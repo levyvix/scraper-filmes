@@ -1,13 +1,11 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean
-from sqlalchemy.orm import sessionmaker, scoped_session, relationship
+from sqlalchemy.orm import Session
 
 # import base class
 from sqlalchemy.ext.declarative import declarative_base
 import json
 
-engine = create_engine("sqlite:///movie_database.db", echo=True)
-
-print(engine)
+engine = create_engine("sqlite:///movie_database.db", echo=False)
 
 Base = declarative_base()
 
@@ -15,7 +13,7 @@ Base = declarative_base()
 class Movie(Base):
     __tablename__ = "movies"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     titulo_dublado = Column(String, unique=True)
     titulo_original = Column(String)
     imdb = Column(Float)
@@ -29,33 +27,26 @@ class Movie(Base):
     link = Column(String)
 
 
-def create_database():
-    Base.metadata.create_all(engine)
-
-
 # insert data into the database, if the data already exists, ignore it
 def insert_to_database(json_path):
-    Session = scoped_session(sessionmaker(bind=engine))
-    session = Session()
+    with Session(bind=engine) as sess:
+        with open(json_path, "r", encoding="utf-8", errors="ignore") as json_file:
+            data = json.load(json_file)
 
-    with open(json_path, "r", encoding="utf-8", errors="ignore") as json_file:
-        data = json.load(json_file)
+        for movie in data:
+            movie = Movie(**movie)
+            # check if movie already exists
+            if sess.query(Movie).filter_by(titulo_dublado=movie.titulo_dublado).first():
+                continue
+            else:
+                sess.add(movie)
 
-    for movie in data:
-        movie = Movie(**movie)
-        # check if movie already exists
-        if session.query(Movie).filter_by(titulo_dublado=movie.titulo_dublado).first():
-            continue
-        else:
-            session.add(movie)
-
-    session.commit()
-    session.close()
+        sess.commit()
 
 
 def create_and_insert(json):
+    Base.metadata.create_all(engine)
 
-    create_database()
     insert_to_database(json)
 
 

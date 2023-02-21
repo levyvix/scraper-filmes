@@ -1,11 +1,11 @@
-from send_email.send_email import send_email
+from filmes.send_email.send_email import send_email
 
 import pandas as pd
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-engine = create_engine('sqlite:///data.db', echo=False)
+engine = create_engine("sqlite:///data.db", echo=False)
 session = Session(bind=engine)
 
 
@@ -35,6 +35,6 @@ def send_top_films():
     send_email(message=data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     send_top_films()
