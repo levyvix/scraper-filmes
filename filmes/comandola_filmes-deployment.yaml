@@ -1,11 +1,11 @@
 ###
 ### A complete description of a Prefect Deployment for flow 'Comando Flow'
 ###
-name: mail_df_session
+name: filmes_flow
 description: null
-version: 9caea36c0367a654632509a10536d772
+version: 8793e902f3b890ff3c925abff5ad5288
 # The work queue that will handle this deployment's runs
-work_queue_name: dev
+work_queue_name: padrao
 work_pool_name: null
 tags: []
 parameters: {}
@@ -37,4 +37,4 @@ parameter_openapi_schema:
   properties: {}
   required: null
   definitions: null
-timestamp: '2023-02-21T15:28:59.760860+00:00'
+timestamp: '2023-02-22T19:01:42.033720+00:00'

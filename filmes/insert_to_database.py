@@ -1,13 +1,14 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean
 from sqlalchemy.orm import Session
-
-# import base class
 from sqlalchemy.ext.declarative import declarative_base
 import json
 
+
 engine = create_engine("sqlite:///movie_database.db", echo=False)
 
+
 Base = declarative_base()
+
 
 
 class Movie(Base):
@@ -44,10 +45,10 @@ def insert_to_database(json_path):
         sess.commit()
 
 
-def create_and_insert(json):
+def create_and_insert(json_f):
     Base.metadata.create_all(engine)
 
-    insert_to_database(json)
+    insert_to_database(json_f)
 
 
 if __name__ == "__main__":

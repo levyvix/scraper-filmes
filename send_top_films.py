@@ -2,6 +2,7 @@ from filmes.send_email.send_email import send_email
 
 import pandas as pd
 
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 

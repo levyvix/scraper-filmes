@@ -1,12 +1,11 @@
+import os
 from prefect import flow, task
-from prefect.tasks import task_input_hash
 from insert_to_database import create_and_insert
 from send_email.send_email import send_email
-import os
 import pandas as pd
 from sqlalchemy import create_engine
 
-from datetime import timedelta, datetime
+from datetime import datetime
 
 
 @task(
@@ -14,7 +13,7 @@ from datetime import timedelta, datetime
     log_prints=True,
     retries=3,
     retry_delay_seconds=10,
-    # cache_key_fn=task_input_hash,  # https://docs.prefect.io/tutorials/flow-task-config/#task-input-hash
+    # cache_key_fn=task_input_hash,
     # cache_expiration=timedelta(minutes=10),
 )
 def run_spider():
