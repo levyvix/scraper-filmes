@@ -3,12 +3,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
 import json
 
+import os
+
 
 engine = create_engine("sqlite:///movie_database.db", echo=False)
 
 
 Base = declarative_base()
-
 
 
 class Movie(Base):

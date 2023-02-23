@@ -6,11 +6,11 @@ description: null
 version: aebf07a8307a383d9f1a082d6bce048b
 # The work queue that will handle this deployment's runs
 work_queue_name: dev
-work_pool_name: null
+work_pool_name: default-agent-pool
 tags: []
 parameters: {}
 schedule: null
-is_schedule_active: null
+is_schedule_active: true
 infra_overrides: {}
 
 ###
@@ -59,4 +59,4 @@ parameter_openapi_schema:
   properties: {}
   required: null
   definitions: null
-timestamp: '2023-02-23T18:20:29.876363+00:00'
+timestamp: '2023-02-23T18:22:15.618807+00:00'

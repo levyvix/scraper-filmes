@@ -1,12 +1,6 @@
 import os
 from prefect import flow, task
-from insert_to_database import create_and_insert
-
-# from send_email.send_email import send_email
-import pandas as pd
-from sqlalchemy import create_engine
-
-from datetime import datetime
+from filmes.insert_to_database import create_and_insert
 
 
 @task(
@@ -25,9 +19,10 @@ def run_spider():
         print("filmes.json already deleted")
 
     # scrapy crawl filmes_spider -O filmes.json
+
     os.system("scrapy crawl filmes -O filmes.json")
 
-    return os.path.relpath("filmes.json")
+    return os.path.abspath("filmes.json")
 
 
 @task(
@@ -55,8 +50,13 @@ def insert(path):
 
 @flow(name="Comando Flow", log_prints=True)
 def comandola_filmes():
+    print(os.getcwd())
+    os.chdir("filmes")
     path = run_spider()
+    os.chdir("..")
+    os.chdir("dbs")
     insert(path)
+    os.chdir("..")
     # send()
 
 
