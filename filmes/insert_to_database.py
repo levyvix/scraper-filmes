@@ -6,9 +6,6 @@ import json
 import os
 
 
-engine = create_engine("sqlite:///movie_database.db", echo=False)
-
-
 Base = declarative_base()
 
 
@@ -30,7 +27,7 @@ class Movie(Base):
 
 
 # insert data into the database, if the data already exists, ignore it
-def insert_to_database(json_path):
+def insert_to_database(json_path, engine):
     with Session(bind=engine) as sess:
         with open(json_path, "r", encoding="utf-8", errors="ignore") as json_file:
             data = json.load(json_file)
@@ -47,9 +44,11 @@ def insert_to_database(json_path):
 
 
 def create_and_insert(json_f):
+    engine = create_engine("sqlite:///movie_database.db", echo=False)
+
     Base.metadata.create_all(engine)
 
-    insert_to_database(json_f)
+    insert_to_database(json_f, engine)
 
 
 if __name__ == "__main__":

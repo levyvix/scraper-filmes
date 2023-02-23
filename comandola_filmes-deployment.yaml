@@ -1,7 +1,7 @@
 ###
 ### A complete description of a Prefect Deployment for flow 'Comando Flow'
 ###
-name: gh-dckr-sem_email_oschdir
+name: seila_mano
 description: null
 version: 76dd219e94fcc57d294177ea218ae265
 # The work queue that will handle this deployment's runs
@@ -59,4 +59,4 @@ parameter_openapi_schema:
   properties: {}
   required: null
   definitions: null
-timestamp: '2023-02-23T18:31:57.967556+00:00'
+timestamp: '2023-02-23T18:37:37.197406+00:00'
