@@ -1,9 +1,9 @@
 ###
 ### A complete description of a Prefect Deployment for flow 'Comando Flow'
 ###
-name: sem_email_docker
+name: gh-dckr-yag
 description: null
-version: aebf07a8307a383d9f1a082d6bce048b
+version: 8793e902f3b890ff3c925abff5ad5288
 # The work queue that will handle this deployment's runs
 work_queue_name: dev
 work_pool_name: null
@@ -52,11 +52,11 @@ storage:
   block_type_slug: github
   _block_type_slug: github
 path: ''
-entrypoint: prefect_flow_se.py:comandola_filmes
+entrypoint: filmes\prefect_flow.py:comandola_filmes
 parameter_openapi_schema:
   title: Parameters
   type: object
   properties: {}
   required: null
   definitions: null
-timestamp: '2023-02-23T18:20:29.876363+00:00'
+timestamp: '2023-02-23T18:04:55.130079+00:00'
