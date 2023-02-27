@@ -1,5 +1,12 @@
 import scrapy
 import logging
+from datetime import datetime
+import locale
+
+try:
+    locale.setlocale(locale.LC_ALL, "pt_BR")
+except:
+    locale.setlocale(locale.LC_ALL, "Portuguese_Brazil")
 
 # stop scrap log
 logging.getLogger("scrapy").propagate = False
@@ -28,6 +35,14 @@ class FilmesSpider(scrapy.Spider):
         informacoes = response.xpath(
             "//html/body/div/div[2]/div[1]/article/div[2]/p[1]/text()"
         ).extract()
+
+        # get release date (div.entry-byline cf > div.entry-date > a)
+        date_updated = response.css(
+            "div.entry-byline.cf > div.entry-date > a::text"
+        ).extract_first()
+
+        # string to date
+        date_updated = datetime.strptime(date_updated, "%d de %B de %Y")
 
         # se nao tem espaço, entao tem informações
         infos = [i for i in informacoes if i not in ["\n", " ", "/10"]]
@@ -104,6 +119,7 @@ class FilmesSpider(scrapy.Spider):
             "qualidade": qualidade,
             "dublado": dublado,
             "sinopse": sinopse,
+            "date_updated": date_updated,
             "link": link,
         }
 

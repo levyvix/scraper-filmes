@@ -4,3 +4,4 @@ scrapyd
 sqlalchemy
 yagmail[all]
 tabulate
+pretty-html-table

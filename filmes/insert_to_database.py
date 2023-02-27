@@ -1,10 +1,8 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, Date
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
 import json
-
-import os
-
+import datetime
 
 Base = declarative_base()
 
@@ -23,6 +21,7 @@ class Movie(Base):
     qualidade = Column(Float)
     dublado = Column(Boolean)
     sinopse = Column(String)
+    date_updated = Column(Date)
     link = Column(String)
 
 
@@ -34,6 +33,10 @@ def insert_to_database(json_path, engine):
 
         for movie in data:
             movie = Movie(**movie)
+            # convert string to datetime.date (template = "2023-01-19 00:00:00" to "2023-01-19")
+            movie.date_updated = datetime.datetime.strptime(
+                movie.date_updated, "%Y-%m-%d %H:%M:%S"
+            ).date()
             # check if movie already exists
             if sess.query(Movie).filter_by(titulo_dublado=movie.titulo_dublado).first():
                 continue

@@ -55,7 +55,7 @@ Site utilizado: [Comando Torrents](https://comando.la/)
 [Web Scraping em um site de filmes online](https://medium.com/@levyvix/como-fazer-raspagem-de-dados-em-sites-com-scrapy-e-python-1cc315f301fb)
 
 ### TODO list
-- [X] Enviar email diariamente sobre os "N" novos filmes adicionados. Usando Airflow ou Prefect
-- [ ] Pegar imagem do filme
+- [X] Enviar email diariamente sobre os "N" novos filmes adicionados por data de atualização. Usando Airflow ou Prefect
+- [ ] Criar um corpo de email melhor, com os dados do filme, imagem e link para o site
 - [ ] Obter informações sobre atores do filme, colocar em uma tabela separada e relacionar com a tabela de filmes
 - [ ] Agendar o download de filmes remotamente para meu servidor local do Jellyfin

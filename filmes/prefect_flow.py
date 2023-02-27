@@ -6,6 +6,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 from datetime import datetime
+from pretty_html_table import build_table
 
 
 @task(
@@ -42,10 +43,27 @@ def send():
     # sql fetch last 10 movies
     engine = create_engine("sqlite:///movie_database.db")
 
-    df = pd.read_sql_query("SELECT * FROM movies ORDER BY id DESC LIMIT 10", engine)
+    # get the last 10 movies by date_updated
+    df = pd.read_sql_query(
+        "SELECT * FROM movies ORDER BY date_updated DESC LIMIT 20", engine
+    )
+
+    body = """
+    <html>
+    <head>
+    </head>
+
+    <body>
+            {0}
+    </body>
+
+    </html>
+    """.format(
+        build_table(df, "blue_light")
+    )
 
     send_email(
-        df,
+        body,
         subject=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
     )
 
