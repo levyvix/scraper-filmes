@@ -44,7 +44,9 @@ def send():
     # sql fetch last 10 movies
     engine = create_engine("sqlite:///dbs/movie_database.db")
 
-    df = pd.read_sql_query("SELECT * FROM movies ORDER BY date_updated DESC LIMIT 15", engine)
+    df = pd.read_sql_query(
+        "SELECT * FROM movies ORDER BY date_updated DESC LIMIT 15", engine
+    )
 
     send_email(
         df,
@@ -56,7 +58,7 @@ def send():
 def comandola_filmes():
     print(os.getcwd())
     os.chdir("filmes")
-    path = run_spider()
+    path = run_spider().rstrip('\n')
     os.chdir("..")
     os.chdir("dbs")
     insert(path)
