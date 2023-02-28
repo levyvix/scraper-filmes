@@ -21,7 +21,7 @@ class Movie(Base):
     qualidade = Column(Float)
     dublado = Column(Boolean)
     sinopse = Column(String)
-    date_updated = Column(Date)
+    # date_updated = Column(Date)
     link = Column(String)
 
 
@@ -34,9 +34,9 @@ def insert_to_database(json_path, engine):
         for movie in data:
             movie = Movie(**movie)
             # convert string to datetime.date (template = "2023-01-19 00:00:00" to "2023-01-19")
-            movie.date_updated = datetime.datetime.strptime(
-                movie.date_updated, "%Y-%m-%d %H:%M:%S"
-            ).date()
+            # movie.date_updated = datetime.datetime.strptime(
+            #     movie.date_updated, "%Y-%m-%d %H:%M:%S"
+            # ).date()
             # check if movie already exists
             if sess.query(Movie).filter_by(titulo_dublado=movie.titulo_dublado).first():
                 continue
@@ -52,7 +52,7 @@ def create_and_insert(json_f):
     Base.metadata.create_all(engine)
 
     insert_to_database(json_f, engine)
-    
+
 
 if __name__ == "__main__":
     create_and_insert("filmes.json")

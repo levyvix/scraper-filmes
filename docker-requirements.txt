@@ -1,0 +1,7 @@
+Scrapy
+requests
+scrapyd
+sqlalchemy
+yagmail[all]
+tabulate
+pandas

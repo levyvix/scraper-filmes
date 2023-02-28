@@ -42,9 +42,7 @@ def send():
     # sql fetch last 10 movies
     engine = create_engine("sqlite:///dbs/movie_database.db")
 
-    df = pd.read_sql_query(
-        "SELECT * FROM movies ORDER BY date_updated DESC LIMIT 15", engine
-    )
+    df = pd.read_sql_query("SELECT * FROM movies ORDER BY id DESC LIMIT 15", engine)
 
     send_email(
         df,

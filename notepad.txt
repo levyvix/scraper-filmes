@@ -1,0 +1,9 @@
+# TODO
+locale = pt_BR.UTF-8
+
+
+# docker build image
+docker image build -t levyvix/comandola_filmes:tag .
+
+# docker push image
+docker image push levyvix/comandola_filmes:tag

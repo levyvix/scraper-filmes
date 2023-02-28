@@ -1,18 +1,12 @@
 import scrapy
 import logging
 from datetime import datetime
-import locale
-import babel
+# import locale
 
-# set locale pt-br
-if not babel.localedata.exists('pt_BR'):
-    # install locale
-    babel.localedata._install('pt_BR')
-
-try:
-    locale.setlocale(locale.LC_ALL, "pt_BR")
-except Exception:
-    locale.setlocale(locale.LC_ALL, "Portuguese_Brazil")
+# try:
+#     locale.setlocale(locale.LC_ALL, "pt_BR")
+# except Exception:
+#     locale.setlocale(locale.LC_ALL, "Portuguese_Brazil")
 
 # stop scrap log
 logging.getLogger("scrapy").propagate = False
@@ -43,12 +37,12 @@ class FilmesSpider(scrapy.Spider):
         ).extract()
 
         # get release date (div.entry-byline cf > div.entry-date > a)
-        date_updated = response.css(
-            "div.entry-byline.cf > div.entry-date > a::text"
-        ).extract_first()
+        # date_updated = response.css(
+        #     "div.entry-byline.cf > div.entry-date > a::text"
+        # ).extract_first()
 
         # string to date
-        date_updated = datetime.strptime(date_updated, "%d de %B de %Y")
+        # date_updated = datetime.strptime(date_updated, "%d de %B de %Y")
 
         # se nao tem espaço, entao tem informações
         infos = [i for i in informacoes if i not in ["\n", " ", "/10"]]
@@ -125,7 +119,7 @@ class FilmesSpider(scrapy.Spider):
             "qualidade": qualidade,
             "dublado": dublado,
             "sinopse": sinopse,
-            "date_updated": date_updated,
+            # "date_updated": date_updated,
             "link": link,
         }
 
