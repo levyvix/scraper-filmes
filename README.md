@@ -42,6 +42,14 @@ Site utilizado: [Comando Torrents](https://comando.la/)
 - Execute o agent com o comando `prefect agent start -q padrao`
 - Execute o flow com o comando `prefect deployment run "Comando Flow/filmes_flow"`
 
+### Fazendo deployment no Prefect com infraestrutura docker local (para mim)
+- `docker image  build -t levyvix/comandola_filmes:tag .`
+- `docker image push levyvix/comandola_filmes:tag`
+- Configurar o Bloco `Docker Container` no UI
+- Rodar o arquivo de Deploy `python docker_deploy.py` (configure com o nome do flow e o agente)
+- Rodar o agente `prefect agent start -q dev`
+- Rodar o flow `prefect run "Comando Flow/comandola_filmes_sem_date"`
+
 ### Agendar Diariamente
 - Entre na UI do Prefect com o link: http://localhost:4200/
 - Clique em Deployments
