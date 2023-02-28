@@ -10,4 +10,18 @@ RUN pip install -r docker-requirements.txt --no-cache-dir --trusted-host pypi.py
 COPY . /opt/prefect/flows
 
 # install pt_BR locale
-RUN sudo apt-get update && sudo apt-get install -y locales && sudo locale-gen pt_BR.UTF-8
+RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* && localedef -i pt_BR -c -f UTF-8 -A /usr/share/locale/locale.alias pt_BR.UTF-8
+
+# Set the locale
+#ENV LANG=en_US.UTF-8 \
+#    LANGUAGE=en_US:en \
+#    LC_ALL=en_US.UTF-8
+ENV LANG=pt_BR.UTF-8 \
+    LANGUAGE=pt_BR:pt \
+    LC_ALL=pt_BR.UTF-8
+
+# Set the timezone
+ENV TZ America/Sao_Paulo
+
+# Set the working directory
+WORKDIR /opt/prefect/flows

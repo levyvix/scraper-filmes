@@ -6,7 +6,7 @@ docker_zoom = DockerContainer.load("zoom")
 
 dep = Deployment.build_from_flow(
     flow=comandola_filmes,
-    name="comandola_filmes_sem_date",
+    name="comandola_filmes_com_date2",
     version=1,
     infrastructure=docker_zoom,
     work_queue_name="dev",
