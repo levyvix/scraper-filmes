@@ -5,7 +5,7 @@ import locale
 
 try:
     locale.setlocale(locale.LC_ALL, "pt_BR")
-except:
+except Exception:
     locale.setlocale(locale.LC_ALL, "Portuguese_Brazil")
 
 # stop scrap log

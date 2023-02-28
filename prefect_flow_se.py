@@ -26,8 +26,6 @@ def run_spider():
 
     os.system("scrapy crawl filmes -O filmes.json")
 
-    return os.path.abspath("filmes.json")
-
 
 @task(
     name="Insert into database",
@@ -58,10 +56,10 @@ def send():
 def comandola_filmes():
     print(os.getcwd())
     os.chdir("filmes")
-    path = run_spider().rstrip('\n')
+    run_spider()
     os.chdir("..")
     os.chdir("dbs")
-    insert(path)
+    insert("../filmes/filmes.json")
     os.chdir("..")
     send()
 
