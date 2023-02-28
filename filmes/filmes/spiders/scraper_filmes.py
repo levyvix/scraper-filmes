@@ -2,6 +2,12 @@ import scrapy
 import logging
 from datetime import datetime
 import locale
+import babel
+
+# set locale pt-br
+if not babel.localedata.exists('pt_BR'):
+    # install locale
+    babel.localedata._install('pt_BR')
 
 try:
     locale.setlocale(locale.LC_ALL, "pt_BR")
