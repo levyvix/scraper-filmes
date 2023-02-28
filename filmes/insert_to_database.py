@@ -52,7 +52,7 @@ def create_and_insert(json_f):
     Base.metadata.create_all(engine)
 
     insert_to_database(json_f, engine)
-
+    
 
 if __name__ == "__main__":
     create_and_insert("filmes.json")

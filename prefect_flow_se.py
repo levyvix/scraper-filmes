@@ -1,6 +1,10 @@
 import os
 from prefect import flow, task
 from filmes.insert_to_database import create_and_insert
+from filmes.send_email.send_email import send_email
+from sqlalchemy import create_engine
+import pandas as pd
+from datetime import datetime
 
 
 @task(
@@ -35,17 +39,17 @@ def insert(path):
     create_and_insert(path)
 
 
-# @task(name="Send Email")
-# def send():
-#     # sql fetch last 10 movies
-#     engine = create_engine("sqlite:///movie_database.db")
+@task(name="Send Email")
+def send():
+    # sql fetch last 10 movies
+    engine = create_engine("sqlite:///dbs/movie_database.db")
 
-#     df = pd.read_sql_query("SELECT * FROM movies ORDER BY id DESC LIMIT 10", engine)
+    df = pd.read_sql_query("SELECT * FROM movies ORDER BY date_updated DESC LIMIT 15", engine)
 
-#     send_email(
-#         df,
-#         subject=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-#     )
+    send_email(
+        df,
+        subject=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+    )
 
 
 @flow(name="Comando Flow", log_prints=True)
@@ -57,7 +61,7 @@ def comandola_filmes():
     os.chdir("dbs")
     insert(path)
     os.chdir("..")
-    # send()
+    send()
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
 ###
 ### A complete description of a Prefect Deployment for flow 'Comando Flow'
 ###
-name: seila_mano_local
+name: gh-docker-local
 description: null
-version: 76dd219e94fcc57d294177ea218ae265
+version: b31c98fee4f416de3f4c9f07cab53fc7
 # The work queue that will handle this deployment's runs
 work_queue_name: dev
 work_pool_name: null
@@ -12,22 +12,35 @@ parameters: {}
 schedule: null
 is_schedule_active: null
 infra_overrides: {}
-infrastructure:
-  type: process
-  env: {}
-  labels: {}
-  name: null
-  command: null
-  stream_output: true
-  working_dir: null
-  block_type_slug: process
-  _block_type_slug: process
 
 ###
 ### DO NOT EDIT BELOW THIS LINE
 ###
 flow_name: Comando Flow
 manifest_path: null
+infrastructure:
+  type: docker-container
+  env:
+    EXTRA_PIP_PACKAGES: pandas sqlalchemy Scrapy requests yagmail tabulate
+  labels: {}
+  name: null
+  command: null
+  image: prefecthq/prefect:2.8.2-python3.9
+  image_pull_policy: null
+  image_registry: null
+  networks: []
+  network_mode: null
+  auto_remove: false
+  volumes: []
+  stream_output: true
+  memswap_limit: null
+  mem_limit: null
+  privileged: false
+  _block_document_id: d2047e30-0760-4bbe-904f-b9d54d04bf16
+  _block_document_name: dckr-container-levy
+  _is_anonymous: false
+  block_type_slug: docker-container
+  _block_type_slug: docker-container
 storage:
   repository: https://github.com/levyvix/scraper-filmes.git
   reference: main
@@ -46,4 +59,4 @@ parameter_openapi_schema:
   properties: {}
   required: null
   definitions: null
-timestamp: '2023-02-23T18:49:47.125525+00:00'
+timestamp: '2023-02-28T14:16:47.592855+00:00'
