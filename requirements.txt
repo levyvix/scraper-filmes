@@ -1,8 +1,5 @@
 Scrapy
-requests
-scrapyd
 sqlalchemy
 yagmail[all]
 tabulate
-pretty-html-table
-Babel
+prefect

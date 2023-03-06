@@ -1,9 +1,4 @@
 # TODO
-locale = pt_BR.UTF-8
+criar servidor prefect docker (quero ligar o pc e o servidor já estar rodando)
 
 
-# docker build image
-docker image build -t levyvix/comandola_filmes:tag .
-
-# docker push image
-docker image push levyvix/comandola_filmes:tag
