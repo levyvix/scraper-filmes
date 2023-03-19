@@ -10,7 +10,7 @@ from filmes.insert_to_database import create_and_insert
 from filmes.send_email.send_email import send_email
 import locale
 
-locale.setlocale(locale.LC_ALL, 'pt-BR.UTF-8')
+locale.setlocale(locale.LC_ALL, 'pt_BR.utf8')
 
 
 @task(
