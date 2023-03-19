@@ -46,7 +46,7 @@ def send():
 
     send_email(
         df,
-        subject=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        subject=datetime.now().strftime("%d/%m/%Y"),
     )
 
 

@@ -21,7 +21,7 @@ ENV LANG=pt_BR.UTF-8 \
     LC_ALL=pt_BR.UTF-8
 
 # Set the timezone
-ENV TZ America/Sao_Paulo
+ENV TZ=America/Sao_Paulo
 
 # Set the working directory
 WORKDIR /opt/prefect/flows
