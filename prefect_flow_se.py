@@ -46,7 +46,7 @@ def send():
 
     df = pd.read_sql_query(
         "SELECT * FROM movies ORDER BY date_updated DESC LIMIT 15", engine
-        )
+    )
 
     send_email(
         df,
