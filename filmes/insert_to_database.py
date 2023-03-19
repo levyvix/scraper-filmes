@@ -1,8 +1,9 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, Boolean, Date
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
-import json
 import datetime
+import json
+
+from sqlalchemy import Boolean, Column, Date, Float, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session
 
 Base = declarative_base()
 
@@ -47,6 +48,8 @@ def insert_to_database(json_path, engine):
 
 
 def create_and_insert(json_f):
+    # TODO: pass engine to function instead of calling inside
+
     engine = create_engine("sqlite:///movie_database.db", echo=False)
 
     Base.metadata.create_all(engine)

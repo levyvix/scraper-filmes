@@ -1,7 +1,8 @@
-import scrapy
+import locale
 import logging
 from datetime import datetime
-import locale
+
+import scrapy
 
 # try:
 locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
@@ -17,9 +18,14 @@ class FilmesSpider(scrapy.Spider):
     start_urls = ["https://comando.la/category/filmes/"]
 
     def parse(self, response):
+
+        # pega lista de cards
         for div in response.xpath('//header[@class = "entry-header cf"]'):
+
+            # pega link do card
             url = div.xpath(".//h2[1]/a/@href").extract_first()
 
+            # manda para o parse_detail
             yield scrapy.Request(url=url, callback=self.parse_detail, meta={"url": url})
 
         # pega a próxima página

@@ -3,10 +3,14 @@ from datetime import datetime
 
 import pandas as pd
 from prefect import flow, task
+# from prefect.tasks import task_input_hash
 from sqlalchemy import create_engine
 
 from filmes.insert_to_database import create_and_insert
 from filmes.send_email.send_email import send_email
+import locale
+
+locale.setlocale(locale.LC_ALL, 'pt-BR.UTF-8')
 
 
 @task(
@@ -45,18 +49,24 @@ def send():
     engine = create_engine("sqlite:///dbs/movie_database.db")
 
     df = pd.read_sql_query(
-        "SELECT * FROM movies ORDER BY date_updated DESC LIMIT 15", engine
+        """
+        SELECT * 
+        FROM movies 
+        ORDER BY date_updated DESC, id DESC
+        LIMIT 15
+        """,
+        engine
     )
 
     send_email(
         df,
-        subject=datetime.now().strftime("%d/%m/%Y"),
+        subject=datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
     )
 
 
 @flow(name="Comando Flow", log_prints=True)
 def comandola_filmes():
-    print(os.getcwd())
+    # print(os.getcwd())
     os.chdir("filmes")
     run_spider()
     os.chdir("../dbs")
