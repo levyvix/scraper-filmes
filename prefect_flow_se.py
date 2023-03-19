@@ -1,10 +1,12 @@
 import os
+from datetime import datetime
+
+import pandas as pd
 from prefect import flow, task
+from sqlalchemy import create_engine
+
 from filmes.insert_to_database import create_and_insert
 from filmes.send_email.send_email import send_email
-from sqlalchemy import create_engine
-import pandas as pd
-from datetime import datetime
 
 
 @task(
@@ -42,7 +44,9 @@ def send():
     # sql fetch last 10 movies
     engine = create_engine("sqlite:///dbs/movie_database.db")
 
-    df = pd.read_sql_query("SELECT * FROM movies ORDER BY date_updated DESC LIMIT 15", engine)
+    df = pd.read_sql_query(
+        "SELECT * FROM movies ORDER BY date_updated DESC LIMIT 15", engine
+        )
 
     send_email(
         df,
