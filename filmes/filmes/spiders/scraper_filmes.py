@@ -5,7 +5,7 @@ from datetime import datetime
 import scrapy
 
 # try:
-locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+locale.setlocale(locale.LC_ALL, "pt_BR.utf-8")
 
 
 # stop scrap log
@@ -32,6 +32,7 @@ class FilmesSpider(scrapy.Spider):
         next_page = response.xpath(
             "//html/body/div[1]/div[2]/div[1]/div[2]/div/a[7]/@href"
         ).extract_first()
+
         if next_page is not None:
             # yield scrapy.Request(response.urljoin(next_page), callback = self.parse)
             yield response.follow(next_page, callback=self.parse)
@@ -46,7 +47,7 @@ class FilmesSpider(scrapy.Spider):
             "div.entry-byline.cf > div.entry-date > a::text"
         ).extract_first()
 
-        # string to date
+        # string to date (costuma dar erro se nao estiver com o locale pt_BR.utf-8 setado)
         date_updated = datetime.strptime(date_updated, "%d de %B de %Y")
 
         # se nao tem espaço, entao tem informações
@@ -129,7 +130,20 @@ class FilmesSpider(scrapy.Spider):
         }
 
 
-def GB_to_MB(tamanho):
+def GB_to_MB(tamanho: str) -> float:
+    """
+    Converte o tamanho de GB para MB
+
+    Args:
+        tamanho (str): tamanho do filme em GB
+
+    Returns:
+        float: tamanho do filme em MB
+
+    Examples:
+        >>> GB_to_MB('2.45 GB')
+        2560.0
+    """
     if "GB" in tamanho:
         tamanho = tamanho.replace("GB", "").strip()
         tamanho = float(tamanho) * 1024
@@ -140,12 +154,25 @@ def GB_to_MB(tamanho):
     return tamanho
 
 
-def split_duracao(duracao):
+def split_duracao(duracao: str) -> int:
+    """
+    - Pega somente a primeira duração do filme
+    - Converte a duração para minutos
+
+    Args:
+        duracao (str): duração do filme
+
+    Returns:
+        int: duração do filme em minutos
+
+    Examples:
+        >>> split_duracao('1h 30 Min. | 1h 40 Min.')
+        90
+    """
 
     if "|" in duracao:
         duracao = duracao.split("|")[0].strip()
 
-    # convert to minutes (TEMPLATE: 1h 26 Min. to: 86)
     if "h" in duracao:
         duracao = duracao.replace("h", "").strip()
         duracao = duracao.replace("Min.", "").strip()

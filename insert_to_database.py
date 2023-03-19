@@ -28,6 +28,18 @@ class Movie(Base):
 
 # insert data into the database, if the data already exists, ignore it
 def insert_to_database(json_path, engine):
+    """
+    Pega o caminho do arquivo json e insere os dados no banco de dados SQLite
+
+
+    Args:
+        json_path (str): caminho do arquivo json
+        engine (sqlalchemy.engine.base.Engine): engine do banco de dados
+
+
+    Examples:
+        >>> insert_to_database("filmes.json", engine)
+    """
     with Session(bind=engine) as sess:
         with open(json_path, "r", encoding="utf-8", errors="ignore") as json_file:
             data = json.load(json_file)
@@ -50,10 +62,18 @@ def insert_to_database(json_path, engine):
         sess.commit()
 
 
-def create_and_insert(json_f):
-    # TODO: pass engine to function instead of calling inside
+def create_and_insert(json_f, engine):
+    """
+    create the database and insert the data into it, if the database already exists, ignore it
 
-    engine = create_engine("sqlite:///movie_database.db", echo=False)
+    Args:
+        json_f (str): path to the json file
+        engine (sqlalchemy.engine.base.Engine): engine of the database
+
+    Examples:
+        >>> create_and_insert("filmes.json", engine)
+    """
+    # engine = create_engine("sqlite:///movie_database.db", echo=False)
 
     Base.metadata.create_all(engine)
 
@@ -61,4 +81,6 @@ def create_and_insert(json_f):
 
 
 if __name__ == "__main__":
-    create_and_insert("filmes.json")
+    engine = create_engine("sqlite:///dbs/movie_database.db", echo=False)
+
+    create_and_insert("filmes/filmes.json", engine)

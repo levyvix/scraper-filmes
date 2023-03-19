@@ -6,7 +6,7 @@ from prefect import flow, task
 # from prefect.tasks import task_input_hash
 from sqlalchemy import create_engine
 
-from filmes.insert_to_database import create_and_insert
+from insert_to_database import create_and_insert
 from filmes.send_email.send_email import send_email
 
 
@@ -36,14 +36,14 @@ def run_spider():
     retries=3,
     retry_delay_seconds=10,
 )
-def insert(path):
-    create_and_insert(path)
+def insert(path, engine):
+    create_and_insert(path, engine)
 
 
 @task(name="Send Email")
-def send():
+def send(engine):
     # sql fetch last 10 movies
-    engine = create_engine("sqlite:///dbs/movie_database.db")
+    # engine = create_engine("sqlite:///dbs/movie_database.db")
 
     df = pd.read_sql_query(
         """
@@ -63,14 +63,17 @@ def send():
 
 @flow(name="Comando Flow", log_prints=True)
 def comandola_filmes():
+    # create engine
+    engine = create_engine("sqlite:///dbs/movie_database.db")
+
     # print(os.getcwd())
     os.chdir("filmes")
     run_spider()
     os.chdir("../dbs")
     # os.chdir("dbs")
-    insert("../filmes/filmes.json")
+    insert("../filmes/filmes.json", engine)
     os.chdir("..")
-    send()
+    send(engine)
 
 
 if __name__ == "__main__":
