@@ -12,7 +12,7 @@ class Movie(Base):
     __tablename__ = "movies"
 
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
-    titulo_dublado = Column(String, unique=True)
+    titulo_dublado = Column(String)
     titulo_original = Column(String)
     imdb = Column(Float)
     ano = Column(Integer)
