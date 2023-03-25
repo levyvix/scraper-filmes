@@ -47,9 +47,13 @@ def send(engine):
 
     df = pd.read_sql_query(
         """
-        SELECT * 
+        -- last 15 movies and list of genders
+        SELECT titulo_dublado, group_concat(gender) as genero, tamanho_mb, duracao_minutos, 
+        qualidade, dublado, date_updated, sinopse, link
         FROM movies 
-        ORDER BY date_updated DESC, id DESC
+        JOIN genders ON movies.id = genders.movie_id
+        GROUP BY movies.id
+        ORDER BY date_updated DESC, movies.id DESC
         LIMIT 15
         """,
         engine

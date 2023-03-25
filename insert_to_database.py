@@ -90,6 +90,7 @@ def insert_to_database(json_path, engine):
                         ).first().id,
                         gender=g.strip(),
                     )
+                    
                     sess.add(gender)
 
 
