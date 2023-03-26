@@ -148,7 +148,7 @@ def GB_to_MB(tamanho: str) -> float:
         >>> GB_to_MB('2.45 GB')
         2560.0
     """
-    print(tamanho)
+    
     if isinstance(tamanho, int):
         return tamanho
 
