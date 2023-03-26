@@ -3,6 +3,7 @@ from datetime import datetime
 
 import pandas as pd
 from prefect import flow, task
+
 # from prefect.tasks import task_input_hash
 from sqlalchemy import create_engine
 
@@ -19,7 +20,6 @@ from filmes.send_email.send_email import send_email
     # cache_expiration=timedelta(minutes=10),
 )
 def run_spider():
-
     try:
         os.remove("filmes.json")
     except FileNotFoundError:
@@ -53,10 +53,10 @@ def send(engine):
         FROM movies 
         JOIN genders ON movies.id = genders.movie_id
         GROUP BY movies.id
-        ORDER BY date_updated DESC, movies.id DESC
+        ORDER BY date_updated DESC
         LIMIT 15
         """,
-        engine
+        engine,
     )
 
     send_email(
