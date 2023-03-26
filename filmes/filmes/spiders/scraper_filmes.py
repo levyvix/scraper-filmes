@@ -1,7 +1,7 @@
 import locale
 import logging
 from datetime import datetime
-
+import re
 import scrapy
 
 # try:
@@ -18,10 +18,8 @@ class FilmesSpider(scrapy.Spider):
     start_urls = ["https://comando.la/category/filmes/"]
 
     def parse(self, response):
-
         # pega lista de cards
         for div in response.xpath('//header[@class = "entry-header cf"]'):
-
             # pega link do card
             url = div.xpath(".//h2[1]/a/@href").extract_first()
 
@@ -104,13 +102,19 @@ class FilmesSpider(scrapy.Spider):
                 "/html/body/div/div[2]/div[1]/article/div[2]/p[3]/text()"
             ).extract_first()
 
+        pat = r"\d+(?:\.\d+)? (?:GB|MB)" # regex para pegar o tamanho do filme
+        try:
+            tamanho = re.findall(pat, tamanho)[0]
+        except Exception:
+            tamanho = 0
+
         dublado = "Português" in idioma
         titulo_dublado = titulo_dublado.replace(":", "").strip()
         titulo = titulo.replace(":", "").strip()
         ano = ano.replace(":", "").strip()
         sinopse = sinopse.replace(":", "").strip()
         genero = genero.replace(":", "").strip()
-        tamanho = GB_to_MB(tamanho.replace(":", "").strip().split(" | ")[0])
+        tamanho = GB_to_MB(tamanho)
         duracao = split_duracao(duracao.replace(":", "").strip())
         qualidade = float(qualidade.replace(":", "").strip().replace(",", "."))
 
@@ -144,6 +148,10 @@ def GB_to_MB(tamanho: str) -> float:
         >>> GB_to_MB('2.45 GB')
         2560.0
     """
+    print(tamanho)
+    if isinstance(tamanho, int):
+        return tamanho
+
     if "GB" in tamanho:
         tamanho = tamanho.replace("GB", "").strip()
         tamanho = float(tamanho) * 1024

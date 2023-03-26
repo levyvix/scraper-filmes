@@ -3,12 +3,10 @@ import sqlite3
 
 class FilmesPipeline:
     def __init__(self) -> None:
-
         self.con = sqlite3.connect("../database.db")
         self.cur = self.con.cursor()
 
     def create_database(self):
-
         self.cur.execute(
             """CREATE TABLE IF NOT EXISTS data (
             id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
