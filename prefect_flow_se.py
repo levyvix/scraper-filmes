@@ -42,7 +42,7 @@ def insert(path, engine):
 
 @task(name="Send Email")
 def send(engine):
-    # sql fetch last 10 movies
+    # sql fetch last 20 movies
     # engine = create_engine("sqlite:///dbs/movie_database.db")
 
     df = pd.read_sql_query(
@@ -53,7 +53,7 @@ def send(engine):
         JOIN genders ON movies.id = genders.movie_id
         GROUP BY movies.id
         ORDER BY date_updated DESC
-        LIMIT 15
+        LIMIT 20
         """,
         engine,
     )
