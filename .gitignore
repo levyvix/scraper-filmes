@@ -1,4 +1,4 @@
 *.pyc
 *.png
 /__pycache__/
-/dbs/movie_database.db
+*.db
