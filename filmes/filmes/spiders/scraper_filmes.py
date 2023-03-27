@@ -1,12 +1,8 @@
-import locale
 import logging
-from datetime import datetime
+
 import re
 import scrapy
-
-# try:
-locale.setlocale(locale.LC_ALL, "pt_BR.utf-8")
-
+import dateparser
 
 # stop scrap log
 logging.getLogger("scrapy").propagate = False
@@ -45,8 +41,8 @@ class FilmesSpider(scrapy.Spider):
             "div.entry-byline.cf > div.entry-date > a::text"
         ).extract_first()
 
-        # string to date (costuma dar erro se nao estiver com o locale pt_BR.utf-8 setado)
-        date_updated = datetime.strptime(date_updated, "%d de %B de %Y")
+        # string to date
+        date_updated = dateparser.parse(date_updated, languages=["pt"])
 
         # se nao tem espaço, entao tem informações
         infos = [i for i in informacoes if i not in ["\n", " ", "/10"]]
@@ -74,8 +70,6 @@ class FilmesSpider(scrapy.Spider):
 
         genero = infos[3]
 
-        # if genero.startswith('/10'):
-        #     genero = infos[4]
 
         tamanho = infos[8]
         duracao = infos[9]
@@ -102,9 +96,9 @@ class FilmesSpider(scrapy.Spider):
                 "/html/body/div/div[2]/div[1]/article/div[2]/p[3]/text()"
             ).extract_first()
 
-        pat = r"\d+(?:\.\d+)? (?:GB|MB)" # regex para pegar o tamanho do filme
+        pat = r"\d+\.\d+ (?:GB|MB)"  # regex para pegar o tamanho do filme
         try:
-            tamanho = re.findall(pat, tamanho)[0]
+            tamanho = re.findall(pat, tamanho)[0] # pega o tamanho minimo
         except Exception:
             tamanho = 0
 
@@ -148,7 +142,7 @@ def GB_to_MB(tamanho: str) -> float:
         >>> GB_to_MB('2.45 GB')
         2560.0
     """
-    
+
     if isinstance(tamanho, int):
         return tamanho
 

@@ -3,3 +3,4 @@ sqlalchemy
 yagmail[all]
 tabulate
 prefect
+dateparser

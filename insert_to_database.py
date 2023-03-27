@@ -1,7 +1,16 @@
 import datetime
 import json
 
-from sqlalchemy import Boolean, Column, Date, Float, Integer, String, create_engine, ForeignKey
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    Float,
+    Integer,
+    String,
+    create_engine,
+    ForeignKey,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, relationship
 
@@ -25,11 +34,11 @@ class Movie(Base):
     date_updated = Column(Date)
     link = Column(String)
 
-class Gender(Base):
 
+class Gender(Base):
     __tablename__ = "genders"
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
-    movie_id = Column(Integer, ForeignKey('movies.id'))
+    movie_id = Column(Integer, ForeignKey("movies.id"))
     gender = Column(String)
 
 
@@ -67,16 +76,20 @@ def insert_to_database(json_path, engine):
                 link=movie["link"],
             )
 
-            list_of_genders = movie['genero'].split(" | ")
+            list_of_genders = movie["genero"].split(" | ")
 
             movie_entity.date_updated = datetime.datetime.strptime(
                 movie_entity.date_updated, "%Y-%m-%d %H:%M:%S"
             ).date()
             # check if movie already exists
-            if sess.query(Movie).filter_by(
-                titulo_dublado=movie_entity.titulo_dublado,
-                date_updated=movie_entity.date_updated,
-            ).first():
+            if (
+                sess.query(Movie)
+                .filter_by(
+                    titulo_dublado=movie_entity.titulo_dublado,
+                    date_updated=movie_entity.date_updated,
+                )
+                .first()
+            ):
                 continue
             else:
                 sess.add(movie_entity)
@@ -84,15 +97,17 @@ def insert_to_database(json_path, engine):
                 # add genders
                 for g in list_of_genders:
                     gender = Gender(
-                        movie_id=sess.query(Movie).filter_by(
+                        movie_id=sess.query(Movie)
+                        .filter_by(
                             titulo_dublado=movie_entity.titulo_dublado,
                             date_updated=movie_entity.date_updated,
-                        ).first().id,
+                        )
+                        .first()
+                        .id,
                         gender=g.strip(),
                     )
-                    
-                    sess.add(gender)
 
+                    sess.add(gender)
 
         sess.commit()
 
@@ -118,4 +133,4 @@ def create_and_insert(json_f, engine):
 if __name__ == "__main__":
     engine = create_engine("sqlite:///dbs/movie_database.db", echo=False)
 
-    create_and_insert("filmes/filmes.json", engine)
+    create_and_insert("filmes/f.json", engine)
