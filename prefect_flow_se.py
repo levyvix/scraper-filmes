@@ -47,9 +47,9 @@ def send(engine):
 
     df = pd.read_sql_query(
         """
-        SELECT titulo_original, group_concat(gender, ', ') as genero, imdb, tamanho_mb, duracao_minutos, 
+        SELECT titulo_original, group_concat(gender, ', ') as genero, imdb, tamanho_mb, duracao_minutos,
         qualidade, dublado, date_updated, sinopse, link
-        FROM movies 
+        FROM movies
         JOIN genders ON movies.id = genders.movie_id
         GROUP BY movies.id
         ORDER BY date_updated DESC

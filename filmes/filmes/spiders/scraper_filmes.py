@@ -1,8 +1,26 @@
 import logging
-
+from pprint import pprint
 import re
 import scrapy
 import dateparser
+import dataclasses
+
+
+@dataclasses.dataclass
+class Movie:
+    titulo_dublado: str
+    titulo_original: str
+    imdb: float
+    ano: int
+    genero: str
+    tamanho_mb: float
+    duracao_minutos: int
+    qualidade: float
+    dublado: bool
+    sinopse: str
+    date_updated: str
+    link: str
+
 
 # stop scrap log
 logging.getLogger("scrapy").propagate = False
@@ -60,7 +78,10 @@ class FilmesSpider(scrapy.Spider):
                 "//html/body/div/div[2]/div[1]/article/div[2]/p[1]/a/text()"
             ).extract()[0]
 
-            if str(imdb).startswith("20"):
+            if imdb is None or imdb == "???":
+                imdb = -1
+
+            elif str(imdb).startswith("20"):
                 # not a imdb link, thats a year link
                 imdb = infos[2]
                 imdb = imdb.replace(":", "").strip()
@@ -70,11 +91,18 @@ class FilmesSpider(scrapy.Spider):
 
         genero = infos[3]
 
-
         tamanho = infos[8]
         duracao = infos[9]
+
         qualidade = infos[10]
         idioma = infos[6]
+
+        if duracao is not None and "GB" in duracao:
+            duracao = infos[10]
+            tamanho = infos[9]
+            qualidade = infos[11]
+
+
         link = response.meta["url"]
 
         ano = response.xpath(
@@ -96,35 +124,57 @@ class FilmesSpider(scrapy.Spider):
                 "/html/body/div/div[2]/div[1]/article/div[2]/p[3]/text()"
             ).extract_first()
 
-        pat = r"\d+\.\d+ (?:GB|MB)"  # regex para pegar o tamanho do filme
+        pat = r"(\d+\.\d+)"  # regex para pegar o tamanho do filme
         try:
-            tamanho = re.findall(pat, tamanho)[0] # pega o tamanho minimo
+            tamanho = re.findall(pat, tamanho)[0]  # pega o tamanho minimo
         except Exception:
             tamanho = 0
 
         dublado = "Português" in idioma
         titulo_dublado = titulo_dublado.replace(":", "").strip()
         titulo = titulo.replace(":", "").strip()
-        ano = ano.replace(":", "").strip()
+        ano = int(ano.replace(":", "").strip()) if ano is not None else -1
         sinopse = sinopse.replace(":", "").strip()
         genero = genero.replace(":", "").strip()
         tamanho = GB_to_MB(tamanho)
         duracao = split_duracao(duracao.replace(":", "").strip())
         qualidade = float(qualidade.replace(":", "").strip().replace(",", "."))
 
+
+        if isinstance(imdb, str) and imdb is not None:
+            if "–" not in imdb:
+                imdb = float(imdb.replace(",", "."))
+            else:
+                imdb = -1
+
+        movie = Movie(
+            titulo_dublado=titulo_dublado,
+            titulo_original=titulo,
+            imdb=imdb,
+            ano=ano,
+            genero=genero,
+            tamanho_mb=tamanho,
+            duracao_minutos=duracao,
+            qualidade=qualidade,
+            dublado=dublado,
+            sinopse=sinopse,
+            date_updated=date_updated,
+            link=link,
+        )
+
         yield {
-            "titulo_dublado": titulo_dublado,
-            "titulo_original": titulo,
-            "imdb": float(imdb.replace(",", ".")) if "–" not in imdb else -1,
-            "ano": int(ano) if ano is not None else -1,
-            "genero": genero,
-            "tamanho_mb": tamanho,
-            "duracao_minutos": duracao,
-            "qualidade": qualidade,
-            "dublado": dublado,
-            "sinopse": sinopse,
-            "date_updated": date_updated,
-            "link": link,
+            "titulo_dublado": movie.titulo_dublado,
+            "titulo_original": movie.titulo_original,
+            "imdb": movie.imdb,
+            "ano": movie.ano,
+            "genero": movie.genero,
+            "tamanho_mb": movie.tamanho_mb,
+            "duracao_minutos": movie.duracao_minutos,
+            "qualidade": movie.qualidade,
+            "dublado": movie.dublado,
+            "sinopse": movie.sinopse,
+            "date_updated": movie.date_updated,
+            "link": movie.link,
         }
 
 
