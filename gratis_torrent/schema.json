@@ -1,0 +1,62 @@
+[
+    {
+        "name": "titulo_dublado",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "titulo_original",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "imdb",
+        "type": "FLOAT",
+        "mode": "NULLABLE"
+    },
+    {
+        "name": "ano",
+        "type": "INTEGER",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "genero",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "tamanho",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "duracao_minutos",
+        "type": "INTEGER",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "qualidade_video",
+        "type": "FLOAT",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "qualidade",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "dublado",
+        "type": "BOOLEAN",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "sinopse",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
+        "name": "link",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    }
+]

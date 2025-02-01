@@ -1,0 +1,38 @@
+# Welcome to your prefect.yaml file! You can use this file for storing and managing
+# configuration for deploying your flows. We recommend committing this file to source
+# control along with your flow code.
+
+# Generic metadata about this project
+name: gratis_torrent
+prefect-version: 3.1.15
+
+# build section allows you to manage and build docker images
+build: null
+
+# push section allows you to manage if and how this project is uploaded to remote locations
+push: null
+
+# pull section allows you to provide instructions for cloning this project in remote locations
+pull:
+- prefect.deployments.steps.git_clone:
+    repository: https://github.com/levyvix/scraper-filmes.git
+    branch: main
+
+# the deployments section allows you to provide configuration for deploying flows
+deployments:
+- name: dag_scraper_filmes_gratis
+  version: null
+  tags: []
+  concurrency_limit: null
+  description: null
+  entrypoint: dag.py:run_dag
+  parameters: {}
+  work_pool:
+    name: wp1
+    work_queue_name: null
+    job_variables: {}
+  schedules:
+  - cron: 0 * * * *
+    timezone: UTC
+    day_or: true
+    active: true
