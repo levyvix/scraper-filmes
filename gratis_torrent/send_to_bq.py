@@ -6,7 +6,7 @@ project_id = "galvanic-flame-384620"
 
 
 def get_table_schema():
-    with open("schema.json", "r") as f:
+    with open("./schema.json", "r") as f:
         schema = json.load(f)
 
     return schema

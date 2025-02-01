@@ -5,6 +5,10 @@ import re
 from pydantic import BaseModel, Field
 from rich import print
 from loguru import logger
+import sys
+
+logger.remove()
+logger.add(sys.stderr, level="WARNING")
 
 
 class Movie(BaseModel):

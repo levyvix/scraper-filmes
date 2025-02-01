@@ -3,7 +3,7 @@
 # control along with your flow code.
 
 # Generic metadata about this project
-name: gratis_torrent
+name: scraper-filmes
 prefect-version: 3.1.15
 
 # build section allows you to manage and build docker images
@@ -20,19 +20,19 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: dag_scraper_filmes_gratis
+- name: dag_run_scraper_filmes_gratis
   version: null
   tags: []
   concurrency_limit: null
   description: null
-  entrypoint: dag.py:run_dag
+  entrypoint: gratis_torrent\dag.py:run_dag
   parameters: {}
   work_pool:
     name: wp1
     work_queue_name: null
     job_variables: {}
   schedules:
-  - cron: 0 * * * *
+  - cron: '0 * * * * '
     timezone: UTC
     day_or: true
     active: true
