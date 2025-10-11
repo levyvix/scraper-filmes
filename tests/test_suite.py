@@ -28,9 +28,9 @@ class TestRunner:
     def test(self, name: str, func):
         """Executa um teste e registra resultado"""
         try:
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print(f"TEST: {name}")
-            print('='*60)
+            print("=" * 60)
             func()
             print("✅ PASSOU")
             self.passed += 1
@@ -45,17 +45,17 @@ class TestRunner:
 
     def summary(self):
         """Imprime resumo dos testes"""
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print("RESUMO DOS TESTES")
-        print('='*60)
+        print("=" * 60)
         print(f"✅ Passou: {self.passed}")
         print(f"❌ Falhou: {self.failed}")
         print(f"📊 Total: {self.passed + self.failed}")
 
         if self.errors:
-            print(f"\n{'='*60}")
+            print(f"\n{'=' * 60}")
             print("ERROS DETALHADOS")
-            print('='*60)
+            print("=" * 60)
             for name, error in self.errors:
                 print(f"\n{name}:")
                 print(f"  {error}")
@@ -67,20 +67,25 @@ class TestRunner:
 # TESTES
 # =============================================================================
 
+
 def test_imports():
     """Testa importações dos módulos principais"""
     print("Testando importações...")
 
     from src.scrapers.gratis_torrent.extract import Movie  # noqa: F401
+
     print("  ✓ src.scrapers.gratis_torrent.extract")
 
     from src.database.insert_to_database import create_and_insert  # noqa: F401
+
     print("  ✓ src.database.insert_to_database")
 
     from src.flows.prefect_flow_gratis import gratis_torrent_flow  # noqa: F401
+
     print("  ✓ src.flows.prefect_flow_gratis")
 
     import src.scrapers.gratis_torrent.send_to_bq  # noqa: F401
+
     print("  ✓ src.scrapers.gratis_torrent.send_to_bq")
 
 
@@ -92,7 +97,7 @@ def test_database_schema():
     from src.database.insert_to_database import Base
 
     # Criar banco em memória
-    engine = create_engine('sqlite:///:memory:')
+    engine = create_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
 
     # Inspecionar schema
@@ -100,28 +105,38 @@ def test_database_schema():
     tables = inspector.get_table_names()
 
     print(f"  ✓ Tabelas criadas: {tables}")
-    assert 'movies' in tables, "Tabela 'movies' não encontrada"
-    assert 'genres' in tables, "Tabela 'genres' não encontrada"
+    assert "movies" in tables, "Tabela 'movies' não encontrada"
+    assert "genres" in tables, "Tabela 'genres' não encontrada"
 
     # Verificar colunas da tabela movies
-    movies_columns = [col['name'] for col in inspector.get_columns('movies')]
+    movies_columns = [col["name"] for col in inspector.get_columns("movies")]
     print(f"  ✓ Colunas movies: {len(movies_columns)} campos")
 
     required_fields = [
-        'id', 'titulo_dublado', 'titulo_original', 'imdb', 'ano',
-        'tamanho_mb', 'duracao_minutos', 'qualidade_video', 'qualidade',
-        'dublado', 'sinopse', 'date_updated', 'link'
+        "id",
+        "titulo_dublado",
+        "titulo_original",
+        "imdb",
+        "ano",
+        "tamanho_mb",
+        "duracao_minutos",
+        "qualidade_video",
+        "qualidade",
+        "dublado",
+        "sinopse",
+        "date_updated",
+        "link",
     ]
 
     for field in required_fields:
         assert field in movies_columns, f"Campo '{field}' não encontrado em movies"
 
     # Verificar colunas da tabela genres
-    genres_columns = [col['name'] for col in inspector.get_columns('genres')]
+    genres_columns = [col["name"] for col in inspector.get_columns("genres")]
     print(f"  ✓ Colunas genres: {len(genres_columns)} campos")
 
-    assert 'genre' in genres_columns, "Campo 'genre' não encontrado em genres"
-    assert 'movie_id' in genres_columns, "Campo 'movie_id' não encontrado em genres"
+    assert "genre" in genres_columns, "Campo 'genre' não encontrado em genres"
+    assert "movie_id" in genres_columns, "Campo 'movie_id' não encontrado em genres"
 
 
 def test_pydantic_validation():
@@ -144,7 +159,7 @@ def test_pydantic_validation():
         qualidade="1080p BluRay",
         dublado=True,
         sinopse="Super-heróis se unem",
-        link="http://example.com"
+        link="http://example.com",
     )
     print(f"  ✓ Dados válidos aceitos: {movie.titulo_dublado}")
     assert movie.qualidade_video == 9.0, "qualidade_video deve ser float"
@@ -153,10 +168,18 @@ def test_pydantic_validation():
     # Teste 2: IMDB inválido
     try:
         Movie(
-            titulo_dublado="Teste", titulo_original="Test", imdb=15.0,
-            ano=2020, genero="Drama", tamanho="1.0", duracao_minutos=90,
-            qualidade_video=8.0, qualidade="720p", dublado=True,
-            sinopse="Teste", link="http://example.com"
+            titulo_dublado="Teste",
+            titulo_original="Test",
+            imdb=15.0,
+            ano=2020,
+            genero="Drama",
+            tamanho="1.0",
+            duracao_minutos=90,
+            qualidade_video=8.0,
+            qualidade="720p",
+            dublado=True,
+            sinopse="Teste",
+            link="http://example.com",
         )
         raise AssertionError("IMDB > 10 deveria ser rejeitado")
     except ValidationError:
@@ -165,10 +188,18 @@ def test_pydantic_validation():
     # Teste 3: Ano inválido
     try:
         Movie(
-            titulo_dublado="Teste", titulo_original="Test", imdb=7.0,
-            ano=1800, genero="Drama", tamanho="1.0", duracao_minutos=90,
-            qualidade_video=8.0, qualidade="720p", dublado=True,
-            sinopse="Teste", link="http://example.com"
+            titulo_dublado="Teste",
+            titulo_original="Test",
+            imdb=7.0,
+            ano=1800,
+            genero="Drama",
+            tamanho="1.0",
+            duracao_minutos=90,
+            qualidade_video=8.0,
+            qualidade="720p",
+            dublado=True,
+            sinopse="Teste",
+            link="http://example.com",
         )
         raise AssertionError("Ano < 1888 deveria ser rejeitado")
     except ValidationError:
@@ -184,7 +215,7 @@ def test_database_insertion():
     from src.database.insert_to_database import create_and_insert, Movie, Genre
 
     # Criar JSON de teste
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         test_data = [
             {
                 "titulo_dublado": "Teste Filme 1",
@@ -198,7 +229,7 @@ def test_database_insertion():
                 "qualidade": "1080p BluRay",
                 "dublado": True,
                 "sinopse": "Um filme de teste",
-                "link": "http://example.com/movie1"
+                "link": "http://example.com/movie1",
             },
             {
                 "titulo_dublado": "Teste Filme 2",
@@ -212,18 +243,18 @@ def test_database_insertion():
                 "qualidade": "720p WEB-DL",
                 "dublado": False,
                 "sinopse": "Outro filme de teste",
-                "link": "http://example.com/movie2"
-            }
+                "link": "http://example.com/movie2",
+            },
         ]
         json.dump(test_data, f)
         json_path = f.name
 
     try:
         # Criar banco de teste
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
 
-        engine = create_engine(f'sqlite:///{db_path}')
+        engine = create_engine(f"sqlite:///{db_path}")
 
         # Inserir dados
         create_and_insert(json_path, engine)
@@ -264,30 +295,32 @@ def test_deduplication():
     from src.database.insert_to_database import create_and_insert, Movie
 
     # Criar JSON de teste
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-        test_data = [{
-            "titulo_dublado": "Teste Dedup",
-            "titulo_original": "Test Dedup",
-            "imdb": 8.0,
-            "ano": 2023,
-            "genero": "Drama",
-            "tamanho": "2.0",
-            "duracao_minutos": 100,
-            "qualidade_video": 8.0,
-            "qualidade": "1080p",
-            "dublado": True,
-            "sinopse": "Teste",
-            "link": "http://example.com/dedup"
-        }]
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        test_data = [
+            {
+                "titulo_dublado": "Teste Dedup",
+                "titulo_original": "Test Dedup",
+                "imdb": 8.0,
+                "ano": 2023,
+                "genero": "Drama",
+                "tamanho": "2.0",
+                "duracao_minutos": 100,
+                "qualidade_video": 8.0,
+                "qualidade": "1080p",
+                "dublado": True,
+                "sinopse": "Teste",
+                "link": "http://example.com/dedup",
+            }
+        ]
         json.dump(test_data, f)
         json_path = f.name
 
     try:
         # Criar banco de teste
-        with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
             db_path = f.name
 
-        engine = create_engine(f'sqlite:///{db_path}')
+        engine = create_engine(f"sqlite:///{db_path}")
 
         # Primeira inserção
         create_and_insert(json_path, engine)
@@ -320,7 +353,7 @@ def test_env_loading():
     from dotenv import load_dotenv
 
     # Criar .env temporário
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.env', delete=False, dir='.') as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False, dir=".") as f:
         f.write("TEST_VAR=test_value_123\n")
         env_path = f.name
 
@@ -350,7 +383,7 @@ def test_prefect_flow_structure():
         run_gratis_scraper,
         insert_movies,
         get_stats,
-        export_to_bigquery
+        export_to_bigquery,
     )
     import inspect
 
@@ -360,7 +393,7 @@ def test_prefect_flow_structure():
     # Verificar parâmetros
     sig = inspect.signature(gratis_torrent_flow.fn)
     params = list(sig.parameters.keys())
-    assert 'export_bq' in params, "Parâmetro 'export_bq' não encontrado"
+    assert "export_bq" in params, "Parâmetro 'export_bq' não encontrado"
     print(f"  ✓ Parâmetros: {', '.join(params)}")
 
     # Verificar tasks
@@ -368,7 +401,7 @@ def test_prefect_flow_structure():
         (run_gratis_scraper, "Run GratisTorrent Scraper"),
         (insert_movies, "Insert into database"),
         (get_stats, "Get Movie Stats"),
-        (export_to_bigquery, "Export to BigQuery")
+        (export_to_bigquery, "Export to BigQuery"),
     ]
 
     for task, expected_name in tasks:
@@ -380,11 +413,12 @@ def test_prefect_flow_structure():
 # MAIN
 # =============================================================================
 
+
 def main():
     """Executa todos os testes"""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("🧪 SUITE DE TESTES - SCRAPER DE FILMES")
-    print("="*60)
+    print("=" * 60)
 
     runner = TestRunner()
 
@@ -400,12 +434,12 @@ def main():
     # Resumo
     success = runner.summary()
 
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     if success:
         print("🎉 TODOS OS TESTES PASSARAM!")
     else:
         print("⚠️  ALGUNS TESTES FALHARAM")
-    print("="*60 + "\n")
+    print("=" * 60 + "\n")
 
     return 0 if success else 1
 

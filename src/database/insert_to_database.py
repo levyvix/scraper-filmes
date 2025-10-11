@@ -74,10 +74,14 @@ def insert_to_database(json_path, engine):
             date_updated = datetime.datetime.strptime(movie["date_updated"], "%Y-%m-%d %H:%M:%S").date()
 
             # Check if movie already exists
-            existing_movie = sess.query(Movie).filter_by(
-                titulo_dublado=movie["titulo_dublado"],
-                date_updated=date_updated,
-            ).first()
+            existing_movie = (
+                sess.query(Movie)
+                .filter_by(
+                    titulo_dublado=movie["titulo_dublado"],
+                    date_updated=date_updated,
+                )
+                .first()
+            )
 
             if existing_movie:
                 continue

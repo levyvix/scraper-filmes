@@ -48,7 +48,9 @@ def run_gratis_scraper():
         return
 
     # If we get here, file was not created
-    error_message = f"Expected JSON file not found at {json_path} or in current directory. The scraper may have failed silently."
+    error_message = (
+        f"Expected JSON file not found at {json_path} or in current directory. The scraper may have failed silently."
+    )
     raise FileNotFoundError(error_message)
 
 

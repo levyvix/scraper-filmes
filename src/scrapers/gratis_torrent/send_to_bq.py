@@ -109,9 +109,7 @@ def create_load_job(client: bigquery.Client) -> None:
     with open(json_path, "r", encoding="utf-8") as f:
         json_file = json.load(f)
         logger.info(f"Loaded {len(json_file)} movies")
-        load_job = client.load_table_from_json(
-            json_file, table_ref_staging, job_config=job_config
-        )
+        load_job = client.load_table_from_json(json_file, table_ref_staging, job_config=job_config)
 
     load_job.result()
     logger.info("Load job completed successfully")
@@ -156,9 +154,7 @@ def merge_into(client: bigquery.Client) -> None:
 
     merge_query_res = client.query(merge_statement, location="US")
     merge_query_res.result()
-    logger.info(
-        f"Merge statement executed successfully: {merge_query_res.num_dml_affected_rows} rows affected"
-    )
+    logger.info(f"Merge statement executed successfully: {merge_query_res.num_dml_affected_rows} rows affected")
 
     # truncate the staging table
     truncate_query = """

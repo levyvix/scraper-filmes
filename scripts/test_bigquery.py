@@ -10,6 +10,7 @@ Requisitos:
 Uso:
     uv run python test_bigquery.py
 """
+
 import os
 import sys
 from pathlib import Path
@@ -44,10 +45,11 @@ def check_credentials():
     # Method 2: Check Application Default Credentials
     try:
         from google.auth import default
+
         credentials, project = default()
         if credentials:
             logger.success("✓ Application Default Credentials configuradas")
-            project_name = project if project else 'não definido'
+            project_name = project if project else "não definido"
             logger.info(f"  Projeto: {project_name}")
             return True
     except Exception as e:
@@ -88,12 +90,14 @@ def run_bigquery_import():
 
     try:
         from src.scrapers.gratis_torrent.send_to_bq import main
+
         main()
         logger.success("✓ Importação concluída com sucesso!")
         return True
     except Exception as e:
         logger.error(f"✗ Erro durante importação: {e}")
         import traceback
+
         logger.error(traceback.format_exc())
         return False
 
