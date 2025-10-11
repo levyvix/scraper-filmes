@@ -32,7 +32,7 @@ class TestRunner:
             print(f"TEST: {name}")
             print('='*60)
             func()
-            print(f"✅ PASSOU")
+            print("✅ PASSOU")
             self.passed += 1
         except AssertionError as e:
             print(f"❌ FALHOU: {e}")
@@ -71,16 +71,16 @@ def test_imports():
     """Testa importações dos módulos principais"""
     print("Testando importações...")
 
-    from src.scrapers.gratis_torrent.extract import Movie, extract_info, main
+    from src.scrapers.gratis_torrent.extract import Movie  # noqa: F401
     print("  ✓ src.scrapers.gratis_torrent.extract")
 
-    from src.database.insert_to_database import Movie, Genre, create_and_insert
+    from src.database.insert_to_database import create_and_insert  # noqa: F401
     print("  ✓ src.database.insert_to_database")
 
-    from src.flows.prefect_flow_gratis import gratis_torrent_flow
+    from src.flows.prefect_flow_gratis import gratis_torrent_flow  # noqa: F401
     print("  ✓ src.flows.prefect_flow_gratis")
 
-    from src.scrapers.gratis_torrent.send_to_bq import get_table_schema
+    import src.scrapers.gratis_torrent.send_to_bq  # noqa: F401
     print("  ✓ src.scrapers.gratis_torrent.send_to_bq")
 
 
@@ -89,7 +89,7 @@ def test_database_schema():
     print("Testando schema do banco de dados...")
 
     from sqlalchemy import create_engine, inspect
-    from src.database.insert_to_database import Base, Movie, Genre
+    from src.database.insert_to_database import Base
 
     # Criar banco em memória
     engine = create_engine('sqlite:///:memory:')

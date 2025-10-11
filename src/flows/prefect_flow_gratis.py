@@ -2,15 +2,15 @@ import os
 import sys
 from pathlib import Path
 
-# Add project root to path
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
-
 import pandas as pd
 from prefect import flow, task
 from sqlalchemy import create_engine
 
 from src.database.insert_to_database import create_and_insert
+
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
 
 
 @task(

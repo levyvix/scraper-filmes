@@ -15,15 +15,15 @@ import sys
 from pathlib import Path
 import warnings
 
+from google.cloud import bigquery
+from loguru import logger
+
 # Suppress the quota project warning for user credentials
 warnings.filterwarnings("ignore", message=".*quota project.*")
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-
-from google.cloud import bigquery
-from loguru import logger
 
 # Change to project root directory
 os.chdir(project_root)
@@ -46,7 +46,7 @@ def check_credentials():
         from google.auth import default
         credentials, project = default()
         if credentials:
-            logger.success(f"✓ Application Default Credentials configuradas")
+            logger.success("✓ Application Default Credentials configuradas")
             project_name = project if project else 'não definido'
             logger.info(f"  Projeto: {project_name}")
             return True
@@ -71,7 +71,7 @@ def test_connection():
             logger.info("  Nenhum dataset encontrado no projeto")
             return True
 
-        logger.success(f"✓ Conexão bem-sucedida! Datasets encontrados:")
+        logger.success("✓ Conexão bem-sucedida! Datasets encontrados:")
         for dataset in datasets[:5]:
             logger.info(f"  - {dataset.dataset_id}")
 

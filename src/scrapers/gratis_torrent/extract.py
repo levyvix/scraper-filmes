@@ -1,3 +1,4 @@
+from typing import Optional
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -12,21 +13,21 @@ logger.add(sys.stderr, level="WARNING")
 
 
 class Movie(BaseModel):
-    titulo_dublado: str
-    titulo_original: str
+    titulo_dublado: str | None = None
+    titulo_original: str | None = None
     imdb: float | None = Field(..., ge=0, le=10)
-    ano: int = Field(..., ge=1888)
-    genero: str
-    tamanho: str
-    duracao_minutos: int = Field(..., ge=1)
-    qualidade_video: float = Field(..., ge=0, description="Video quality score (0-10)")
-    qualidade: str = Field(..., description="Quality description (e.g., '1080p', '720p BluRay')")
-    dublado: bool
-    sinopse: str
-    link: str
+    ano: int | None = Field(..., ge=1888)
+    genero: str | None = None
+    tamanho: str | None = None
+    duracao_minutos: int | None = Field(..., ge=1)
+    qualidade_video: float | None = Field(..., ge=0, description="Video quality score (0-10)")
+    qualidade: str | None = Field(..., description="Quality description (e.g., '1080p', '720p BluRay')")
+    dublado: bool | None = None
+    sinopse: str | None = None
+    link: str | None = None
 
 
-def extract_info(url: str) -> Movie:
+def extract_info(url: str) -> Optional[Movie]:
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -80,11 +81,11 @@ def extract_info(url: str) -> Movie:
         titulo_dublado=valores_extraidos["titulo_dublado"],
         titulo_original=valores_extraidos["titulo_original"],
         imdb=float(valores_extraidos["imdb"]) if valores_extraidos["imdb"] else None,
-        ano=int(valores_extraidos["ano"]),
-        genero=valores_extraidos["genero"].replace(" / ", ", ") if valores_extraidos["genero"] else "",
+        ano=int(valores_extraidos["ano"]) if valores_extraidos["ano"] else None,
+        genero=valores_extraidos["genero"].replace(" / ", ", ") if valores_extraidos["genero"] else None,
         tamanho=valores_extraidos["tamanho"],
-        duracao_minutos=int(valores_extraidos["duracao_minutos"]),
-        qualidade_video=float(valores_extraidos["qualidade_video"]),
+        duracao_minutos=int(valores_extraidos["duracao_minutos"]) if valores_extraidos["duracao_minutos"] else None,
+        qualidade_video=float(valores_extraidos["qualidade_video"]) if valores_extraidos["qualidade_video"] else None,
         qualidade=valores_extraidos["qualidade"],
         dublado="Português" in texto,
         sinopse=valores_extraidos["sinopse"],
