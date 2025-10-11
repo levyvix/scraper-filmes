@@ -20,10 +20,6 @@ scraper-filmes/
 │   └── test_bigquery.py         # Script de teste do BigQuery
 ├── config/
 │   └── prefect.yaml             # Configuração do Prefect
-├── deploy/
-│   ├── Dockerfile               # Docker para deployment
-│   ├── docker-compose.yaml      # Docker Compose
-│   └── docker_deploy.py         # Script de deployment
 ├── docs/
 │   ├── CLAUDE.md                # Documentação do projeto
 │   └── BIGQUERY_SETUP.md        # Guia de configuração do BigQuery
@@ -41,7 +37,17 @@ scraper-filmes/
 uv sync
 ```
 
-### 2. Executar o Scraper
+### 2. Configurar Variáveis de Ambiente (Opcional)
+
+```bash
+# Copiar arquivo de exemplo
+cp .env.example .env
+
+# Editar .env com suas configurações (especialmente GCP_PROJECT_ID para BigQuery)
+# O arquivo .env é carregado automaticamente pelos scripts
+```
+
+### 3. Executar o Scraper
 
 ```bash
 # Scraper do GratisTorrent
@@ -106,12 +112,12 @@ O processo de inserção no banco de dados:
 
 1. **Criação de Tabelas** (se não existirem):
    - `movies`: Armazena os dados principais dos filmes
-   - `genders`: Armazena os gêneros (relacionamento N:N com filmes)
+   - `genres`: Armazena os gêneros (relacionamento N:N com filmes)
 
 2. **Transformações**:
    - Converte tamanho de GB (string) para MB (float)
    - Adiciona data de atualização (`date_updated`) automaticamente
-   - Separa gêneros em registros individuais na tabela `genders`
+   - Separa gêneros em registros individuais na tabela `genres`
 
 3. **Deduplicação Inteligente**:
    - Verifica se o filme já existe usando `titulo_dublado` + `date_updated`
@@ -295,17 +301,23 @@ prefect flow-run ls
 ### 📊 BigQuery (Opcional)
 
 ```bash
-# Autenticar com Google Cloud
+# 1. Configurar variáveis de ambiente
+cp .env.example .env
+# Editar .env e configurar GCP_PROJECT_ID
+
+# 2. Autenticar com Google Cloud
 gcloud auth application-default login
 
-# Testar conexão com BigQuery
+# 3. Testar conexão com BigQuery
 uv run scripts/test_bigquery.py
 
-# Enviar dados para BigQuery
+# 4. Enviar dados para BigQuery
 uv run src/scrapers/gratis_torrent/send_to_bq.py
 
 # Para configuração completa, veja docs/BIGQUERY_SETUP.md
 ```
+
+**Nota:** O script `send_to_bq.py` carrega automaticamente o arquivo `.env` usando `python-dotenv`.
 
 ### 🗄️ Banco de Dados
 

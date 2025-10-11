@@ -2,15 +2,21 @@ from google.cloud import bigquery
 import json
 from loguru import logger
 import warnings
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Suppress the quota project warning for user credentials
 warnings.filterwarnings("ignore", message=".*quota project.*")
 
-project_id = "galvanic-flame-384620"
+# Get project ID from environment variable, with fallback to default
+project_id = os.getenv("GCP_PROJECT_ID", "galvanic-flame-384620")
 
 
 def get_table_schema():
-    import os
+    """Load BigQuery table schema from schema.json file."""
     from pathlib import Path
 
     # Get the directory where this script is located
@@ -18,20 +24,25 @@ def get_table_schema():
 
     # Try multiple paths for schema.json
     schema_paths = [
-        script_dir / "schema.json",  # Same directory as this script
-        Path("./schema.json"),  # Current working directory
-        Path("./gratis_torrent/schema.json"),  # Legacy path
-        Path("./src/scrapers/gratis_torrent/schema.json"),  # New structure
+        script_dir / "schema.json",
+        Path("./schema.json"),
+        Path("./gratis_torrent/schema.json"),
+        Path("./src/scrapers/gratis_torrent/schema.json"),
     ]
 
     for path in schema_paths:
-        if path.exists():
-            with open(path, "r") as f:
-                schema = json.load(f)
-            logger.info(f"Schema loaded from {path}")
-            return schema
+        if not path.exists():
+            continue
 
-    raise FileNotFoundError(f"Schema file not found. Tried: {[str(p) for p in schema_paths]}")
+        with open(path, "r") as f:
+            schema = json.load(f)
+        logger.info(f"Schema loaded from {path}")
+        return schema
+
+    # If we get here, no schema file was found
+    tried_paths = [str(p) for p in schema_paths]
+    error_message = f"Schema file not found. Tried the following paths: {', '.join(tried_paths)}"
+    raise FileNotFoundError(error_message)
 
 
 def create_dataset(client: bigquery.Client) -> None:
@@ -60,6 +71,7 @@ def create_staging_table(client: bigquery.Client) -> None:
 
 
 def create_load_job(client: bigquery.Client) -> None:
+    """Load movie data from JSON file into BigQuery staging table."""
     from pathlib import Path
 
     table_id_staging = f"{project_id}.movies_raw.stg_filmes"
@@ -75,20 +87,23 @@ def create_load_job(client: bigquery.Client) -> None:
 
     # Try multiple paths for the JSON file
     json_paths = [
-        script_dir / "movies_gratis.json",  # Same directory as this script
-        Path("movies_gratis.json"),  # Current working directory
-        Path("./gratis_torrent/movies_gratis.json"),  # Legacy path
-        Path("./src/scrapers/gratis_torrent/movies_gratis.json"),  # New structure
+        script_dir / "movies_gratis.json",
+        Path("movies_gratis.json"),
+        Path("./gratis_torrent/movies_gratis.json"),
+        Path("./src/scrapers/gratis_torrent/movies_gratis.json"),
     ]
 
     json_path = None
     for path in json_paths:
-        if path.exists():
-            json_path = path
-            break
+        if not path.exists():
+            continue
+        json_path = path
+        break
 
     if not json_path:
-        raise FileNotFoundError(f"JSON file not found. Tried: {[str(p) for p in json_paths]}")
+        tried_paths = [str(p) for p in json_paths]
+        error_message = f"JSON file not found. Tried the following paths: {', '.join(tried_paths)}"
+        raise FileNotFoundError(error_message)
 
     logger.info(f"Loading data from {json_path}")
     with open(json_path, "r", encoding="utf-8") as f:

@@ -23,28 +23,33 @@ def run_gratis_scraper():
     """Execute the GratisTorrent scraper and generate movies_gratis.json"""
     json_path = "src/scrapers/gratis_torrent/movies_gratis.json"
 
-    try:
+    # Delete previous file if it exists
+    if os.path.exists(json_path):
         os.remove(json_path)
         print(f"Previous {json_path} deleted")
-    except FileNotFoundError:
-        print(f"No previous {json_path} found")
 
     # Run the scraper
     result = os.system("uv run src/scrapers/gratis_torrent/extract.py")
 
     if result != 0:
-        raise RuntimeError(f"Scraper failed with exit code {result}")
+        error_message = f"Scraper failed with exit code {result}. Please check the scraper logs for details."
+        raise RuntimeError(error_message)
 
-    # Check if file was created
-    if not os.path.exists(json_path):
-        # Check if it's in the current directory
-        if os.path.exists("movies_gratis.json"):
-            print("JSON file found in current directory, moving to gratis_torrent/")
-            os.rename("movies_gratis.json", json_path)
-        else:
-            raise FileNotFoundError(f"Expected JSON file not found at {json_path}")
+    # Check if file was created in expected location
+    if os.path.exists(json_path):
+        print("GratisTorrent scraper completed successfully")
+        return
 
-    print("GratisTorrent scraper completed successfully")
+    # Check if file was created in current directory
+    if os.path.exists("movies_gratis.json"):
+        print("JSON file found in current directory, moving to gratis_torrent/")
+        os.rename("movies_gratis.json", json_path)
+        print("GratisTorrent scraper completed successfully")
+        return
+
+    # If we get here, file was not created
+    error_message = f"Expected JSON file not found at {json_path} or in current directory. The scraper may have failed silently."
+    raise FileNotFoundError(error_message)
 
 
 @task(
@@ -69,8 +74,10 @@ def export_to_bigquery():
 
     if result == 0:
         print("Data exported to BigQuery successfully")
-    else:
-        print(f"BigQuery export failed with exit code {result}")
+        return
+
+    error_message = f"BigQuery export failed with exit code {result}. Check the BigQuery logs for details."
+    print(error_message)
 
 
 @task(
@@ -82,7 +89,7 @@ def get_stats(engine):
     df = pd.read_sql_query(
         """
         SELECT COUNT(*) as total_movies,
-               (SELECT COUNT(DISTINCT gender) FROM genders) as total_genres,
+               (SELECT COUNT(DISTINCT genre) FROM genres) as total_genres,
                AVG(imdb) as avg_imdb,
                MAX(date_updated) as latest_update
         FROM movies

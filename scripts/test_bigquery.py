@@ -33,22 +33,22 @@ def check_credentials():
     """Verifica se as credenciais estão configuradas"""
     logger.info("Verificando credenciais do Google Cloud...")
 
-    # Método 1: Variável de ambiente GOOGLE_APPLICATION_CREDENTIALS
+    # Method 1: Check GOOGLE_APPLICATION_CREDENTIALS environment variable
     creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
     if creds_path:
         if os.path.exists(creds_path):
             logger.success(f"✓ Credenciais encontradas em: {creds_path}")
             return True
-        else:
-            logger.warning(f"⚠ Arquivo de credenciais não existe: {creds_path}")
+        logger.warning(f"⚠ Arquivo de credenciais não existe: {creds_path}")
 
-    # Método 2: Application Default Credentials (gcloud auth application-default login)
+    # Method 2: Check Application Default Credentials
     try:
         from google.auth import default
         credentials, project = default()
         if credentials:
             logger.success(f"✓ Application Default Credentials configuradas")
-            logger.info(f"  Projeto: {project if project else 'não definido'}")
+            project_name = project if project else 'não definido'
+            logger.info(f"  Projeto: {project_name}")
             return True
     except Exception as e:
         logger.warning(f"⚠ Falha ao carregar Application Default Credentials: {e}")
@@ -62,18 +62,18 @@ def test_connection():
     logger.info("Testando conexão com BigQuery...")
 
     try:
-        # Specify project to avoid quota warnings
         client = bigquery.Client(project="galvanic-flame-384620")
         logger.info(f"Cliente BigQuery criado para projeto: {client.project}")
 
-        # Listar datasets como teste
+        # List datasets to test connection
         datasets = list(client.list_datasets())
-        if datasets:
-            logger.success(f"✓ Conexão bem-sucedida! Datasets encontrados:")
-            for dataset in datasets[:5]:  # Mostrar apenas os 5 primeiros
-                logger.info(f"  - {dataset.dataset_id}")
-        else:
+        if not datasets:
             logger.info("  Nenhum dataset encontrado no projeto")
+            return True
+
+        logger.success(f"✓ Conexão bem-sucedida! Datasets encontrados:")
+        for dataset in datasets[:5]:
+            logger.info(f"  - {dataset.dataset_id}")
 
         return True
 
@@ -103,7 +103,7 @@ def main():
     logger.info("TESTE DE INSERÇÃO NO BIGQUERY")
     logger.info("=" * 60)
 
-    # Passo 1: Verificar credenciais
+    # Step 1: Check credentials
     if not check_credentials():
         logger.error("\nConfigure as credenciais usando um dos métodos:")
         logger.info("1. Variável de ambiente:")
@@ -114,7 +114,7 @@ def main():
 
     logger.info("")
 
-    # Passo 2: Testar conexão
+    # Step 2: Test connection
     if not test_connection():
         logger.error("\nFalha na conexão. Verifique:")
         logger.info("1. Se você tem acesso ao projeto 'galvanic-flame-384620'")
@@ -123,13 +123,13 @@ def main():
 
     logger.info("")
 
-    # Passo 3: Executar importação
-    if run_bigquery_import():
-        logger.success("\n✓ TESTE CONCLUÍDO COM SUCESSO!")
-        return 0
-    else:
+    # Step 3: Run import
+    if not run_bigquery_import():
         logger.error("\n✗ TESTE FALHOU")
         return 1
+
+    logger.success("\n✓ TESTE CONCLUÍDO COM SUCESSO!")
+    return 0
 
 
 if __name__ == "__main__":
