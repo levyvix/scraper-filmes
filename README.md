@@ -94,7 +94,7 @@ Web Scraping → Validação → SQLite → BigQuery (opcional)
 
 O scraper realiza as seguintes operações:
 
-1. **Coleta de Links**: Acessa `https://gratistorrent.com/filmes/` e extrai todos os links de filmes da página inicial usando BeautifulSoup
+1. **Coleta de Links**: Acessa `https://gratistorrent.com/lancamentos/` e extrai todos os links de filmes da página inicial usando BeautifulSoup
 2. **Extração de Dados**: Para cada filme, acessa a página individual e extrai informações usando regex:
    - Título dublado e original
    - Nota IMDB, ano de lançamento

@@ -94,7 +94,7 @@ def extract_info(url: str) -> Optional[Movie]:
 
 
 def main():
-    website = "https://gratistorrent.com/filmes/"
+    website = "https://gratistorrent.com/lancamentos/"
     response = requests.get(website)
     soup = BeautifulSoup(response.text, "html.parser")
 
