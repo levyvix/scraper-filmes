@@ -16,15 +16,20 @@ scraper-filmes/
 │   │   └── insert_to_database.py  # Lógica de inserção no SQLite
 │   └── flows/
 │       └── prefect_flow_gratis.py # Flow do Prefect
+├── tests/
+│   ├── test_suite.py            # Suite completa de testes
+│   └── README.md                # Documentação dos testes
 ├── scripts/
 │   └── test_bigquery.py         # Script de teste do BigQuery
 ├── config/
 │   └── prefect.yaml             # Configuração do Prefect
 ├── docs/
 │   ├── CLAUDE.md                # Documentação do projeto
-│   └── BIGQUERY_SETUP.md        # Guia de configuração do BigQuery
+│   ├── BIGQUERY_SETUP.md        # Guia de configuração do BigQuery
+│   └── PREFECT_DEPLOYMENT.md    # Guia de deployment com Prefect
 ├── dbs/
 │   └── movie_database.db        # Banco de dados SQLite
+├── .env.example                 # Exemplo de variáveis de ambiente
 └── pyproject.toml               # Dependências do projeto
 ```
 
@@ -350,6 +355,22 @@ docker-compose -f deploy/docker-compose.yaml down
 # Ver logs
 docker-compose -f deploy/docker-compose.yaml logs -f
 ```
+
+### 🧪 Testes
+
+```bash
+# Executar suite completa de testes
+uv run python tests/test_suite.py
+```
+
+A suite de testes verifica:
+- ✅ Importações dos módulos
+- ✅ Schema do banco de dados (tabelas `movies` e `genres`)
+- ✅ Validação Pydantic (IMDB, ano, campos obrigatórios)
+- ✅ Inserção de dados no banco
+- ✅ Deduplicação de filmes
+- ✅ Carregamento de variáveis `.env`
+- ✅ Estrutura do Prefect Flow
 
 ### 🧹 Utilitários
 
