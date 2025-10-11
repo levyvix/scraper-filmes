@@ -1,4 +1,0 @@
-# TODO
-criar servidor prefect docker (quero ligar o pc e o servidor já estar rodando)
-
-

@@ -1,71 +1,233 @@
-# Web Scraping em um site de filmes online
+# Scraper de Filmes - GratisTorrent
 
-Este projeto foi criado com o intuito de criar um script para raspar um site de filmes online e conseguir as seguintes informações:
+Sistema automatizado de scraping de filmes do site GratisTorrent com armazenamento em SQLite e exportação opcional para BigQuery.
 
-- Nome do filme
-- Ano de lançamento
-- Nota IMDB
-- Gênero
-- Tamanho
-- Duração
-- Qualidade de vídeo
-- Se tem a opção dublado
-- Sinopse
-- Link
+## 📁 Estrutura do Projeto
 
-Site utilizado: [Comando Torrents](https://comando.la/)
+```
+scraper-filmes/
+├── src/
+│   ├── scrapers/
+│   │   └── gratis_torrent/     # Scraper do GratisTorrent
+│   │       ├── extract.py       # Script de scraping
+│   │       ├── send_to_bq.py    # Exportação para BigQuery
+│   │       └── schema.json      # Schema do BigQuery
+│   ├── database/
+│   │   └── insert_to_database.py  # Lógica de inserção no SQLite
+│   └── flows/
+│       └── prefect_flow_gratis.py # Flow do Prefect
+├── scripts/
+│   └── test_bigquery.py         # Script de teste do BigQuery
+├── config/
+│   └── prefect.yaml             # Configuração do Prefect
+├── deploy/
+│   ├── Dockerfile               # Docker para deployment
+│   ├── docker-compose.yaml      # Docker Compose
+│   └── docker_deploy.py         # Script de deployment
+├── docs/
+│   ├── CLAUDE.md                # Documentação do projeto
+│   └── BIGQUERY_SETUP.md        # Guia de configuração do BigQuery
+├── dbs/
+│   └── movie_database.db        # Banco de dados SQLite
+└── pyproject.toml               # Dependências do projeto
+```
 
-## Tecnologias
+## 🚀 Início Rápido
 
-- **Scrapy**: Usando este framework para realizar as chamadas HTTP, tratanto e carregando os dados em uma base json.
-- **SQLAlchemy**: Usando este ORM para criar a tabela de filmes e persistir os dados.
-- **SQLite**: Base de dados para persistir as informações dos filmes em um banco de dados relacional.
-- **Prefect**: Framework para agendar o script para rodar diariamente e enviar um email com os novos filmes adicionados ao banco de dados SQLite.
+### 1. Instalar Dependências
 
-## Como rodar o projeto
+```bash
+# O projeto usa UV para gerenciamento de dependências
+uv sync
+```
 
-- Clone o repositório
-- Instale as dependências com o comando `pip install -r requirements.txt`
-- Entre na pasta do projeto `filmes` e execute o comando `scrapy crawl filmes -O filmes.json`
-- O arquivo `filmes.json` será gerado com os dados do site
-- Se quiser colocar os dados em um banco de dados, execute o comando `python3 insert_to_database.py --data filmes.json`. Ele irá criar um arquivo `movie_database.db` com a tabela `movies` populada.
+### 2. Executar o Scraper
 
-## Agendando o script para rodar diariamente
+```bash
+# Scraper do GratisTorrent
+uv run src/scrapers/gratis_torrent/extract.py
+```
 
-- Instale o Prefect com o comando `pip install prefect`
-- Inicie o servidor prefect com o comando `prefect server start`
-- Construa o deploy com o comando `prefect deployment build filmes/prefect_flow.py:comandola_filmes --name filmes_flow -q padrao --apply`
-- Execute o agent com o comando `prefect agent start -q padrao`
-- Execute o flow com o comando `prefect deployment run "Comando Flow/filmes_flow"`
+### 3. Executar o Flow Completo
 
-### Fazendo deployment no Prefect com infraestrutura docker local (para mim)
+```bash
+# Flow do Prefect (scraping + banco de dados + estatísticas)
+uv run src/flows/prefect_flow_gratis.py
+```
 
-- `docker image  build -t levyvix/comandola_filmes:tag .`
-- `docker image push levyvix/comandola_filmes:tag`
-- Configurar o Bloco `Docker Container` no UI
-- Rodar o arquivo de Deploy `python docker_deploy.py` (configure com o nome do flow e o agente)
-- Rodar o agente `prefect agent start -q dev`
-- Rodar o flow `prefect run "Comando Flow/comandola_filmes_sem_date"`
+## 📊 Funcionalidades
 
-### Agendar Diariamente
+- ✅ Scraping automático do site GratisTorrent
+- ✅ Validação de dados com Pydantic
+- ✅ Armazenamento em SQLite com deduplicação
+- ✅ Workflow orquestrado com Prefect
+- ✅ Exportação opcional para Google BigQuery
+- ✅ Deployment com Docker
+- ✅ Suporte a retry e tratamento de erros
 
-- Entre na UI do Prefect com o link: <http://localhost:4200/>
-- Clique em Deployments
-- Ache o flow `Comando Flow/filmes_flow` e clique nos 3 pontinhos e "Edit"
-- Lá em baixo, em Schedule, você pode agendar o flow para rodar diariamente clicando em "Add".
-- Salve as alterações e o flow será executado diariamente desde de que o servidor esteja ativo e o agent esteja rodando.
+## 🔧 Comandos Mais Importantes
 
-## Postagem sobre o projeto
+### 🎯 Uso Rápido (Recomendado)
 
-[Web Scraping em um site de filmes online](https://medium.com/@levyvix/como-fazer-raspagem-de-dados-em-sites-com-scrapy-e-python-1cc315f301fb)
+```bash
+# Executar o workflow completo (scraping + banco de dados + estatísticas)
+uv run src/flows/prefect_flow_gratis.py
+```
 
-### TODO list
+### ⚙️ Gerenciamento de Dependências
 
-- [X] Enviar email diariamente sobre os "N" novos filmes adicionados por data de atualização. Usando Airflow ou Prefect
-- [ ] Criar um corpo de email melhor, com os dados do filme, imagem e link para o site
-- [ ] Obter informações sobre atores do filme, colocar em uma tabela separada e relacionar com a tabela de filmes
-- [ ] Agendar o download de filmes remotamente para meu servidor local do Jellyfin
+```bash
+# Instalar/sincronizar dependências
+uv sync
 
-### Issues
+# Adicionar nova biblioteca
+uv add nome-da-biblioteca
 
-- Se não tiver o timezone configurado para America/Sao_Paulo, a notificação do email fica diferente do esperado. O email é enviado com a data de hoje, mas o horário é 3 horas adiantado. Para mudar o timezone, execute o comando `sudo timedatectl set-timezone America/Sao_Paulo` e reinicie o servidor.
+# Remover biblioteca
+uv remove nome-da-biblioteca
+
+# Executar qualquer script Python
+uv run src/caminho/para/script.py
+```
+
+### 🕷️ Scraping Manual
+
+```bash
+# Executar scraper do GratisTorrent
+uv run src/scrapers/gratis_torrent/extract.py
+
+# Inserir dados manualmente no SQLite
+uv run python -c "from src.database.insert_to_database import create_and_insert; from sqlalchemy import create_engine; create_and_insert('src/scrapers/gratis_torrent/movies_gratis.json', create_engine('sqlite:///dbs/movie_database.db'))"
+```
+
+### 🔄 Prefect (Orquestração)
+
+```bash
+# Executar flow localmente
+uv run src/flows/prefect_flow_gratis.py
+
+# Iniciar servidor Prefect (interface web)
+prefect server start
+
+# Criar deployment para agendamento
+prefect deployment build src/flows/prefect_flow_gratis.py:gratis_torrent_flow \
+  --name gratis_flow \
+  -q padrao \
+  --apply
+
+# Iniciar agent para executar deployments
+prefect agent start -q padrao
+
+# Ver status dos flows
+prefect flow-run ls
+```
+
+### 📊 BigQuery (Opcional)
+
+```bash
+# Autenticar com Google Cloud
+gcloud auth application-default login
+
+# Testar conexão com BigQuery
+uv run scripts/test_bigquery.py
+
+# Enviar dados para BigQuery
+uv run src/scrapers/gratis_torrent/send_to_bq.py
+
+# Para configuração completa, veja docs/BIGQUERY_SETUP.md
+```
+
+### 🗄️ Banco de Dados
+
+```bash
+# Ver tabelas do banco
+sqlite3 dbs/movie_database.db ".tables"
+
+# Ver filmes cadastrados
+sqlite3 dbs/movie_database.db "SELECT titulo_dublado, ano, imdb FROM movies LIMIT 10;"
+
+# Contar filmes no banco
+sqlite3 dbs/movie_database.db "SELECT COUNT(*) FROM movies;"
+
+# Ver estrutura da tabela
+sqlite3 dbs/movie_database.db ".schema movies"
+```
+
+### 🐳 Docker
+
+```bash
+# Build da imagem
+docker build -t scraper-filmes -f deploy/Dockerfile .
+
+# Executar com docker-compose
+docker-compose -f deploy/docker-compose.yaml up
+
+# Parar containers
+docker-compose -f deploy/docker-compose.yaml down
+
+# Ver logs
+docker-compose -f deploy/docker-compose.yaml logs -f
+```
+
+### 🧹 Utilitários
+
+```bash
+# Limpar cache Python
+find . -type d -name "__pycache__" -exec rm -r {} +
+find . -type f -name "*.pyc" -delete
+
+# Ver versão do Python
+python --version
+
+# Ver localização do ambiente virtual UV
+which python
+```
+
+## 📦 Estrutura de Dados
+
+### Campos do Filme
+
+| Campo            | Tipo    | Descrição                    |
+|------------------|---------|------------------------------|
+| titulo_dublado   | STRING  | Título em português          |
+| titulo_original  | STRING  | Título original              |
+| imdb             | FLOAT   | Nota do IMDB                 |
+| ano              | INTEGER | Ano de lançamento            |
+| genero           | STRING  | Gêneros (separados por ",")  |
+| tamanho          | STRING  | Tamanho do arquivo (GB)      |
+| duracao_minutos  | INTEGER | Duração em minutos           |
+| qualidade_video  | FLOAT   | Qualidade do vídeo (0-10)    |
+| qualidade        | STRING  | Qualidade (1080p, 720p, etc) |
+| dublado          | BOOLEAN | Se está dublado              |
+| sinopse          | STRING  | Sinopse do filme             |
+| link             | STRING  | URL do torrent               |
+
+## 🐳 Docker
+
+```bash
+# Build da imagem
+docker build -t scraper-filmes -f deploy/Dockerfile .
+
+# Executar com docker-compose
+docker-compose -f deploy/docker-compose.yaml up
+```
+
+## 📚 Documentação
+
+- [CLAUDE.md](docs/CLAUDE.md) - Documentação completa do projeto
+- [BIGQUERY_SETUP.md](docs/BIGQUERY_SETUP.md) - Guia de configuração do BigQuery
+
+## 🛠️ Tecnologias
+
+- **Python 3.11+**
+- **UV** - Gerenciamento de dependências
+- **BeautifulSoup4** - Parsing de HTML
+- **Pydantic** - Validação de dados
+- **SQLAlchemy** - ORM para SQLite
+- **Prefect** - Orquestração de workflows
+- **Google Cloud BigQuery** - Data warehouse (opcional)
+- **Docker** - Containerização
+
+## 📝 Licença
+
+Este projeto é para fins educacionais.

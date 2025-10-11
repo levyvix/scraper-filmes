@@ -61,6 +61,20 @@ def insert_to_database(json_path, engine):
             data = json.load(json_file)
 
         for movie in data:
+            # Adapt data from GratisTorrent format if needed
+            # Convert tamanho (string GB) to tamanho_mb (float)
+            if "tamanho" in movie and "tamanho_mb" not in movie:
+                tamanho_str = movie["tamanho"]
+                movie["tamanho_mb"] = float(tamanho_str) * 1024  # Convert GB to MB
+
+            # Use qualidade_video if qualidade is string
+            if "qualidade_video" in movie and isinstance(movie.get("qualidade"), str):
+                movie["qualidade"] = movie["qualidade_video"]
+
+            # Add date_updated if missing (use today's date)
+            if "date_updated" not in movie:
+                movie["date_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
             movie_entity = Movie(
                 titulo_dublado=movie["titulo_dublado"],
                 titulo_original=movie["titulo_original"],
@@ -76,7 +90,12 @@ def insert_to_database(json_path, engine):
                 link=movie["link"],
             )
 
-            list_of_genders = movie["genero"].split(" | ")
+            # Handle both " | " and ", " as genre separators
+            genero_str = movie["genero"]
+            if " | " in genero_str:
+                list_of_genders = genero_str.split(" | ")
+            else:
+                list_of_genders = genero_str.split(", ")
 
             movie_entity.date_updated = datetime.datetime.strptime(
                 movie_entity.date_updated, "%Y-%m-%d %H:%M:%S"

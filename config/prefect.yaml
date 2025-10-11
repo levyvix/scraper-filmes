@@ -15,28 +15,25 @@ push: null
 # pull section allows you to provide instructions for cloning this project in remote locations
 pull:
 - prefect.deployments.steps.git_clone:
-    repository: git@github.com:levyvix/scraper-filmes.git
+    repository: https://github.com/levyvix/scraper-filmes.git
     branch: main
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: default
-  version: null
-  tags: []
-  concurrency_limit: null
-  description: |-
-    Main Prefect flow for GratisTorrent scraping pipeline
-
-    Args:
-        export_bq: If True, exports data to BigQuery after database insertion
+- name: gratis-torrent-scraper
+  version: 1.0
+  tags: ["scraper", "gratis-torrent", "movies"]
+  concurrency_limit: 1
+  description: "Daily scraper for GratisTorrent movies with database insertion"
   entrypoint: src/flows/prefect_flow_gratis.py:gratis_torrent_flow
-  parameters: {}
+  parameters:
+    export_bq: true
   work_pool:
-    name: defaultw
+    name: default
     work_queue_name: null
     job_variables: {}
   schedules:
-  - interval: 3600.0
-    anchor_date: '2025-10-11T00:58:50.127957+00:00'
-    timezone: UTC
+  - cron: '0 2 * * *'
+    timezone: America/Sao_Paulo
+    day_or: true
     active: true

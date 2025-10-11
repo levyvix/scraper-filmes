@@ -50,10 +50,7 @@ def extract_info(url: str) -> Movie:
         "qualidade": re.search(r"Qualidade:\s*([0-9a-zA-Z |]+)", texto),
     }
 
-    valores_extraidos = {
-        chave: padrao.group(1).strip() if padrao else None
-        for chave, padrao in padroes.items()
-    }
+    valores_extraidos = {chave: padrao.group(1).strip() if padrao else None for chave, padrao in padroes.items()}
 
     sinopse = soup.select_one("#sinopse > p")
 
@@ -68,9 +65,7 @@ def extract_info(url: str) -> Movie:
         titulo_original=valores_extraidos["titulo_original"],
         imdb=float(valores_extraidos["imdb"]) if valores_extraidos["imdb"] else None,
         ano=int(valores_extraidos["ano"]),
-        genero=valores_extraidos["genero"].replace(" / ", ", ")
-        if valores_extraidos["genero"]
-        else "",
+        genero=valores_extraidos["genero"].replace(" / ", ", ") if valores_extraidos["genero"] else "",
         tamanho=valores_extraidos["tamanho"],
         duracao_minutos=int(valores_extraidos["duracao_minutos"]),
         qualidade_video=float(valores_extraidos["qualidade_video"]),
