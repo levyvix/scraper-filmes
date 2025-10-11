@@ -65,6 +65,176 @@ uv run src/flows/prefect_flow_gratis.py
 - ✅ Deployment com Docker
 - ✅ Suporte a retry e tratamento de erros
 
+## 🔄 Como Funciona o Pipeline
+
+### Visão Geral do Fluxo de Dados
+
+O projeto implementa um pipeline completo de ETL (Extract, Transform, Load) orquestrado pelo Prefect:
+
+```
+Web Scraping → Validação → SQLite → BigQuery (opcional)
+                                  ↓
+                            Estatísticas
+```
+
+### 1. **Extração (Web Scraping)** - `src/scrapers/gratis_torrent/extract.py`
+
+**Task Prefect**: `run_gratis_scraper()`
+
+O scraper realiza as seguintes operações:
+
+1. **Coleta de Links**: Acessa `https://gratistorrent.com/filmes/` e extrai todos os links de filmes da página inicial usando BeautifulSoup
+2. **Extração de Dados**: Para cada filme, acessa a página individual e extrai informações usando regex:
+   - Título dublado e original
+   - Nota IMDB, ano de lançamento
+   - Gêneros, duração em minutos
+   - Qualidade do vídeo, tamanho do arquivo
+   - Sinopse e link do torrent
+3. **Validação com Pydantic**: Cada filme é validado usando o model `Movie` que garante:
+   - IMDB entre 0-10
+   - Ano >= 1888 (primeiro filme da história)
+   - Duração >= 1 minuto
+4. **Saída**: Gera o arquivo `movies_gratis.json` com todos os filmes validados
+
+**Configuração de Retry**: 3 tentativas com 10 segundos de delay entre falhas
+
+### 2. **Transformação e Carga no SQLite** - `src/database/insert_to_database.py`
+
+**Task Prefect**: `insert_movies()`
+
+O processo de inserção no banco de dados:
+
+1. **Criação de Tabelas** (se não existirem):
+   - `movies`: Armazena os dados principais dos filmes
+   - `genders`: Armazena os gêneros (relacionamento N:N com filmes)
+
+2. **Transformações**:
+   - Converte tamanho de GB (string) para MB (float)
+   - Adiciona data de atualização (`date_updated`) automaticamente
+   - Separa gêneros em registros individuais na tabela `genders`
+
+3. **Deduplicação Inteligente**:
+   - Verifica se o filme já existe usando `titulo_dublado` + `date_updated`
+   - Ignora filmes duplicados automaticamente
+   - Permite que o mesmo filme seja inserido novamente em datas diferentes
+
+4. **Transação Atômica**: Todas as inserções são feitas em uma única transação (commit ao final)
+
+**Configuração de Retry**: 3 tentativas com 10 segundos de delay entre falhas
+
+### 3. **Estatísticas** - Task `get_stats()`
+
+Gera e exibe estatísticas do banco de dados:
+- Total de filmes cadastrados
+- Total de gêneros únicos
+- Média das notas IMDB
+- Data da última atualização
+
+### 4. **Exportação para BigQuery (Opcional)** - `src/scrapers/gratis_torrent/send_to_bq.py`
+
+**Task Prefect**: `export_to_bigquery()` - Executada apenas se `export_bq=True`
+
+#### Processo de ETL no BigQuery:
+
+1. **Criação da Infraestrutura**:
+   - Dataset: `movies_raw`
+   - Tabela staging: `stg_filmes` (temporária)
+   - Tabela final: `filmes` (produção)
+
+2. **Load para Staging**:
+   - Carrega o arquivo `movies_gratis.json` na tabela `stg_filmes`
+   - Usa schema definido em `schema.json` para validação
+   - Formato: NEWLINE_DELIMITED_JSON
+
+3. **Merge (Upsert)**:
+   ```sql
+   MERGE INTO filmes AS target
+   USING stg_filmes AS source
+   ON target.link = source.link
+   WHEN NOT MATCHED THEN INSERT ...
+   ```
+   - Compara filmes por `link` (chave única)
+   - Insere apenas filmes novos (evita duplicação)
+   - Retorna número de linhas afetadas
+
+4. **Limpeza**:
+   - Trunca a tabela `stg_filmes` após o merge
+   - Prepara para a próxima execução
+
+**Vantagens da Abordagem Staging**:
+- ✅ Separação entre dados temporários e produção
+- ✅ Validação antes de afetar dados finais
+- ✅ Rollback fácil em caso de problemas
+- ✅ Auditoria do processo de carga
+
+### 🎯 Orquestração com Prefect
+
+**Flow Principal**: `gratis_torrent_flow()` - `src/flows/prefect_flow_gratis.py`
+
+#### Execução das Tasks:
+
+```python
+# 1. Scraping
+run_gratis_scraper()
+    ↓
+# 2. Inserção no SQLite
+insert_movies(json_path, engine)
+    ↓
+# 3. Estatísticas
+get_stats(engine)
+    ↓
+# 4. BigQuery (condicional)
+if export_bq:
+    export_to_bigquery()
+```
+
+#### Recursos do Prefect:
+
+1. **Retry Automático**: Tasks com falha são reexecutadas automaticamente (3x)
+2. **Logging**: Todos os prints são capturados nos logs do Prefect
+3. **Monitoramento**: UI web em `http://127.0.0.1:4200` mostra:
+   - Status de cada task em tempo real
+   - Logs completos de execução
+   - Histórico de runs
+   - Métricas de performance
+4. **Agendamento**: Execução automática via cron (configurável em `config/prefect.yaml`)
+5. **Parâmetros**: Flow aceita `export_bq` para controlar exportação ao BigQuery
+
+#### Configuração do Deployment:
+
+Para executar o flow automaticamente (agendado), é necessário:
+
+1. **Prefect Server**: Interface web e API (`uv run prefect server start`)
+2. **Work Pool**: Gerencia a fila de execução (`uv run prefect work-pool create defaultp`)
+3. **Deployment**: Configuração do agendamento (`uv run prefect deploy -n default`)
+4. **Worker**: Processo que executa as tasks (`uv run prefect worker start --pool defaultp`)
+
+Veja [PREFECT_DEPLOYMENT.md](docs/PREFECT_DEPLOYMENT.md) para instruções detalhadas.
+
+### 🎛️ Modos de Execução
+
+#### 1. Execução Local Simples (Sem Agendamento)
+```bash
+uv run src/flows/prefect_flow_gratis.py
+```
+- Executa o flow imediatamente
+- Não requer servidor Prefect
+- Ideal para desenvolvimento e testes
+
+#### 2. Execução via Deployment (Com Agendamento)
+```bash
+# Configurar infraestrutura (uma vez)
+uv run prefect server start
+uv run prefect work-pool create defaultp --set-as-default
+uv run prefect deploy -n default
+
+# Iniciar worker (mantém rodando)
+uv run prefect worker start --pool defaultp
+```
+- Flow roda automaticamente no horário agendado
+- Monitoramento via UI web
+- Ideal para produção
+
 ## 🔧 Comandos Mais Importantes
 
 ### 🎯 Uso Rápido (Recomendado)
@@ -216,6 +386,7 @@ docker-compose -f deploy/docker-compose.yaml up
 
 - [CLAUDE.md](docs/CLAUDE.md) - Documentação completa do projeto
 - [BIGQUERY_SETUP.md](docs/BIGQUERY_SETUP.md) - Guia de configuração do BigQuery
+- [PREFECT_DEPLOYMENT.md](docs/PREFECT_DEPLOYMENT.md) - Guia completo de deployment com Prefect
 
 ## 🛠️ Tecnologias
 

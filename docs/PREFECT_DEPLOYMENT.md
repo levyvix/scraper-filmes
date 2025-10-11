@@ -6,6 +6,28 @@ Este projeto usa Prefect para orquestrar o scraping de filmes do GratisTorrent.
 
 ## Configuração do Deployment
 
+### Comandos Essenciais (Ordem Recomendada)
+
+**IMPORTANTE**: Estes comandos são necessários para configurar o Prefect corretamente pela primeira vez:
+
+```bash
+# 1. Iniciar o servidor Prefect (em um terminal separado)
+uv run prefect server start
+
+# 2. Criar o work pool padrão
+uv run prefect work-pool create defaultp --set-as-default
+
+# 3. Fazer o deploy do flow
+uv run prefect deploy -n default
+
+# 4. Iniciar o worker (em outro terminal)
+uv run prefect worker start --pool defaultp
+```
+
+> **Nota**: Os passos 1 e 4 precisam rodar em terminais separados, pois são processos contínuos.
+
+### Detalhamento dos Passos
+
 ### 1. Iniciar o Prefect Server (Local)
 
 ```bash
@@ -14,21 +36,28 @@ uv run prefect server start
 
 O servidor ficará disponível em: http://127.0.0.1:4200
 
-### 2. Configurar a API URL (Primeira vez)
+### 2. Criar o Work Pool
 
 ```bash
-uv run prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api
+uv run prefect work-pool create defaultp --set-as-default
 ```
+
+Este comando cria o work pool que gerenciará a execução dos flows.
 
 ### 3. Deploy do Flow
 
-Usar o script automatizado:
+```bash
+# Usando o deployment configurado
+uv run prefect deploy -n default
+```
+
+Ou usar o script automatizado:
 
 ```bash
 ./scripts/deploy_prefect.sh
 ```
 
-Ou manualmente:
+Ou manualmente com o arquivo de configuração:
 
 ```bash
 uv run prefect --no-prompt deploy --prefect-file config/prefect.yaml --all
@@ -37,7 +66,7 @@ uv run prefect --no-prompt deploy --prefect-file config/prefect.yaml --all
 ### 4. Iniciar um Worker
 
 ```bash
-uv run prefect worker start --pool default
+uv run prefect worker start --pool defaultp
 ```
 
 ## Agendamento
