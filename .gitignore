@@ -3,3 +3,6 @@
 /__pycache__/
 *.db
 .env
+*.json
+*.csv
+!**/schema.json
