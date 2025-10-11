@@ -32,7 +32,7 @@ deployments:
   entrypoint: src/flows/prefect_flow_gratis.py:gratis_torrent_flow
   parameters: {}
   work_pool:
-    name: defaultw
+    name: defaultp
     work_queue_name: null
     job_variables: {}
   schedules:
