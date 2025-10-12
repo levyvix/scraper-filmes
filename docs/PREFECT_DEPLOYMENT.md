@@ -18,7 +18,7 @@ uv run prefect server start
 uv run prefect work-pool create defaultp --set-as-default
 
 # 3. Fazer o deploy do flow
-uv run prefect deploy -n default
+uv run prefect deploy -n gratis-torrent
 
 # 4. Iniciar o worker (em outro terminal)
 uv run prefect worker start --pool defaultp

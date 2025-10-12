@@ -84,24 +84,6 @@ def test_connection():
         return False
 
 
-def run_bigquery_import():
-    """Executa a importação para o BigQuery"""
-    logger.info("Iniciando importação para BigQuery...")
-
-    try:
-        from src.scrapers.gratis_torrent.send_to_bq import main
-
-        main()
-        logger.success("✓ Importação concluída com sucesso!")
-        return True
-    except Exception as e:
-        logger.error(f"✗ Erro durante importação: {e}")
-        import traceback
-
-        logger.error(traceback.format_exc())
-        return False
-
-
 def main():
     logger.info("=" * 60)
     logger.info("TESTE DE INSERÇÃO NO BIGQUERY")
@@ -116,20 +98,11 @@ def main():
         logger.info("   gcloud auth application-default login")
         return 1
 
-    logger.info("")
-
     # Step 2: Test connection
     if not test_connection():
         logger.error("\nFalha na conexão. Verifique:")
         logger.info("1. Se você tem acesso ao projeto 'galvanic-flame-384620'")
         logger.info("2. Se as permissões do BigQuery estão configuradas")
-        return 1
-
-    logger.info("")
-
-    # Step 3: Run import
-    if not run_bigquery_import():
-        logger.error("\n✗ TESTE FALHOU")
         return 1
 
     logger.success("\n✓ TESTE CONCLUÍDO COM SUCESSO!")

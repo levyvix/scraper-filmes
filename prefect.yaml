@@ -20,16 +20,19 @@ pull:
 
 # the deployments section allows you to provide configuration for deploying flows
 deployments:
-- name: default
+- name: gratis-torrent
   version: null
   tags: []
   concurrency_limit: null
   description: |-
-    Main Prefect flow for GratisTorrent scraping pipeline
+    Main Prefect flow for scraping GratisTorrent and loading to BigQuery.
 
-    Args:
-        export_bq: If True, exports data to BigQuery after database insertion
-  entrypoint: src/flows/prefect_flow_gratis.py:gratis_torrent_flow
+    This flow orchestrates the scraping and loading pipeline without
+    performing any data processing itself.
+
+    Returns:
+        Dictionary with pipeline statistics
+  entrypoint: src/scrapers/gratis_torrent/flow.py:gratis_torrent_flow
   parameters: {}
   work_pool:
     name: defaultp
@@ -37,6 +40,6 @@ deployments:
     job_variables: {}
   schedules:
   - interval: 3600.0
-    anchor_date: '2025-10-11T00:58:50.127957+00:00'
+    anchor_date: '2025-10-12T04:36:33.394872+00:00'
     timezone: UTC
     active: true

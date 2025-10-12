@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from loguru import logger
 
-from .config import Config
+from src.scrapers.gratis_torrent.config import Config
 
 
 def fetch_page(url: str, timeout: int = Config.REQUEST_TIMEOUT) -> BeautifulSoup | None:

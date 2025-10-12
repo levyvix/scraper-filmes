@@ -2,10 +2,15 @@
 
 from loguru import logger
 
-from .config import Config
-from .http_client import collect_movie_links, fetch_page
-from .models import Movie
-from .parser import parse_movie_page
+from src.scrapers.gratis_torrent.config import Config
+from src.scrapers.gratis_torrent.http_client import collect_movie_links, fetch_page
+from src.scrapers.gratis_torrent.models import Movie
+from src.scrapers.gratis_torrent.parser import parse_movie_page
+
+from diskcache import Cache
+
+
+cache = Cache("movie_cache")
 
 
 def scrape_movie_links() -> list[str]:
@@ -43,6 +48,7 @@ def scrape_movie_details(url: str) -> Movie | None:
     return parse_movie_page(soup, url)
 
 
+@cache.memoize(expire=3600)
 def scrape_all_movies() -> list[dict]:
     """
     Scrape all movies from the main page.

@@ -4,89 +4,74 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A production-grade web scraping and data pipeline project for collecting movie data from the GratisTorrent website, using Python, Prefect, and Google BigQuery.
+A movie scraper project that automates scraping movies from the GratisTorrent website, with optional export to Google BigQuery. The project is built with Python and uses various libraries for web scraping, data validation, workflow orchestration, and data storage.
 
-## Development Commands
+## Development Environment
+
+### Prerequisites
+- Python 3.11+
+- UV for dependency management
 
 ### Setup
 ```bash
 # Install dependencies
 uv sync
 
-# Run type checking
-uvx mypy --ignore-missing-imports .
+# Set up environment variables (optional)
+cp .env.example .env
+# Edit .env with your specific configurations
+```
 
-# Lint the code
+## Common Commands
+
+### Running the Project
+```bash
+# Run the main scraper
+uv run main.py
+
+# Run a specific test
+uvx pytest tests/path/to/specific_test.py
+
+# Run all tests
+uvx pytest tests/
+
+# Linting
 uvx ruff check .
 
-# Format the code
+# Formatting
 uvx ruff format --line-length 120
+
+# Type checking
+uvx mypy --ignore-missing-imports .
 ```
+
+## Development Workflow
+
+### Key Components
+- **Scraper**: Located in `src/scrapers/gratis_torrent/scraper.py`
+- **HTTP Client**: `src/scrapers/gratis_torrent/http_client.py`
+- **BigQuery Integration**: `src/scrapers/gratis_torrent/bigquery_client.py`
+- **Data Models**: `src/scrapers/gratis_torrent/models.py`
 
 ### Testing
-```bash
-# Run integration test suite
-uv run python tests/test_suite.py
+- Use pytest for testing
+- Test files are located in the `tests/` directory
+- Run tests with `uvx pytest`
 
-# Run specific test module (example)
-uv run python tests/scrapers/gratis_torrent/test_parser.py
-```
+### Configuration
+- Environment variables managed via `.env` file
+- Project configuration in `pyproject.toml`
+- Prefect workflow configuration in `prefect.yaml`
+
+## Deployment
+
+### Optional BigQuery Setup
+Refer to `docs/BIGQUERY_SETUP.md` for detailed BigQuery configuration.
 
 ### Prefect Deployment
-```bash
-# Start Prefect server
-prefect server start
+See `docs/PREFECT_DEPLOYMENT.md` for deployment instructions.
 
-# Create default work pool
-prefect work-pool create defaultp --set-as-default
-
-# Deploy workflow
-prefect deploy -n default
-
-# Start worker
-prefect worker start --pool defaultp
-```
-
-## Key Architecture Notes
-
-### Data Pipeline
-- Uses Prefect for workflow orchestration
-- Scrapes GratisTorrent website
-- Validates data with Pydantic models
-- Stores data directly in Google BigQuery
-- 24-hour disk caching to reduce redundant requests
-
-### Core Modules
-- `src/scrapers/gratis_torrent/`
-  - `scraper.py`: High-level scraping workflow
-  - `parser.py`: HTML parsing logic
-  - `http_client.py`: Web request handling
-  - `models.py`: Pydantic data validation
-  - `bigquery_client.py`: BigQuery data operations
-
-### Environment Configuration
-- Uses `.env` file for configuration
-- Critical environment variables:
-  - `GCP_PROJECT_ID`: Google Cloud project ID
-  - Ensure these are set before running deployment scripts
-
-## Deployment Targets
-1. Local development
-2. Prefect server with scheduled jobs
-3. Docker containerization (currently under refactoring)
-
-## Ongoing Migration
-- Currently transitioning from SQLite to direct BigQuery pipeline
-- Old database modules have been removed
-- Update tests to reflect new architecture
-
-## Contribution Guidelines
-- Always run type checking, linting, and formatting before committing
-- Ensure all tests pass after making changes
-- Update documentation if architecture changes
-- Be mindful of the ongoing migration and architectural simplification
-
-## Troubleshooting
-- If tests fail, verify environment setup
-- Check BigQuery credentials and project configuration
-- Ensure UV dependencies are synchronized
+## Notes
+- Project is for educational purposes
+- Always validate and sanitize input data
+- Respect website terms of service when scraping

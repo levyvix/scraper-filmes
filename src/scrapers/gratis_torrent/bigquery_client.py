@@ -6,7 +6,7 @@ import warnings
 from google.cloud import bigquery
 from loguru import logger
 
-from .config import Config
+from src.scrapers.gratis_torrent.config import Config
 
 # Suppress quota project warning for user credentials
 warnings.filterwarnings("ignore", message=".*quota project.*")

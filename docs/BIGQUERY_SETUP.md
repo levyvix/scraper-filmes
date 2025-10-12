@@ -6,7 +6,7 @@ Este guia explica como configurar e testar a inserção de dados no BigQuery.
 
 - Google Cloud SDK instalado ✓
 - Biblioteca `google-cloud-bigquery` instalada ✓
-- Acesso ao projeto BigQuery: `galvanic-flame-384620`
+- Criar um projeto ✓
 
 ## Opções de Autenticação
 
@@ -19,10 +19,10 @@ Este método usa suas credenciais pessoais do Google Cloud:
 gcloud auth application-default login
 
 # 2. Configurar o projeto
-gcloud config set project galvanic-flame-384620
+gcloud config set project <nome-do-projeto>
 
 # 3. Testar a conexão
-uv run python test_bigquery.py
+uv run python scripts/test_bigquery.py
 ```
 
 ### Opção 2: Service Account (Para Produção)
@@ -49,25 +49,6 @@ uv run python test_bigquery.py
 uv run python test_bigquery.py
 ```
 
-### 2. Importação Direta
-
-```bash
-# Depois de autenticado, execute a importação
-cd gratis_torrent
-uv run python send_to_bq.py
-```
-
-### 3. Via Flow do Prefect
-
-```bash
-# Execute o flow com exportação para BigQuery habilitada
-uv run python prefect_flow_gratis.py --export-bq
-```
-
-Ou edite o arquivo e altere:
-```python
-gratis_torrent_flow(export_bq=True)  # Mudar False para True
-```
 
 ## Estrutura do BigQuery
 
@@ -114,21 +95,21 @@ O script cria automaticamente:
 
 ### Via Console Web
 1. Acesse: https://console.cloud.google.com/bigquery
-2. Navegue até: `galvanic-flame-384620` → `movies_raw` → `filmes`
+2. Navegue até: `<projeto>` → `movies_raw` → `filmes`
 3. Clique em "Query" e execute:
 ```sql
-SELECT COUNT(*) as total_filmes FROM `galvanic-flame-384620.movies_raw.filmes`
+SELECT COUNT(*) as total_filmes FROM `<projeto>.movies_raw.filmes`
 ```
 
 ### Via CLI
 ```bash
 # Contar filmes
 bq query --use_legacy_sql=false \
-  'SELECT COUNT(*) as total FROM `galvanic-flame-384620.movies_raw.filmes`'
+  'SELECT COUNT(*) as total FROM `<projeto>.movies_raw.filmes`'
 
 # Ver últimos 10 filmes
 bq query --use_legacy_sql=false \
-  'SELECT titulo_dublado, ano, imdb FROM `galvanic-flame-384620.movies_raw.filmes` LIMIT 10'
+  'SELECT titulo_dublado, ano, imdb FROM `<projeto>.movies_raw.filmes` LIMIT 10'
 ```
 
 ## Troubleshooting
@@ -139,7 +120,7 @@ bq query --use_legacy_sql=false \
 ### Erro: "Permission denied"
 **Solução**: Verifique se você tem permissões no projeto:
 ```bash
-gcloud projects get-iam-policy galvanic-flame-384620 --flatten="bindings[].members" --filter="bindings.members:user:$(gcloud config get-value account)"
+gcloud projects get-iam-policy <projeto> --flatten="bindings[].members" --filter="bindings.members:user:$(gcloud config get-value account)"
 ```
 
 ### Erro: "Dataset not found"
@@ -148,7 +129,7 @@ gcloud projects get-iam-policy galvanic-flame-384620 --flatten="bindings[].membe
 ### Erro: "JSON file not found"
 **Solução**: Execute o scraper primeiro:
 ```bash
-uv run gratis_torrent/extract.py
+uv run main.py
 ```
 
 ## Custos
@@ -156,12 +137,3 @@ uv run gratis_torrent/extract.py
 - BigQuery tem free tier de 1TB de consultas/mês
 - Armazenamento: primeiros 10GB são gratuitos
 - Este projeto usa volumes bem abaixo do free tier
-
-## Próximos Passos
-
-Após configurar e testar:
-
-1. ✅ Execute o scraper: `uv run gratis_torrent/extract.py`
-2. ✅ Teste a importação: `uv run python test_bigquery.py`
-3. ✅ Configure o flow: Edite `prefect_flow_gratis.py` e mude `export_bq=True`
-4. ✅ Agende execuções: Configure o Prefect para rodar diariamente

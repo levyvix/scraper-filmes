@@ -3,15 +3,11 @@
 from prefect import flow, task
 from loguru import logger
 
-from .bigquery_client import load_movies_to_bigquery
-from .scraper import scrape_all_movies
-from diskcache import Cache
-
-cache = Cache("movie_cache")
+from src.scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
+from src.scrapers.gratis_torrent.scraper import scrape_all_movies
 
 
 @task(name="scrape-movies", retries=2, retry_delay_seconds=30)
-@cache.memoize(expire=86400)  # Cache results for 24 hours
 def scrape_movies_task() -> list[dict]:
     """
     Task to scrape all movies from GratisTorrent.
