@@ -1,36 +1,25 @@
-from typing import Optional
-import requests
-from bs4 import BeautifulSoup
-import json
+"""Parser functions for extracting movie data from HTML."""
+
 import re
-from pydantic import BaseModel, Field, ValidationError
-from rich import print
+
+from bs4 import BeautifulSoup
 from loguru import logger
-import sys
+from pydantic import ValidationError
 
-logger.remove()
-logger.add(sys.stderr, level="WARNING")
-
-
-class Movie(BaseModel):
-    titulo_dublado: str | None = None
-    titulo_original: str | None = None
-    imdb: float | None = Field(None, ge=0, le=10)
-    ano: int | None = Field(None, ge=1888)
-    genero: str | None = None
-    tamanho: str | None = None
-    duracao_minutos: int | None = Field(None, ge=1)
-    qualidade_video: float | None = Field(None, ge=0, description="Video quality score (0-10)")
-    qualidade: str | None = Field(None, description="Quality description (e.g., '1080p', '720p BluRay')")
-    dublado: bool | None = None
-    sinopse: str | None = None
-    link: str | None = None
+from .models import Movie
 
 
 def extract_regex_field(pattern: str, text: str, group: int = 1) -> str | None:
     """
     Extract a single field using regex.
-    Returns the matched group or None if no match found.
+
+    Args:
+        pattern: Regular expression pattern
+        text: Text to search in
+        group: Regex group number to extract
+
+    Returns:
+        Matched string or None if no match found
     """
     match = re.search(pattern, text)
     if not match:
@@ -39,7 +28,15 @@ def extract_regex_field(pattern: str, text: str, group: int = 1) -> str | None:
 
 
 def safe_convert_float(value: str | None) -> float | None:
-    """Convert string to float, return None if conversion fails."""
+    """
+    Convert string to float, return None if conversion fails.
+
+    Args:
+        value: String value to convert
+
+    Returns:
+        Float value or None if conversion fails
+    """
     if not value:
         return None
 
@@ -51,7 +48,15 @@ def safe_convert_float(value: str | None) -> float | None:
 
 
 def safe_convert_int(value: str | None) -> int | None:
-    """Convert string to integer, return None if conversion fails."""
+    """
+    Convert string to integer, return None if conversion fails.
+
+    Args:
+        value: String value to convert
+
+    Returns:
+        Integer value or None if conversion fails
+    """
     if not value:
         return None
 
@@ -62,22 +67,16 @@ def safe_convert_int(value: str | None) -> int | None:
         return None
 
 
-def fetch_page(url: str) -> BeautifulSoup | None:
-    """
-    Fetch and parse HTML page.
-    Returns BeautifulSoup object or None if request fails.
-    """
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        return BeautifulSoup(response.text, "html.parser")
-    except requests.RequestException as e:
-        logger.error(f"Failed to fetch {url}: {e}")
-        return None
-
-
 def extract_sinopse(soup: BeautifulSoup) -> str | None:
-    """Extract movie synopsis from the page."""
+    """
+    Extract movie synopsis from the page.
+
+    Args:
+        soup: BeautifulSoup object of the page
+
+    Returns:
+        Synopsis text or None if not found
+    """
     sinopse_element = soup.select_one("#sinopse > p")
     if not sinopse_element:
         return None
@@ -96,8 +95,15 @@ def extract_sinopse(soup: BeautifulSoup) -> str | None:
 
 
 def extract_movie_fields(info_text: str) -> dict[str, str | None]:
-    """Extract all movie fields from info text using regex patterns."""
-    # Define all regex patterns in one place
+    """
+    Extract all movie fields from info text using regex patterns.
+
+    Args:
+        info_text: Raw text containing movie information
+
+    Returns:
+        Dictionary of extracted field values
+    """
     patterns = {
         "titulo_dublado": r"Baixar (.+) Torrent",
         "titulo_original": r"Título Original:\s*(.+)\s*",
@@ -110,7 +116,6 @@ def extract_movie_fields(info_text: str) -> dict[str, str | None]:
         "qualidade": r"Qualidade:\s*([0-9a-zA-Z |]+)",
     }
 
-    # Extract all fields
     extracted = {}
     for field_name, pattern in patterns.items():
         extracted[field_name] = extract_regex_field(pattern, info_text)
@@ -119,14 +124,33 @@ def extract_movie_fields(info_text: str) -> dict[str, str | None]:
 
 
 def clean_genre(genre: str | None) -> str | None:
-    """Clean up genre field by replacing slashes with commas."""
+    """
+    Clean up genre field by replacing slashes with commas.
+
+    Args:
+        genre: Raw genre string
+
+    Returns:
+        Cleaned genre string or None
+    """
     if not genre:
         return None
     return genre.replace(" / ", ", ")
 
 
 def create_movie_object(extracted: dict, info_text: str, sinopse: str | None, url: str) -> Movie | None:
-    """Create and validate Movie object from extracted data."""
+    """
+    Create and validate Movie object from extracted data.
+
+    Args:
+        extracted: Dictionary of extracted field values
+        info_text: Raw info text (used to check for "Português")
+        sinopse: Synopsis text
+        url: Movie page URL
+
+    Returns:
+        Validated Movie object or None if validation fails
+    """
     try:
         movie = Movie(
             titulo_dublado=extracted["titulo_dublado"],
@@ -148,17 +172,17 @@ def create_movie_object(extracted: dict, info_text: str, sinopse: str | None, ur
         return None
 
 
-def extract_info(url: str) -> Optional[Movie]:
+def parse_movie_page(soup: BeautifulSoup, url: str) -> Movie | None:
     """
-    Extract movie information from a Gratis Torrent page.
-    Returns Movie object or None if extraction fails.
-    """
-    # Fetch the page
-    soup = fetch_page(url)
-    if not soup:
-        logger.warning(f"Skipping {url} - could not fetch page")
-        return None
+    Parse a movie page and extract all information.
 
+    Args:
+        soup: BeautifulSoup object of the movie page
+        url: URL of the movie page
+
+    Returns:
+        Movie object or None if parsing fails
+    """
     # Get main info text
     info_element = soup.select_one("#informacoes > p")
     if not info_element:
@@ -178,55 +202,3 @@ def extract_info(url: str) -> Optional[Movie]:
 
     # Create and return movie object
     return create_movie_object(extracted, info_text, sinopse, url)
-
-
-def collect_movie_links(soup: BeautifulSoup) -> list[str]:
-    """Collect all unique movie links from the page."""
-    elements = soup.select("#capas_pequenas > div > a")
-
-    links = []
-    for element in elements:
-        link = element.get("href")
-        if link:
-            links.append(link)
-
-    # Remove duplicates while preserving order
-    unique_links = list(dict.fromkeys(links))
-    return unique_links
-
-
-def main():
-    website = "https://gratistorrent.com/lancamentos/"
-
-    # Fetch the main page
-    soup = fetch_page(website)
-    if not soup:
-        logger.error(f"Cannot access {website}. Exiting.")
-        return
-
-    # Collect all movie links
-    logger.info("Getting Movies...")
-    links = collect_movie_links(soup)
-    logger.info(f"Found {len(links)} unique movie links")
-
-    # Extract movie information
-    movies_list = []
-    for index, link in enumerate(links, start=1):
-        logger.info(f"Processing movie {index}/{len(links)}: {link}")
-
-        movie = extract_info(link)
-        if not movie:
-            logger.warning(f"Failed to extract info from {link}")
-            continue
-
-        print(movie)
-        movies_list.append(movie.model_dump())
-
-    # Save to JSON file
-    logger.info(f"Successfully scraped {len(movies_list)} movies")
-    with open("movies_gratis.json", "w", encoding="utf-8") as f:
-        json.dump(movies_list, f, indent=4, ensure_ascii=False)
-
-
-if __name__ == "__main__":
-    main()

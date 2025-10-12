@@ -1,6 +1,0 @@
-requests
-bs4
-loguru
-rich
-pydantic
-google-cloud-bigquery

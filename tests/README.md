@@ -1,55 +1,85 @@
-# 🧪 Suite de Testes
+# Test Suite Documentation
 
-Suite completa de testes automatizados para o projeto Scraper de Filmes.
+Comprehensive automated test suite for the Movie Scraper project.
 
-## 📋 O que é Testado
+## Overview
 
-### 1. **Importações dos Módulos**
-- Verifica se todos os módulos principais podem ser importados sem erros
-- Testa: `extract.py`, `insert_to_database.py`, `prefect_flow_gratis.py`, `send_to_bq.py`
+This test suite validates the functionality of the GratisTorrent scraper pipeline, which has been refactored to use a direct BigQuery pipeline (no SQLite database).
 
-### 2. **Schema do Banco de Dados**
-- Verifica criação das tabelas `movies` e `genres`
-- Valida todos os campos obrigatórios
-- Confirma que `genres` (não `genders`) está correto
-- Valida campos `qualidade_video` (float) e `qualidade` (string)
+## What Gets Tested
 
-### 3. **Validação Pydantic**
-- Testa aceitação de dados válidos
-- Verifica rejeição de IMDB > 10
-- Verifica rejeição de ano < 1888
-- Confirma tipos corretos (`qualidade_video` float, `qualidade` string)
+### 1. Module Imports
+Tests that all core modules can be imported without errors:
+- `src.scrapers.gratis_torrent.models` - Pydantic data models
+- `src.scrapers.gratis_torrent.parser` - HTML parsing functions
+- `src.scrapers.gratis_torrent.http_client` - HTTP request handling
+- `src.scrapers.gratis_torrent.scraper` - Main scraping orchestration
+- `src.scrapers.gratis_torrent.bigquery_client` - BigQuery operations
+- `src.scrapers.gratis_torrent.flow` - Prefect workflow
+- `src.scrapers.gratis_torrent.config` - Configuration management
 
-### 4. **Inserção no Banco**
-- Testa inserção de filmes no SQLite
-- Verifica conversão de GB para MB
-- Valida separação de gêneros em registros individuais
-- Confirma todos os campos são salvos corretamente
+### 2. Pydantic Validation
+Validates the Movie model data validation rules:
+- Accepts valid movie data
+- Rejects IMDB scores outside 0-10 range
+- Rejects years before 1888
+- Validates field types (float for `qualidade_video`, string for `qualidade`)
+- Ensures required fields are present
 
-### 5. **Deduplicação**
-- Testa que filmes duplicados não são inseridos duas vezes
-- Valida lógica de `titulo_dublado` + `date_updated`
+### 3. Configuration Management
+Tests the Config class:
+- GCP_PROJECT_ID is set correctly
+- Dataset and table IDs match expected values
+- Location is configured properly
+- `get_full_table_id()` method constructs correct table references
 
-### 6. **Carregamento de .env**
-- Verifica que `python-dotenv` está funcionando
-- Testa carregamento de variáveis de ambiente do arquivo `.env`
+### 4. Parser Functions
+Tests individual parsing utility functions:
+- `clean_genre()` - Converts genre separators (/ to ,)
+- `safe_convert_float()` - Safely converts strings to float
+- `safe_convert_int()` - Safely converts strings to int
+- `extract_regex_field()` - Extracts data using regex patterns
 
-### 7. **Estrutura do Prefect Flow**
-- Valida estrutura do flow principal
-- Verifica todas as tasks estão definidas
-- Confirma parâmetro `export_bq` existe
+### 5. Model Serialization
+Tests Pydantic model serialization:
+- `model_dump()` returns proper dictionary
+- All required fields are present in serialized output
+- Data types are preserved correctly
 
----
+### 6. Prefect Flow Structure
+Validates the Prefect workflow configuration:
+- Flow is properly defined
+- All tasks are registered with correct names
+- Retry policies are configured correctly:
+  - `scrape-movies` task: 2 retries, 30s delay
+  - `load-to-bigquery` task: 3 retries, 60s delay
 
-## 🚀 Como Executar
+### 7. HTTP Client Functions
+Tests HTTP request and parsing utilities:
+- `collect_movie_links()` extracts movie links from HTML
+- Duplicate links are properly deduplicated
+- Handles missing href attributes gracefully
 
-### Executar Todos os Testes
+### 8. BigQuery Schema
+Validates the BigQuery table schema definition:
+- Schema file exists and is valid JSON
+- All required fields are present
+- Data types match expectations:
+  - STRING fields for titles and text
+  - FLOAT64 for IMDB scores
+  - INT64 for years and durations
+  - BOOL for dubbed status
+  - TIMESTAMP for update tracking
+
+## Running the Tests
+
+### Run All Tests
 
 ```bash
 uv run python tests/test_suite.py
 ```
 
-### Saída Esperada
+### Expected Output
 
 ```
 ============================================================
@@ -60,65 +90,155 @@ uv run python tests/test_suite.py
 TEST: 1. Importações dos Módulos
 ============================================================
 Testando importações...
-  ✓ src.scrapers.gratis_torrent.extract
-  ✓ src.database.insert_to_database
-  ✓ src.flows.prefect_flow_gratis
-  ✓ src.scrapers.gratis_torrent.send_to_bq
+  ✓ src.scrapers.gratis_torrent.models
+  ✓ src.scrapers.gratis_torrent.parser
+  ✓ src.scrapers.gratis_torrent.http_client
+  ✓ src.scrapers.gratis_torrent.scraper
+  ✓ src.scrapers.gratis_torrent.bigquery_client
+  ✓ src.scrapers.gratis_torrent.flow
+  ✓ src.scrapers.gratis_torrent.config
 ✅ PASSOU
-
-...
 
 ============================================================
 RESUMO DOS TESTES
 ============================================================
-✅ Passou: 7
+✅ Passou: 8
 ❌ Falhou: 0
-📊 Total: 7
+📊 Total: 8
 
 ============================================================
 🎉 TODOS OS TESTES PASSARAM!
 ============================================================
 ```
 
----
+## Individual Module Tests
 
-## ⏰ Execução Periódica
-
-### Manualmente
-
-Execute sempre que:
-- Fizer mudanças no código
-- Antes de fazer commits importantes
-- Depois de atualizar dependências
-
-### Com Cron (Linux/Mac)
-
-Adicionar ao crontab para rodar diariamente às 8h:
+More granular tests are available in the `tests/scrapers/gratis_torrent/` directory:
 
 ```bash
-crontab -e
+# Test parser functions
+uv run python -m pytest tests/scrapers/gratis_torrent/test_parser.py
+
+# Test models
+uv run python -m pytest tests/scrapers/gratis_torrent/test_models.py
+
+# Test HTTP client
+uv run python -m pytest tests/scrapers/gratis_torrent/test_http_client.py
+
+# Test configuration
+uv run python -m pytest tests/scrapers/gratis_torrent/test_config.py
 ```
 
-Adicione a linha:
+## Migration Notes
 
-```cron
-0 8 * * * cd /caminho/para/scraper-filmes && uv run python tests/test_suite.py >> tests/test_log.txt 2>&1
-```
+### What Changed
 
-### Com GitHub Actions
+The test suite has been updated to reflect the project's migration from SQLite to BigQuery:
 
-Crie `.github/workflows/tests.yml`:
+**Removed Tests:**
+- Database schema creation tests (SQLite-specific)
+- Database insertion tests
+- Deduplication tests (now handled by BigQuery)
+- SQLAlchemy model tests
+
+**Updated Tests:**
+- Import tests now reference new module structure
+- Added BigQuery schema validation
+- Updated Prefect flow tests for new workflow structure
+- Configuration tests for BigQuery-specific settings
+
+**New Tests:**
+- BigQuery schema validation
+- Config class method tests
+- Direct model serialization tests
+
+### Legacy Flow
+
+The old Prefect flow (`src/flows/prefect_flow_gratis.py`) is still present but deprecated. The new flow is at `src/scrapers/gratis_torrent/flow.py` and uses the direct BigQuery pipeline.
+
+## Troubleshooting
+
+### Test Failures
+
+If tests fail, check the following:
+
+1. **Dependencies:** Ensure all dependencies are installed:
+   ```bash
+   uv sync
+   ```
+
+2. **Environment Variables:** Verify `.env` file contains:
+   ```
+   GCP_PROJECT_ID=your-project-id
+   ```
+
+3. **Schema File:** Confirm `src/scrapers/gratis_torrent/schema.json` exists
+
+4. **Module Structure:** Ensure all files in `src/scrapers/gratis_torrent/` are present
+
+### Common Issues
+
+**Import Errors:**
+- Verify Python path includes project root
+- Check for circular imports
+- Ensure `__init__.py` files are present
+
+**Validation Errors:**
+- Check that Pydantic models match BigQuery schema
+- Verify field types are consistent
+
+**Configuration Errors:**
+- Ensure environment variables are loaded
+- Check file paths are absolute, not relative
+
+## Adding New Tests
+
+To add new tests to the suite:
+
+1. Create a test function in `test_suite.py`:
+   ```python
+   def test_new_feature():
+       """Test description"""
+       print("Testing new feature...")
+
+       from src.module import function
+
+       result = function()
+       assert result == expected, "Error message"
+
+       print("  ✓ Feature works correctly")
+   ```
+
+2. Register the test in `main()`:
+   ```python
+   runner.test("9. New Feature", test_new_feature)
+   ```
+
+3. Run the updated suite:
+   ```bash
+   uv run python tests/test_suite.py
+   ```
+
+## Best Practices
+
+1. **Isolation:** Tests should not depend on external services (no actual web scraping)
+2. **Speed:** All tests should complete in under 5 seconds
+3. **Cleanup:** Tests should clean up any temporary resources
+4. **Clarity:** Error messages should clearly indicate what went wrong
+5. **Coverage:** Test both success and failure paths
+
+## Continuous Integration
+
+To integrate with CI/CD pipelines:
+
+### GitHub Actions
+
+Create `.github/workflows/test.yml`:
 
 ```yaml
-name: Tests
+name: Test Suite
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  schedule:
-    - cron: '0 8 * * *'  # Diariamente às 8h
+on: [push, pull_request]
 
 jobs:
   test:
@@ -129,87 +249,12 @@ jobs:
         run: curl -LsSf https://astral.sh/uv/install.sh | sh
       - name: Run tests
         run: uv run python tests/test_suite.py
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 ```
 
----
+## Related Documentation
 
-## 🐛 Quando um Teste Falha
-
-### 1. Ver Detalhes do Erro
-
-O resumo mostrará qual teste falhou e o motivo:
-
-```
-============================================================
-ERROS DETALHADOS
-============================================================
-
-4. Inserção no Banco:
-  Esperado 2 filmes, encontrado 0
-```
-
-### 2. Verificar Logs
-
-Se o teste falhou:
-1. Leia a mensagem de erro cuidadosamente
-2. Verifique se as dependências estão instaladas: `uv sync`
-3. Verifique se algum arquivo foi modificado incorretamente
-4. Execute o teste individual para debug
-
-### 3. Executar Teste Individual
-
-Para debugar um teste específico, edite `test_suite.py` e comente os outros:
-
-```python
-# runner.test("1. Importações dos Módulos", test_imports)
-# runner.test("2. Schema do Banco de Dados", test_database_schema)
-# runner.test("3. Validação Pydantic", test_pydantic_validation)
-runner.test("4. Inserção no Banco", test_database_insertion)  # Apenas este
-```
-
----
-
-## 📝 Notas Importantes
-
-- **Sem Rede**: Os testes não fazem scraping real (não precisam de internet)
-- **Temporários**: Usa arquivos temporários (não afeta seu banco de dados)
-- **Rápido**: Todos os testes rodam em ~2-3 segundos
-- **Isolados**: Cada teste limpa seus dados após execução
-
----
-
-## 🔧 Adicionar Novos Testes
-
-Para adicionar um novo teste:
-
-1. Crie uma função `test_nome_do_teste()` em `test_suite.py`
-2. Use `print()` para mostrar progresso
-3. Use `assert` para validar condições
-4. Adicione ao runner no `main()`:
-
-```python
-runner.test("8. Meu Novo Teste", test_nome_do_teste)
-```
-
-Exemplo:
-
-```python
-def test_meu_recurso():
-    """Testa meu novo recurso"""
-    print("Testando meu recurso...")
-
-    from src.meu_modulo import minha_funcao
-
-    resultado = minha_funcao()
-    assert resultado == "esperado", "Resultado incorreto"
-
-    print("  ✓ Funcionou!")
-```
-
----
-
-## 📚 Recursos
-
-- **Pytest**: Para testes mais avançados, considere usar `pytest`
-- **Coverage**: Para ver cobertura de testes, use `coverage.py`
-- **CI/CD**: Integre com GitHub Actions, GitLab CI, etc.
+- [Project README](/README.md)
+- [CLAUDE.md](/CLAUDE.md) - Development guidelines
+- [GratisTorrent Scraper README](/src/scrapers/gratis_torrent/README.md)

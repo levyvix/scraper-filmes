@@ -2,61 +2,66 @@
     {
         "name": "titulo_dublado",
         "type": "STRING",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
     },
     {
         "name": "titulo_original",
         "type": "STRING",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
     },
     {
         "name": "imdb",
-        "type": "FLOAT",
+        "type": "FLOAT64",
         "mode": "NULLABLE"
     },
     {
         "name": "ano",
-        "type": "INTEGER",
-        "mode": "REQUIRED"
+        "type": "INT64",
+        "mode": "NULLABLE"
     },
     {
         "name": "genero",
         "type": "STRING",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
     },
     {
         "name": "tamanho",
         "type": "STRING",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
     },
     {
         "name": "duracao_minutos",
         "type": "INTEGER",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
     },
     {
         "name": "qualidade_video",
         "type": "FLOAT",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
     },
     {
         "name": "qualidade",
         "type": "STRING",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
     },
     {
         "name": "dublado",
-        "type": "BOOLEAN",
-        "mode": "REQUIRED"
+        "type": "BOOL",
+        "mode": "NULLABLE"
     },
     {
         "name": "sinopse",
         "type": "STRING",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
     },
     {
         "name": "link",
         "type": "STRING",
-        "mode": "REQUIRED"
+        "mode": "NULLABLE"
+    },
+    {
+        "name": "date_updated",
+        "type": "TIMESTAMP",
+        "mode": "NULLABLE"
     }
 ]

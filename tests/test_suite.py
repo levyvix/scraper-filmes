@@ -1,5 +1,5 @@
 """
-Teste Suite Completo - Scraper de Filmes
+Test Suite - Scraper de Filmes
 Executa testes de todos os componentes do projeto
 
 Uso:
@@ -7,9 +7,6 @@ Uso:
 """
 
 import sys
-import os
-import json
-import tempfile
 from pathlib import Path
 
 # Add project root to path
@@ -72,78 +69,42 @@ def test_imports():
     """Testa importações dos módulos principais"""
     print("Testando importações...")
 
-    from src.scrapers.gratis_torrent.extract import Movie  # noqa: F401
+    from src.scrapers.gratis_torrent.models import Movie  # noqa: F401
 
-    print("  ✓ src.scrapers.gratis_torrent.extract")
+    print("  ✓ src.scrapers.gratis_torrent.models")
 
-    from src.database.insert_to_database import create_and_insert  # noqa: F401
+    from src.scrapers.gratis_torrent.parser import parse_movie_page  # noqa: F401
 
-    print("  ✓ src.database.insert_to_database")
+    print("  ✓ src.scrapers.gratis_torrent.parser")
 
-    from src.flows.prefect_flow_gratis import gratis_torrent_flow  # noqa: F401
+    from src.scrapers.gratis_torrent.http_client import fetch_page  # noqa: F401
 
-    print("  ✓ src.flows.prefect_flow_gratis")
+    print("  ✓ src.scrapers.gratis_torrent.http_client")
 
-    import src.scrapers.gratis_torrent.send_to_bq  # noqa: F401
+    from src.scrapers.gratis_torrent.scraper import scrape_all_movies  # noqa: F401
 
-    print("  ✓ src.scrapers.gratis_torrent.send_to_bq")
+    print("  ✓ src.scrapers.gratis_torrent.scraper")
 
+    from src.scrapers.gratis_torrent.bigquery_client import (  # noqa: F401
+        load_movies_to_bigquery,
+    )
 
-def test_database_schema():
-    """Testa criação do schema do banco de dados"""
-    print("Testando schema do banco de dados...")
+    print("  ✓ src.scrapers.gratis_torrent.bigquery_client")
 
-    from sqlalchemy import create_engine, inspect
-    from src.database.insert_to_database import Base
+    from src.scrapers.gratis_torrent.flow import gratis_torrent_flow  # noqa: F401
 
-    # Criar banco em memória
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+    print("  ✓ src.scrapers.gratis_torrent.flow")
 
-    # Inspecionar schema
-    inspector = inspect(engine)
-    tables = inspector.get_table_names()
+    from src.scrapers.gratis_torrent.config import Config  # noqa: F401
 
-    print(f"  ✓ Tabelas criadas: {tables}")
-    assert "movies" in tables, "Tabela 'movies' não encontrada"
-    assert "genres" in tables, "Tabela 'genres' não encontrada"
-
-    # Verificar colunas da tabela movies
-    movies_columns = [col["name"] for col in inspector.get_columns("movies")]
-    print(f"  ✓ Colunas movies: {len(movies_columns)} campos")
-
-    required_fields = [
-        "id",
-        "titulo_dublado",
-        "titulo_original",
-        "imdb",
-        "ano",
-        "tamanho_mb",
-        "duracao_minutos",
-        "qualidade_video",
-        "qualidade",
-        "dublado",
-        "sinopse",
-        "date_updated",
-        "link",
-    ]
-
-    for field in required_fields:
-        assert field in movies_columns, f"Campo '{field}' não encontrado em movies"
-
-    # Verificar colunas da tabela genres
-    genres_columns = [col["name"] for col in inspector.get_columns("genres")]
-    print(f"  ✓ Colunas genres: {len(genres_columns)} campos")
-
-    assert "genre" in genres_columns, "Campo 'genre' não encontrado em genres"
-    assert "movie_id" in genres_columns, "Campo 'movie_id' não encontrado em genres"
+    print("  ✓ src.scrapers.gratis_torrent.config")
 
 
 def test_pydantic_validation():
     """Testa validação do modelo Pydantic"""
     print("Testando validação Pydantic...")
 
-    from src.scrapers.gratis_torrent.extract import Movie
+    from src.scrapers.gratis_torrent.models import Movie
     from pydantic import ValidationError
 
     # Teste 1: Dados válidos
@@ -206,207 +167,223 @@ def test_pydantic_validation():
         print("  ✓ Ano inválido rejeitado")
 
 
-def test_database_insertion():
-    """Testa inserção de dados no banco"""
-    print("Testando inserção no banco de dados...")
+def test_config():
+    """Testa configurações do projeto"""
+    print("Testando configurações...")
 
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import Session
-    from src.database.insert_to_database import create_and_insert, Movie, Genre
+    from src.scrapers.gratis_torrent.config import Config
 
-    # Criar JSON de teste
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-        test_data = [
-            {
-                "titulo_dublado": "Teste Filme 1",
-                "titulo_original": "Test Movie 1",
-                "imdb": 8.5,
-                "ano": 2023,
-                "genero": "Ação, Aventura, Drama",
-                "tamanho": "2.5",
-                "duracao_minutos": 120,
-                "qualidade_video": 9.0,
-                "qualidade": "1080p BluRay",
-                "dublado": True,
-                "sinopse": "Um filme de teste",
-                "link": "http://example.com/movie1",
-            },
-            {
-                "titulo_dublado": "Teste Filme 2",
-                "titulo_original": "Test Movie 2",
-                "imdb": 7.2,
-                "ano": 2024,
-                "genero": "Comédia | Romance",
-                "tamanho": "1.8",
-                "duracao_minutos": 95,
-                "qualidade_video": 8.5,
-                "qualidade": "720p WEB-DL",
-                "dublado": False,
-                "sinopse": "Outro filme de teste",
-                "link": "http://example.com/movie2",
-            },
-        ]
-        json.dump(test_data, f)
-        json_path = f.name
+    # Verificar propriedades essenciais
+    assert Config.GCP_PROJECT_ID is not None, "GCP_PROJECT_ID não configurado"
+    print(f"  ✓ GCP_PROJECT_ID: {Config.GCP_PROJECT_ID}")
 
-    try:
-        # Criar banco de teste
-        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-            db_path = f.name
+    assert Config.DATASET_ID == "movies_raw", "DATASET_ID incorreto"
+    print(f"  ✓ DATASET_ID: {Config.DATASET_ID}")
 
-        engine = create_engine(f"sqlite:///{db_path}")
+    assert Config.TABLE_ID == "filmes", "TABLE_ID incorreto"
+    print(f"  ✓ TABLE_ID: {Config.TABLE_ID}")
 
-        # Inserir dados
-        create_and_insert(json_path, engine)
-        print("  ✓ Dados inseridos")
+    assert Config.LOCATION == "US", "LOCATION incorreto"
+    print(f"  ✓ LOCATION: {Config.LOCATION}")
 
-        # Verificar inserção
-        with Session(engine) as sess:
-            movies = sess.query(Movie).all()
-            assert len(movies) == 2, f"Esperado 2 filmes, encontrado {len(movies)}"
-            print(f"  ✓ {len(movies)} filmes inseridos")
-
-            # Verificar campos
-            movie1 = movies[0]
-            assert movie1.qualidade_video == 9.0, "qualidade_video incorreto"
-            assert movie1.qualidade == "1080p BluRay", "qualidade incorreto"
-            assert movie1.tamanho_mb == 2560.0, "conversão GB->MB incorreta"
-            print("  ✓ Campos corretos (qualidade_video, qualidade, tamanho_mb)")
-
-            # Verificar gêneros
-            genres = sess.query(Genre).filter_by(movie_id=movie1.id).all()
-            assert len(genres) == 3, f"Esperado 3 gêneros, encontrado {len(genres)}"
-            genre_names = [g.genre for g in genres]
-            assert "Ação" in genre_names, "Gênero 'Ação' não encontrado"
-            print(f"  ✓ Gêneros separados corretamente: {', '.join(genre_names)}")
-
-    finally:
-        # Cleanup
-        os.unlink(json_path)
-        os.unlink(db_path)
+    # Verificar métodos
+    full_table_id = Config.get_full_table_id(Config.TABLE_ID)
+    assert "movies_raw.filmes" in full_table_id, "get_full_table_id incorreto"
+    print(f"  ✓ Full table ID: {full_table_id}")
 
 
-def test_deduplication():
-    """Testa deduplicação de filmes"""
-    print("Testando deduplicação...")
+def test_parser_functions():
+    """Testa funções do parser"""
+    print("Testando funções do parser...")
 
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import Session
-    from src.database.insert_to_database import create_and_insert, Movie
+    from src.scrapers.gratis_torrent.parser import (
+        clean_genre,
+        safe_convert_float,
+        safe_convert_int,
+        extract_regex_field,
+    )
 
-    # Criar JSON de teste
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-        test_data = [
-            {
-                "titulo_dublado": "Teste Dedup",
-                "titulo_original": "Test Dedup",
-                "imdb": 8.0,
-                "ano": 2023,
-                "genero": "Drama",
-                "tamanho": "2.0",
-                "duracao_minutos": 100,
-                "qualidade_video": 8.0,
-                "qualidade": "1080p",
-                "dublado": True,
-                "sinopse": "Teste",
-                "link": "http://example.com/dedup",
-            }
-        ]
-        json.dump(test_data, f)
-        json_path = f.name
+    # Teste 1: clean_genre
+    assert clean_genre("Action / Sci-Fi") == "Action, Sci-Fi"
+    print("  ✓ clean_genre funciona")
 
-    try:
-        # Criar banco de teste
-        with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
-            db_path = f.name
+    # Teste 2: safe_convert_float
+    assert safe_convert_float("8.5") == 8.5
+    assert safe_convert_float("invalid") is None
+    print("  ✓ safe_convert_float funciona")
 
-        engine = create_engine(f"sqlite:///{db_path}")
+    # Teste 3: safe_convert_int
+    assert safe_convert_int("120") == 120
+    assert safe_convert_int("invalid") is None
+    print("  ✓ safe_convert_int funciona")
 
-        # Primeira inserção
-        create_and_insert(json_path, engine)
-
-        with Session(engine) as sess:
-            count1 = sess.query(Movie).count()
-            print(f"  ✓ Primeira inserção: {count1} filme")
-
-        # Segunda inserção (deve ignorar duplicatas)
-        create_and_insert(json_path, engine)
-
-        with Session(engine) as sess:
-            count2 = sess.query(Movie).count()
-            print(f"  ✓ Segunda inserção: {count2} filme")
-
-        assert count1 == count2 == 1, "Deduplicação falhou"
-        print("  ✓ Deduplicação funcionando")
-
-    finally:
-        # Cleanup
-        os.unlink(json_path)
-        os.unlink(db_path)
+    # Teste 4: extract_regex_field
+    text = "Título: The Matrix"
+    pattern = r"Título:\s*(.+)"
+    assert extract_regex_field(pattern, text) == "The Matrix"
+    print("  ✓ extract_regex_field funciona")
 
 
-def test_env_loading():
-    """Testa carregamento de variáveis de ambiente"""
-    print("Testando carregamento de .env...")
+def test_model_serialization():
+    """Testa serialização do modelo"""
+    print("Testando serialização do modelo...")
 
-    import os
-    from dotenv import load_dotenv
+    from src.scrapers.gratis_torrent.models import Movie
 
-    # Criar .env temporário
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".env", delete=False, dir=".") as f:
-        f.write("TEST_VAR=test_value_123\n")
-        env_path = f.name
+    movie = Movie(
+        titulo_dublado="Matrix",
+        titulo_original="The Matrix",
+        imdb=8.7,
+        ano=1999,
+        genero="Action, Sci-Fi",
+        tamanho="2.5",
+        duracao_minutos=136,
+        qualidade_video=10.0,
+        qualidade="1080p BluRay",
+        dublado=True,
+        sinopse="A hacker discovers reality.",
+        link="https://example.com/matrix",
+    )
 
-    try:
-        # Carregar .env
-        load_dotenv(env_path)
+    # Teste model_dump
+    data = movie.model_dump()
+    assert isinstance(data, dict), "model_dump deve retornar dict"
+    assert data["titulo_dublado"] == "Matrix", "Título incorreto"
+    assert data["imdb"] == 8.7, "IMDB incorreto"
+    print("  ✓ model_dump funciona")
 
-        value = os.getenv("TEST_VAR")
-        assert value == "test_value_123", f"Esperado 'test_value_123', obtido '{value}'"
-        print(f"  ✓ Variável carregada: TEST_VAR={value}")
+    # Verificar todos os campos
+    required_fields = [
+        "titulo_dublado",
+        "titulo_original",
+        "imdb",
+        "ano",
+        "genero",
+        "tamanho",
+        "duracao_minutos",
+        "qualidade_video",
+        "qualidade",
+        "dublado",
+        "sinopse",
+        "link",
+    ]
 
-        # Limpar variável
-        if "TEST_VAR" in os.environ:
-            del os.environ["TEST_VAR"]
+    for field in required_fields:
+        assert field in data, f"Campo '{field}' não encontrado"
 
-    finally:
-        # Cleanup
-        os.unlink(env_path)
+    print(f"  ✓ Todos os {len(required_fields)} campos presentes")
 
 
 def test_prefect_flow_structure():
     """Testa estrutura do Prefect Flow"""
     print("Testando estrutura do Prefect Flow...")
 
-    from src.flows.prefect_flow_gratis import (
+    from src.scrapers.gratis_torrent.flow import (
         gratis_torrent_flow,
-        run_gratis_scraper,
-        insert_movies,
-        get_stats,
-        export_to_bigquery,
+        scrape_movies_task,
+        load_to_bigquery_task,
     )
-    import inspect
 
     # Verificar se é um flow
     print(f"  ✓ Flow: {gratis_torrent_flow.name}")
 
-    # Verificar parâmetros
-    sig = inspect.signature(gratis_torrent_flow.fn)
-    params = list(sig.parameters.keys())
-    assert "export_bq" in params, "Parâmetro 'export_bq' não encontrado"
-    print(f"  ✓ Parâmetros: {', '.join(params)}")
-
     # Verificar tasks
     tasks = [
-        (run_gratis_scraper, "Run GratisTorrent Scraper"),
-        (insert_movies, "Insert into database"),
-        (get_stats, "Get Movie Stats"),
-        (export_to_bigquery, "Export to BigQuery"),
+        (scrape_movies_task, "scrape-movies"),
+        (load_to_bigquery_task, "load-to-bigquery"),
     ]
 
     for task, expected_name in tasks:
         assert task.name == expected_name, f"Nome da task incorreto: {task.name}"
         print(f"  ✓ Task: {task.name}")
+
+    # Verificar retries configurados
+    assert scrape_movies_task.retries == 2, "scrape_movies_task deve ter 2 retries"
+    assert load_to_bigquery_task.retries == 3, "load_to_bigquery_task deve ter 3 retries"
+    print("  ✓ Retries configurados corretamente")
+
+
+def test_http_client_functions():
+    """Testa funções do http_client"""
+    print("Testando funções do http_client...")
+
+    from src.scrapers.gratis_torrent.http_client import collect_movie_links
+    from bs4 import BeautifulSoup
+
+    # Teste collect_movie_links com HTML mockado
+    html = """
+    <html>
+        <div id="capas_pequenas">
+            <div><a href="https://example.com/movie1">Movie 1</a></div>
+            <div><a href="https://example.com/movie2">Movie 2</a></div>
+            <div><a href="https://example.com/movie1">Movie 1 Again</a></div>
+        </div>
+    </html>
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    links = collect_movie_links(soup)
+
+    assert len(links) == 2, "Deduplicação de links falhou"
+    assert "https://example.com/movie1" in links
+    assert "https://example.com/movie2" in links
+    print(f"  ✓ collect_movie_links funciona (encontrou {len(links)} links únicos)")
+
+
+def test_bigquery_schema():
+    """Testa schema do BigQuery"""
+    print("Testando schema do BigQuery...")
+
+    import json
+    from src.scrapers.gratis_torrent.config import Config
+
+    # Carregar schema
+    schema_file = Config.SCHEMA_FILE
+    assert schema_file.exists(), f"Schema file não encontrado: {schema_file}"
+
+    with open(schema_file, "r") as f:
+        schema = json.load(f)
+
+    # Verificar estrutura do schema
+    assert isinstance(schema, list), "Schema deve ser uma lista"
+    print(f"  ✓ Schema carregado com {len(schema)} campos")
+
+    # Verificar campos essenciais
+    field_names = [field["name"] for field in schema]
+    required_fields = [
+        "titulo_dublado",
+        "titulo_original",
+        "imdb",
+        "ano",
+        "genero",
+        "tamanho",
+        "duracao_minutos",
+        "qualidade_video",
+        "qualidade",
+        "dublado",
+        "sinopse",
+        "link",
+        "date_updated",
+    ]
+
+    for field in required_fields:
+        assert field in field_names, f"Campo '{field}' não encontrado no schema"
+
+    print(f"  ✓ Todos os {len(required_fields)} campos essenciais presentes")
+
+    # Verificar tipos de dados
+    type_mapping = {
+        "titulo_dublado": "STRING",
+        "imdb": "FLOAT64",
+        "ano": "INT64",
+        "dublado": "BOOL",
+        "date_updated": "TIMESTAMP",
+    }
+
+    for field_name, expected_type in type_mapping.items():
+        field = next(f for f in schema if f["name"] == field_name)
+        assert field["type"] == expected_type, f"Tipo incorreto para {field_name}"
+
+    print("  ✓ Tipos de dados corretos no schema")
 
 
 # =============================================================================
@@ -424,12 +401,13 @@ def main():
 
     # Executar testes
     runner.test("1. Importações dos Módulos", test_imports)
-    runner.test("2. Schema do Banco de Dados", test_database_schema)
-    runner.test("3. Validação Pydantic", test_pydantic_validation)
-    runner.test("4. Inserção no Banco", test_database_insertion)
-    runner.test("5. Deduplicação", test_deduplication)
-    runner.test("6. Carregamento de .env", test_env_loading)
-    runner.test("7. Estrutura do Prefect Flow", test_prefect_flow_structure)
+    runner.test("2. Validação Pydantic", test_pydantic_validation)
+    runner.test("3. Configurações", test_config)
+    runner.test("4. Funções do Parser", test_parser_functions)
+    runner.test("5. Serialização do Modelo", test_model_serialization)
+    runner.test("6. Estrutura do Prefect Flow", test_prefect_flow_structure)
+    runner.test("7. Funções do HTTP Client", test_http_client_functions)
+    runner.test("8. Schema do BigQuery", test_bigquery_schema)
 
     # Resumo
     success = runner.summary()
