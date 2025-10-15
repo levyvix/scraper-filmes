@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from scrapling.fetchers import StealthySession
-from scrapling.parser import Adaptor
+from scrapling.parser import Adaptor, Selector
 from pydantic import BaseModel, Field, ValidationError
 from diskcache import Cache
 
@@ -30,7 +30,7 @@ def fetch_page_html(url: str) -> tuple[str, str] | None:
     """Fetch HTML content from a web page with stealth settings. Returns (html, url) tuple."""
     try:
         with StealthySession(headless=True, solve_cloudflare=True) as session:
-            page = session.fetch(url)
+            page: Selector = session.fetch(url)
             return (page.html_content, url)
     except Exception as error:
         print(f"Error: Failed to fetch page from {url}")
@@ -38,7 +38,7 @@ def fetch_page_html(url: str) -> tuple[str, str] | None:
         return None
 
 
-def fetch_page(url: str):
+def fetch_page(url: str) -> Adaptor | None:
     """Fetch a web page and return an Adaptor object for parsing."""
     result = fetch_page_html(url)
     if result is None:
