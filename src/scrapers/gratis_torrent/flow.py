@@ -1,13 +1,26 @@
 """Prefect flow for GratisTorrent scraper pipeline."""
 
+import json
+
+from pathlib import Path
+
 from prefect import flow, task
+from prefect.cache_policies import INPUTS, TASK_SOURCE
 from loguru import logger
 
 from src.scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
 from src.scrapers.gratis_torrent.scraper import scrape_all_movies
+from src.scrapers.gratis_torrent.config import Config
+from datetime import timedelta
 
 
-@task(name="scrape-movies", retries=2, retry_delay_seconds=30)
+@task(
+    name="scrape-movies",
+    retries=2,
+    retry_delay_seconds=30,
+    cache_policy=INPUTS + TASK_SOURCE,
+    cache_expiration=timedelta(hours=1),
+)
 def scrape_movies_task() -> list[dict]:
     """
     Task to scrape all movies from GratisTorrent.
@@ -21,8 +34,16 @@ def scrape_movies_task() -> list[dict]:
     return movies
 
 
+def load_jsonl(path: Path) -> list[dict]:
+    items = []
+    with open(path, "r") as f:
+        for line in f:
+            items.append(json.loads(line))
+    return items
+
+
 @task(name="load-to-bigquery", retries=3, retry_delay_seconds=60)
-def load_to_bigquery_task(movies: list[dict]) -> int:
+def load_to_bigquery_task(movies_path: Path) -> int:
     """
     Task to load movies to BigQuery.
 
@@ -33,6 +54,7 @@ def load_to_bigquery_task(movies: list[dict]) -> int:
         Number of rows affected in BigQuery
     """
     logger.info("Starting BigQuery load task")
+    movies = load_jsonl(movies_path)
     rows_affected = load_movies_to_bigquery(movies)
     logger.info(f"Loaded {rows_affected} new movies to BigQuery")
     return rows_affected
@@ -54,15 +76,21 @@ def gratis_torrent_flow() -> dict:
     # Scrape movies
     movies = scrape_movies_task()
 
+    # Save to disk
+    # save jsonl
+    with open(Config.MOVIES_JSON_PATH, "w") as f:
+        for movie in movies:
+            f.write(f"{movie}\n")
+
     # Load to BigQuery
-    rows_affected = load_to_bigquery_task(movies)
+    rows_affected = load_to_bigquery_task(Config.MOVIES_JSON_PATH)
 
     result = {
         "movies_scraped": len(movies),
         "rows_loaded": rows_affected,
     }
 
-    logger.info(f"Flow completed successfully: {result}")
+    logger.success(f"Flow completed successfully: {result}")
     return result
 
 

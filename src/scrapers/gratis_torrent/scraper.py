@@ -22,11 +22,11 @@ def scrape_movie_links() -> list[str]:
     """
     soup = fetch_page(Config.BASE_URL)
     if not soup:
-        logger.error(f"Cannot access {Config.BASE_URL}")
+        logger.error(f"Cannot access {Config.BASE_URL}. Returning empty list")
         return []
 
     links = collect_movie_links(soup)
-    logger.info(f"Found {len(links)} unique movie links")
+    logger.info(f"Found {len(links)} unique movie links. Scraping details...")
     return links
 
 

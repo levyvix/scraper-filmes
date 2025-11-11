@@ -33,12 +33,13 @@ def load_schema() -> list[bigquery.SchemaField]:
         FileNotFoundError: If schema file is not found
     """
     if not Config.SCHEMA_FILE.exists():
-        raise FileNotFoundError(f"Schema file not found at {Config.SCHEMA_FILE}")
+        raise FileNotFoundError(
+            f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}"
+        )
 
-    with open(Config.SCHEMA_FILE, "r") as f:
-        schema = json.load(f)
+    schema = json.loads(Config.SCHEMA_FILE.read_text("utf-8"))
 
-    logger.info(f"Schema loaded from {Config.SCHEMA_FILE}")
+    logger.info(f"Schema loaded from {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}")
     return schema
 
 
@@ -70,7 +71,9 @@ def delete_table(client: bigquery.Client, table_name: str) -> None:
     logger.info(f"Table {table_id} deleted")
 
 
-def create_table(client: bigquery.Client, table_name: str, force_recreate: bool = False) -> None:
+def create_table(
+    client: bigquery.Client, table_name: str, force_recreate: bool = False
+) -> None:
     """
     Create BigQuery table if it doesn't exist.
 
@@ -80,13 +83,13 @@ def create_table(client: bigquery.Client, table_name: str, force_recreate: bool 
         force_recreate: If True, delete and recreate the table
     """
     table_id = Config.get_full_table_id(table_name)
-    schema = load_schema()
+    schema: list[bigquery.SchemaField] = load_schema()
 
     if force_recreate:
         delete_table(client, table_name)
 
-    table = bigquery.Table(table_id, schema=schema)
-    client.create_table(table, exists_ok=True)
+    table_reference = bigquery.Table(table_id, schema=schema)
+    client.create_table(table_reference, exists_ok=True)
     logger.info(f"Table {table_id} ready")
 
 

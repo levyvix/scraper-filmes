@@ -46,4 +46,4 @@ def collect_movie_links(soup: BeautifulSoup) -> list[str]:
             links.append(link)
 
     # Remove duplicates while preserving order
-    return list(dict.fromkeys(links))
+    return list(set(links))
