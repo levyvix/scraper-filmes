@@ -18,12 +18,8 @@ class Movie(BaseModel):
     genero: str | None = None
     tamanho: str | None = None
     duracao: str | None = None
-    qualidade_video: float | None = Field(
-        None, ge=0, description="Video quality score (0-10)"
-    )
-    qualidade: str | None = Field(
-        None, description="Quality description (e.g., '1080p', '720p BluRay')"
-    )
+    qualidade_video: float | None = Field(None, ge=0, description="Video quality score (0-10)")
+    qualidade: str | None = Field(None, description="Quality description (e.g., '1080p', '720p BluRay')")
     dublado: bool | None = None
     sinopse: str | None = None
     link: str | None = None
@@ -114,14 +110,10 @@ def parse_detail(link: str) -> Movie | None:
         print(f"Details: Expected 12 fields, found {len(info_texts)}")
         return None
 
-    imdb_text = extract_text_or_none(
-        page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(7)::text"
-    )
+    imdb_text = extract_text_or_none(page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(7)::text")
     imdb_rating = parse_rating(imdb_text)
 
-    year_text = extract_text_or_none(
-        page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(10)::text"
-    )
+    year_text = extract_text_or_none(page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(10)::text")
     # TODO: consertar busca por ano do filme
     year = parse_year(year_text)
     if not year:
@@ -178,9 +170,7 @@ def main():
     links = get_movie_links(base_url)
 
     if not links:
-        print(
-            "Error: No movie links found. Please check the website or your connection."
-        )
+        print("Error: No movie links found. Please check the website or your connection.")
         return
 
     print(f"Found {len(links)} movie links. Starting to scrape...")

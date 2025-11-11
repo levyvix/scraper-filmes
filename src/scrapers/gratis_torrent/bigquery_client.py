@@ -33,9 +33,7 @@ def load_schema() -> list[bigquery.SchemaField]:
         FileNotFoundError: If schema file is not found
     """
     if not Config.SCHEMA_FILE.exists():
-        raise FileNotFoundError(
-            f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}"
-        )
+        raise FileNotFoundError(f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}")
 
     schema = json.loads(Config.SCHEMA_FILE.read_text("utf-8"))
 
@@ -71,9 +69,7 @@ def delete_table(client: bigquery.Client, table_name: str) -> None:
     logger.info(f"Table {table_id} deleted")
 
 
-def create_table(
-    client: bigquery.Client, table_name: str, force_recreate: bool = False
-) -> None:
+def create_table(client: bigquery.Client, table_name: str, force_recreate: bool = False) -> None:
     """
     Create BigQuery table if it doesn't exist.
 
