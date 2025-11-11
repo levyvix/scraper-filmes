@@ -18,8 +18,12 @@ class Movie(BaseModel):
     genero: str | None = None
     tamanho: str | None = None
     duracao: str | None = None
-    qualidade_video: float | None = Field(None, ge=0, description="Video quality score (0-10)")
-    qualidade: str | None = Field(None, description="Quality description (e.g., '1080p', '720p BluRay')")
+    qualidade_video: float | None = Field(
+        None, ge=0, description="Video quality score (0-10)"
+    )
+    qualidade: str | None = Field(
+        None, description="Quality description (e.g., '1080p', '720p BluRay')"
+    )
     dublado: bool | None = None
     sinopse: str | None = None
     link: str | None = None
@@ -48,7 +52,7 @@ def fetch_page(url: str) -> Adaptor | None:
     return Adaptor(html, url=original_url)
 
 
-def extract_text_or_none(page, selector: str) -> str | None:
+def extract_text_or_none(page: Adaptor, selector: str) -> str | None:
     """Extract text from CSS selector, return None if empty or missing."""
     result = page.css_first(selector)
     if not result:
@@ -110,10 +114,15 @@ def parse_detail(link: str) -> Movie | None:
         print(f"Details: Expected 12 fields, found {len(info_texts)}")
         return None
 
-    imdb_text = extract_text_or_none(page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(7)::text")
+    imdb_text = extract_text_or_none(
+        page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(7)::text"
+    )
     imdb_rating = parse_rating(imdb_text)
 
-    year_text = extract_text_or_none(page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(10)::text")
+    year_text = extract_text_or_none(
+        page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(10)::text"
+    )
+    # TODO: consertar busca por ano do filme
     year = parse_year(year_text)
     if not year:
         year_fallback = safe_list_get(info_texts, 3)
@@ -169,7 +178,9 @@ def main():
     links = get_movie_links(base_url)
 
     if not links:
-        print("Error: No movie links found. Please check the website or your connection.")
+        print(
+            "Error: No movie links found. Please check the website or your connection."
+        )
         return
 
     print(f"Found {len(links)} movie links. Starting to scrape...")
@@ -187,7 +198,11 @@ def main():
         return
 
     json_path = Path(__file__).parent / "movies.json"
-    json_data = json.dumps([movie.model_dump(mode="json") for movie in list_movies], indent=2, ensure_ascii=False)
+    json_data = json.dumps(
+        [movie.model_dump(mode="json") for movie in list_movies],
+        indent=2,
+        ensure_ascii=False,
+    )
     json_path.write_text(json_data, encoding="utf-8")
 
     print(f"Success: Saved {len(list_movies)} movies to {json_path}")
