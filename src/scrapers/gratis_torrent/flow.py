@@ -38,6 +38,7 @@ def load_jsonl(path: Path) -> list[dict]:
     items = []
     with open(path, "r") as f:
         for line in f:
+            line = line.replace("'", '"')  # Ensure proper JSON format
             items.append(json.loads(line))
     return items
 
