@@ -11,3 +11,4 @@ comando_cache/
 .mypy_cache/
 .pytest_cache/
 .venv
+movie_cache

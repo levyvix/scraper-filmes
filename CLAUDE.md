@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Prerequisites
 - Python 3.11+
-- UV for dependency management (see `.claude/CLAUDE.md` for conventions)
+- UV for dependency management
 
 ### Setup
 ```bash
@@ -72,16 +72,22 @@ Cloud Storage (movies_raw.filmes dataset)
 
 ### Key Components
 
-1. **Data Models** (`src/scrapers/gratis_torrent/models.py`)
+1. **Data Models** (`src/utils/models.py`)
    - `Movie`: Pydantic BaseModel with 12 fields
    - Field validations: IMDB (0-10), year (≥1888), duration (≥1 min)
    - All fields nullable by design for partial data
 
 2. **Parser** (`src/scrapers/gratis_torrent/parser.py`)
+   - Utilizes functions from `src/utils/parse_utils.py` for common parsing tasks
    - Regex-based field extraction (12 patterns)
    - Safe type conversions (float, int) with fallbacks
    - Functions: `extract_movie_fields()`, `parse_movie_page()`, `clean_genre()`, etc.
    - Handles partial failures gracefully
+
+3. **Utility Parsing Functions** (`src/utils/parse_utils.py`)
+   - `parse_rating()`: Converts rating text to float
+   - `parse_year()`: Converts year text to integer
+   - Provides robust type conversion with error handling for common fields
 
 3. **HTTP Client** (`src/scrapers/gratis_torrent/http_client.py`)
    - `fetch_page()`: BeautifulSoup wrapper with 40s timeout
@@ -237,7 +243,7 @@ Both share: Pydantic validation, similar data models, error handling patterns
 
 ## Useful References
 
-- Data Models: `src/scrapers/gratis_torrent/models.py:1-50`
+- Data Models: `src/utils/models.py`
 - Parser entry point: `src/scrapers/gratis_torrent/parser.py:parse_movie_page()`
 - Scraper entry point: `src/scrapers/gratis_torrent/scraper.py:scrape_all_movies()`
 - Flow definition: `src/scrapers/gratis_torrent/flow.py:gratis_torrent_flow()`

@@ -59,7 +59,7 @@ def check_credentials():
     return False
 
 
-def test_connection():
+def _test_bigquery_connection():
     """Testa conexão com o BigQuery"""
     logger.info("Testando conexão com BigQuery...")
 
@@ -99,7 +99,7 @@ def main():
         return 1
 
     # Step 2: Test connection
-    if not test_connection():
+    if not _test_bigquery_connection():
         logger.error("\nFalha na conexão. Verifique:")
         logger.info("1. Se você tem acesso ao projeto 'galvanic-flame-384620'")
         logger.info("2. Se as permissões do BigQuery estão configuradas")

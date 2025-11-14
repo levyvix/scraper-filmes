@@ -118,12 +118,12 @@ def parse_detail(link: str) -> Movie | None:
 
     try:
         movie = Movie(
-            titulo_dublado=safe_list_get(info_texts, 0).replace(":", "").strip(),
+            titulo_dublado=safe_list_get(info_texts, 0).replace("Titulo Dublado:", "").strip(),
             titulo_original=safe_list_get(info_texts, 1).replace(":", "").strip(),
             imdb=str(imdb_rating) if imdb_rating else None,
             ano=year,
             genero=safe_list_get(info_texts, 4).replace(":", "").strip(),
-            qualidade=safe_list_get(info_texts, 6).strip(),
+            qualidade=safe_list_get(info_texts, 8).replace("Quality:", "").strip(),
             dublado=is_dubbed,
             tamanho=safe_list_get(info_texts, 9).strip(),
             duracao=safe_list_get(info_texts, 10).strip(),
@@ -146,7 +146,8 @@ def get_movie_links(url: str) -> list[str]:
         if not page:
             return []
         links = page.css("article > header > h2 > a::attr(href)")
-        return [str(link) for link in links]
+        config = Config() # Instantiate Config to get base_url
+        return [f"{config.base_url}{link}" if link.startswith('/') else link for link in links]
     except Exception as error:
         print(f"Error: Failed to fetch movie links from {url}")
         print(f"Details: {error}")
