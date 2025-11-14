@@ -77,7 +77,6 @@ def gratis_torrent_flow() -> dict:
     movies = scrape_movies_task()
 
     # Save to disk
-    # save jsonl
     with open(Config.MOVIES_JSON_PATH, "w") as f:
         for movie in movies:
             f.write(json.dumps(movie) + "\n")

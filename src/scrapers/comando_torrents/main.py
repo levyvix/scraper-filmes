@@ -44,29 +44,6 @@ def extract_text_or_none(page: Adaptor, selector: str) -> str | None:
     return text if text else None
 
 
-# def parse_year(year_text: str | None) -> int | None:
-#     """Convert year text to integer, return None if invalid."""
-#     if not year_text:
-#         return None
-
-#     clean_year = year_text.strip()
-#     if not clean_year.isdigit():
-#         return None
-
-#     return int(clean_year)
-
-
-# def parse_rating(rating_text: str | None) -> float | None:
-#     """Convert rating text to float, return None if invalid."""
-#     if not rating_text:
-#         return None
-
-#     try:
-#         return float(rating_text.replace(",", ".").strip())
-#     except ValueError:
-#         return None
-
-
 def safe_list_get(items: list, index: int, default: str = "") -> str:
     """Safely get item from list by index, return default if out of range."""
     if index < 0 or index >= len(items):
@@ -146,8 +123,15 @@ def get_movie_links(url: str) -> list[str]:
         if not page:
             return []
         links = page.css("article > header > h2 > a::attr(href)")
-        config = Config() # Instantiate Config to get base_url
-        return [f"{config.base_url}{link}" if link.startswith('/') else link for link in links]
+        config = Config()
+        movie_links = []
+        for link in links:
+            if str(link).startswith('/'):
+                movie_links.append(config.URL_BASE + str(link))
+            else:
+                movie_links.append(link)
+
+        return movie_links
     except Exception as error:
         print(f"Error: Failed to fetch movie links from {url}")
         print(f"Details: {error}")
