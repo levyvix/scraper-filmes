@@ -38,7 +38,6 @@ def load_jsonl(path: Path) -> list[dict]:
     items = []
     with open(path, "r") as f:
         for line in f:
-            line = line.replace("'", '"')  # Ensure proper JSON format
             items.append(json.loads(line))
     return items
 
@@ -97,4 +96,4 @@ def gratis_torrent_flow() -> dict:
 
 
 if __name__ == "__main__":
-    gratis_torrent_flow()
+    gratis_torrent_flow.serve("local-deploy", cron="* * * * *")
