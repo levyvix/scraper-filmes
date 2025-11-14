@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Script to run the GratisTorrent scraper standalone (no Prefect server required).
 
@@ -8,8 +7,8 @@ For Prefect-managed runs, use: prefect deploy -n default
 
 from loguru import logger
 
-from src.scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
-from src.scrapers.gratis_torrent.scraper import scrape_all_movies
+from scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
+from scrapers.gratis_torrent.scraper import scrape_all_movies
 
 
 def main() -> dict:
