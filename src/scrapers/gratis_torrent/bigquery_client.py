@@ -2,6 +2,7 @@
 
 import json
 import warnings
+from datetime import datetime
 
 from google.cloud import bigquery
 from loguru import logger
@@ -10,6 +11,13 @@ from scrapers.gratis_torrent.config import Config
 
 # Suppress quota project warning for user credentials
 warnings.filterwarnings("ignore", message=".*quota project.*")
+
+
+def _json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
 
 
 def get_client() -> bigquery.Client:
@@ -146,8 +154,11 @@ def load_data_to_staging(client: bigquery.Client, data: list[dict]) -> None:
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
     )
 
-    logger.info(f"Loading {len(data)} movies to staging table")
-    load_job = client.load_table_from_json(data, table_ref, job_config=job_config)
+    # Convert datetime objects to ISO 8601 strings for JSON serialization
+    serialized_data = json.loads(json.dumps(data, default=_json_serial))
+
+    logger.info(f"Loading {len(serialized_data)} movies to staging table")
+    load_job = client.load_table_from_json(serialized_data, table_ref, job_config=job_config)
     load_job.result()
 
     logger.info("Data loaded to staging table successfully")
