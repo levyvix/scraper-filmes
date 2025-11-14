@@ -112,6 +112,10 @@ def parse_detail(link: str) -> Movie | None:
     audio_text = safe_list_get(info_texts, 7, "").strip()
     is_dubbed = "Português" in audio_text
 
+    poster_url_selector = "div.entry-content.cf img::attr(src)"
+    poster_url_result = page.css_first(poster_url_selector)
+    poster_url = str(poster_url_result).strip() if poster_url_result else None
+
     try:
         movie = Movie(
             titulo_dublado=safe_list_get(info_texts, 0).replace(":", "").strip(),
@@ -126,6 +130,7 @@ def parse_detail(link: str) -> Movie | None:
             qualidade_video=parse_rating(safe_list_get(info_texts, 11)),
             sinopse=sinopse.replace(":", "").strip() if sinopse else None,
             link=link,
+            poster_url=poster_url,
         )
         return movie
     except ValidationError as error:

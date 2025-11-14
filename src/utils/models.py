@@ -16,3 +16,4 @@ class Movie(BaseModel):
     dublado: bool | None = None
     sinopse: str | None = None
     link: str | None = None
+    poster_url: str | None = None
