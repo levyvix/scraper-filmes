@@ -1,3 +1,3 @@
 class Config:
-    URL_BASE = "https://comando.la/category/filmes/"
-    JSON_FILE_NAME = "movies.json"
+    URL_BASE: str = "https://comando.la/category/filmes/"
+    JSON_FILE_NAME: str = "movies.json"

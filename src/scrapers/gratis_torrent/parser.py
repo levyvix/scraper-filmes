@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from pydantic import ValidationError
 
-from src.scrapers.gratis_torrent.models import Movie
+from scrapers.gratis_torrent.models import Movie
 
 
 def extract_regex_field(pattern: str, text: str, group: int = 1) -> str | None:

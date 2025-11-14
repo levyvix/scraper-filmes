@@ -174,11 +174,16 @@ def main():
         print("Error: No movies were successfully scraped.")
         return
 
+    json_path = save_to_json(config, list_movies)
+
+    print(f"Success: Saved {len(list_movies)} movies to {json_path}")
+
+
+def save_to_json(config, list_movies: list[Movie]):
     json_path = Path(__file__).parent / config.JSON_FILE_NAME
     json_data = json.dumps([movie.model_dump(mode="json") for movie in list_movies], indent=2, ensure_ascii=False)
     json_path.write_text(json_data, encoding="utf-8")
-
-    print(f"Success: Saved {len(list_movies)} movies to {json_path}")
+    return json_path
 
 
 if __name__ == "__main__":

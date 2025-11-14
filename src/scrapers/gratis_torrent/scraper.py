@@ -2,10 +2,10 @@
 
 from loguru import logger
 
-from src.scrapers.gratis_torrent.config import Config
-from src.scrapers.gratis_torrent.http_client import collect_movie_links, fetch_page
-from src.scrapers.gratis_torrent.models import Movie
-from src.scrapers.gratis_torrent.parser import parse_movie_page
+from scrapers.gratis_torrent.config import Config
+from scrapers.gratis_torrent.http_client import collect_movie_links, fetch_page
+from scrapers.gratis_torrent.models import Movie
+from scrapers.gratis_torrent.parser import parse_movie_page
 
 from diskcache import Cache
 
