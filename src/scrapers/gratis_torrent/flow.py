@@ -81,7 +81,8 @@ def gratis_torrent_flow() -> dict:
     # save jsonl
     with open(Config.MOVIES_JSON_PATH, "w") as f:
         for movie in movies:
-            f.write(f"{movie}\n")
+            f.write(json.dumps(movie) + "\n")
+    logger.info(f"Saved scraped movies to {Config.MOVIES_JSON_PATH}")
 
     # Load to BigQuery
     rows_affected = load_to_bigquery_task(Config.MOVIES_JSON_PATH)
