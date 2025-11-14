@@ -1,5 +1,7 @@
 """Data models for movie information."""
 
+from datetime import datetime, timezone
+
 from pydantic import BaseModel, Field
 
 
@@ -18,3 +20,5 @@ class Movie(BaseModel):
     dublado: bool | None = None
     sinopse: str | None = None
     link: str | None = None
+    poster_url: str | None = None
+    date_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

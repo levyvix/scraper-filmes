@@ -37,7 +37,7 @@ uv run src/scrapers/comando_torrents/main.py
 - ✅ Scraping automático do site GratisTorrent
 - ✅ Validação de dados com Pydantic
 - ✅ Workflow orquestrado com Prefect
-- ✅ Exportação opcional para Google BigQuery
+- ✅ Exportação opcional para Google BigQuery, com atualização dinâmica de esquema para novas colunas sem perda de dados.
 - ✅ Suporte a retry e tratamento de erros
 
 ### Comando Torrents Scraper

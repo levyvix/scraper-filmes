@@ -83,12 +83,14 @@ O script cria automaticamente:
 | dublado          | BOOLEAN | REQUIRED |
 | sinopse          | STRING  | REQUIRED |
 | link             | STRING  | REQUIRED |
+| poster_url       | STRING  | NULLABLE |
+| date_updated     | TIMESTAMP | NULLABLE |
 
 ## Processo de Importação
 
-1. **Criar Dataset e Tabelas**: Se não existirem
+1. **Criar Dataset e Tabelas**: Se não existirem. A tabela principal (`filmes`) agora suporta atualização de esquema para adicionar novas colunas sem perda de dados.
 2. **Load**: Carrega `movies_gratis.json` → `stg_filmes`
-3. **Merge**: Insere apenas novos filmes (baseado no link)
+3. **Merge**: Insere novos filmes e atualiza filmes existentes (baseado no link), incluindo as colunas `poster_url` e `date_updated`. A coluna `date_updated` é preenchida automaticamente com o timestamp atual no BigQuery.
 4. **Truncate**: Limpa a tabela staging
 
 ## Verificando os Dados

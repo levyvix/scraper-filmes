@@ -35,7 +35,15 @@ def load_schema() -> list[bigquery.SchemaField]:
     if not Config.SCHEMA_FILE.exists():
         raise FileNotFoundError(f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}")
 
-    schema = json.loads(Config.SCHEMA_FILE.read_text("utf-8"))
+    schema_raw = json.loads(Config.SCHEMA_FILE.read_text("utf-8"))
+    schema = [
+        bigquery.SchemaField(
+            name=field["name"],
+            field_type=field["type"],
+            mode=field["mode"],
+        )
+        for field in schema_raw
+    ]
 
     logger.info(f"Schema loaded from {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}")
     return schema
@@ -83,10 +91,43 @@ def create_table(client: bigquery.Client, table_name: str, force_recreate: bool 
 
     if force_recreate:
         delete_table(client, table_name)
+        table_reference = bigquery.Table(table_id, schema=schema)
+        client.create_table(table_reference)
+        logger.info(f"Table {table_id} recreated with new schema")
+        return
 
-    table_reference = bigquery.Table(table_id, schema=schema)
-    client.create_table(table_reference, exists_ok=True)
-    logger.info(f"Table {table_id} ready")
+    try:
+        table = client.get_table(table_id)
+        current_schema_fields = {field.name: field for field in table.schema}
+        new_schema_fields = {field.name: field for field in schema}
+
+        fields_to_add = []
+        for field_name, field_definition in new_schema_fields.items():
+            if field_name not in current_schema_fields:
+                fields_to_add.append(
+                    bigquery.SchemaField(
+                        name=field_definition.name,
+                        field_type=str(field_definition.field_type),
+                        mode=str(field_definition.mode),
+                    )
+                )
+
+        if fields_to_add:
+            updated_schema = table.schema + fields_to_add
+            table.schema = updated_schema
+            client.update_table(table, ["schema"])
+            logger.info(f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}")
+        else:
+            logger.info(f"Table {table_id} already exists and schema is up to date.")
+
+    except Exception as e:
+        if "Not found: Table" in str(e):
+            table_reference = bigquery.Table(table_id, schema=schema)
+            client.create_table(table_reference)
+            logger.info(f"Table {table_id} created with new schema")
+        else:
+            logger.error(f"Error creating or updating table {table_id}: {e}")
+            raise
 
 
 def load_data_to_staging(client: bigquery.Client, data: list[dict]) -> None:
@@ -129,6 +170,21 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
     MERGE INTO `{target_table}` AS target
     USING `{source_table}` AS source
     ON target.link = source.link
+    WHEN MATCHED THEN
+    UPDATE SET
+        target.titulo_dublado = source.titulo_dublado,
+        target.titulo_original = source.titulo_original,
+        target.imdb = source.imdb,
+        target.ano = source.ano,
+        target.genero = source.genero,
+        target.tamanho = source.tamanho,
+        target.duracao_minutos = source.duracao_minutos,
+        target.qualidade_video = source.qualidade_video,
+        target.qualidade = source.qualidade,
+        target.dublado = source.dublado,
+        target.sinopse = source.sinopse,
+        target.poster_url = source.poster_url,
+        target.date_updated = CURRENT_TIMESTAMP()
     WHEN NOT MATCHED THEN
     INSERT (
         titulo_dublado,
@@ -142,7 +198,9 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
         qualidade,
         dublado,
         sinopse,
-        link
+        link,
+        poster_url,
+        date_updated
     )
     VALUES (
         source.titulo_dublado,
@@ -156,7 +214,9 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
         source.qualidade,
         source.dublado,
         source.sinopse,
-        source.link
+        source.link,
+        source.poster_url,
+        CURRENT_TIMESTAMP()
     );
     """
 

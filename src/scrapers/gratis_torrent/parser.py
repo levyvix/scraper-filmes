@@ -9,6 +9,22 @@ from pydantic import ValidationError
 from scrapers.gratis_torrent.models import Movie
 
 
+def extract_poster_url(soup: BeautifulSoup) -> str | None:
+    """
+    Extract the poster URL from the movie page.
+
+    Args:
+        soup: BeautifulSoup object of the page
+
+    Returns:
+        Poster URL string or None if not found
+    """
+    poster_element = soup.select_one("body > div:nth-child(3) > div > div.col-12.col-sm-8.col-lg-9.my-1 > img")
+    if poster_element and "src" in poster_element.attrs:
+        return poster_element["src"]
+    return None
+
+
 def extract_regex_field(pattern: str, text: str, group: int = 1) -> str | None:
     """
     Extract a single field using regex.
@@ -138,7 +154,7 @@ def clean_genre(genre: str | None) -> str | None:
     return genre.replace(" / ", ", ")
 
 
-def create_movie_object(extracted: dict, info_text: str, sinopse: str | None, url: str) -> Movie | None:
+def create_movie_object(extracted: dict, info_text: str, sinopse: str | None, url: str, poster_url: str | None) -> Movie | None:
     """
     Create and validate Movie object from extracted data.
 
@@ -147,6 +163,7 @@ def create_movie_object(extracted: dict, info_text: str, sinopse: str | None, ur
         info_text: Raw info text (used to check for "Português")
         sinopse: Synopsis text
         url: Movie page URL
+        poster_url: URL of the movie poster
 
     Returns:
         Validated Movie object or None if validation fails
@@ -165,6 +182,7 @@ def create_movie_object(extracted: dict, info_text: str, sinopse: str | None, ur
             dublado="Português" in info_text,
             sinopse=sinopse,
             link=url,
+            poster_url=poster_url,
         )
         return movie
     except ValidationError as e:
@@ -200,5 +218,8 @@ def parse_movie_page(soup: BeautifulSoup, url: str) -> Movie | None:
     # Extract synopsis
     sinopse = extract_sinopse(soup)
 
+    # Extract poster URL
+    poster_url = extract_poster_url(soup)
+
     # Create and return movie object
-    return create_movie_object(extracted, info_text, sinopse, url)
+    return create_movie_object(extracted, info_text, sinopse, url, poster_url)

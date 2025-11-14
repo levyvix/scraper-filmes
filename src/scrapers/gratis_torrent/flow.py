@@ -96,4 +96,4 @@ def gratis_torrent_flow() -> dict:
 
 
 if __name__ == "__main__":
-    gratis_torrent_flow.serve("local-deploy", cron="* * * * *")
+    gratis_torrent_flow()

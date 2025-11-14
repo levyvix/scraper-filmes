@@ -63,5 +63,10 @@
         "name": "date_updated",
         "type": "TIMESTAMP",
         "mode": "NULLABLE"
+    },
+    {
+        "name": "poster_url",
+        "type": "STRING",
+        "mode": "NULLABLE"
     }
 ]
