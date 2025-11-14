@@ -2,27 +2,13 @@ import json
 from pathlib import Path
 from scrapling.fetchers import StealthySession
 from scrapling.parser import Adaptor, Selector
-from pydantic import BaseModel, Field, ValidationError
+from utils.parse_utils import parse_rating, parse_year
+from utils.models import Movie
+from scrapers.comando_torrents.config import Config
+from pydantic import ValidationError
 from diskcache import Cache
 
 cache = Cache("./comando_cache")
-
-
-class Movie(BaseModel):
-    """Movie data model with validation."""
-
-    titulo_dublado: str | None = None
-    titulo_original: str | None = None
-    imdb: str | None = None
-    ano: int | None = Field(None, ge=1888)
-    genero: str | None = None
-    tamanho: str | None = None
-    duracao: str | None = None
-    qualidade_video: float | None = Field(None, ge=0, description="Video quality score (0-10)")
-    qualidade: str | None = Field(None, description="Quality description (e.g., '1080p', '720p BluRay')")
-    dublado: bool | None = None
-    sinopse: str | None = None
-    link: str | None = None
 
 
 @cache.memoize()
@@ -58,27 +44,27 @@ def extract_text_or_none(page: Adaptor, selector: str) -> str | None:
     return text if text else None
 
 
-def parse_year(year_text: str | None) -> int | None:
-    """Convert year text to integer, return None if invalid."""
-    if not year_text:
-        return None
+# def parse_year(year_text: str | None) -> int | None:
+#     """Convert year text to integer, return None if invalid."""
+#     if not year_text:
+#         return None
 
-    clean_year = year_text.strip()
-    if not clean_year.isdigit():
-        return None
+#     clean_year = year_text.strip()
+#     if not clean_year.isdigit():
+#         return None
 
-    return int(clean_year)
+#     return int(clean_year)
 
 
-def parse_rating(rating_text: str | None) -> float | None:
-    """Convert rating text to float, return None if invalid."""
-    if not rating_text:
-        return None
+# def parse_rating(rating_text: str | None) -> float | None:
+#     """Convert rating text to float, return None if invalid."""
+#     if not rating_text:
+#         return None
 
-    try:
-        return float(rating_text.replace(",", ".").strip())
-    except ValueError:
-        return None
+#     try:
+#         return float(rating_text.replace(",", ".").strip())
+#     except ValueError:
+#         return None
 
 
 def safe_list_get(items: list, index: int, default: str = "") -> str:
@@ -164,10 +150,11 @@ def get_movie_links(url: str) -> list[str]:
 
 def main():
     """Main function to scrape movies and save to JSON."""
-    base_url = "https://comando.la/category/filmes/"
 
-    print(f"Fetching movie links from {base_url}")
-    links = get_movie_links(base_url)
+    config = Config()
+
+    print(f"Fetching movie links from {config.URL_BASE}")
+    links = get_movie_links(config.URL_BASE)
 
     if not links:
         print("Error: No movie links found. Please check the website or your connection.")
@@ -187,12 +174,8 @@ def main():
         print("Error: No movies were successfully scraped.")
         return
 
-    json_path = Path(__file__).parent / "movies.json"
-    json_data = json.dumps(
-        [movie.model_dump(mode="json") for movie in list_movies],
-        indent=2,
-        ensure_ascii=False,
-    )
+    json_path = Path(__file__).parent / config.JSON_FILE_NAME
+    json_data = json.dumps([movie.model_dump(mode="json") for movie in list_movies], indent=2, ensure_ascii=False)
     json_path.write_text(json_data, encoding="utf-8")
 
     print(f"Success: Saved {len(list_movies)} movies to {json_path}")
