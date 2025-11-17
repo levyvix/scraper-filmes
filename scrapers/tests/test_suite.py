@@ -69,42 +69,42 @@ def test_imports():
     """Testa importações dos módulos principais"""
     print("Testando importações...")
 
-    from src.scrapers.gratis_torrent.models import Movie  # noqa: F401
+    from scrapers.gratis_torrent.models import Movie  # noqa: F401
 
-    print("  ✓ src.scrapers.gratis_torrent.models")
+    print("  ✓ scrapers.gratis_torrent.models")
 
-    from src.scrapers.gratis_torrent.parser import parse_movie_page  # noqa: F401
+    from scrapers.gratis_torrent.parser import parse_movie_page  # noqa: F401
 
-    print("  ✓ src.scrapers.gratis_torrent.parser")
+    print("  ✓ scrapers.gratis_torrent.parser")
 
-    from src.scrapers.gratis_torrent.http_client import fetch_page  # noqa: F401
+    from scrapers.gratis_torrent.http_client import fetch_page  # noqa: F401
 
-    print("  ✓ src.scrapers.gratis_torrent.http_client")
+    print("  ✓ scrapers.gratis_torrent.http_client")
 
-    from src.scrapers.gratis_torrent.scraper import scrape_all_movies  # noqa: F401
+    from scrapers.gratis_torrent.scraper import scrape_all_movies  # noqa: F401
 
-    print("  ✓ src.scrapers.gratis_torrent.scraper")
+    print("  ✓ scrapers.gratis_torrent.scraper")
 
-    from src.scrapers.gratis_torrent.bigquery_client import (  # noqa: F401
+    from scrapers.gratis_torrent.bigquery_client import (  # noqa: F401
         load_movies_to_bigquery,
     )
 
-    print("  ✓ src.scrapers.gratis_torrent.bigquery_client")
+    print("  ✓ scrapers.gratis_torrent.bigquery_client")
 
-    from src.scrapers.gratis_torrent.flow import gratis_torrent_flow  # noqa: F401
+    from scrapers.gratis_torrent.flow import gratis_torrent_flow  # noqa: F401
 
-    print("  ✓ src.scrapers.gratis_torrent.flow")
+    print("  ✓ scrapers.gratis_torrent.flow")
 
-    from src.scrapers.gratis_torrent.config import Config  # noqa: F401
+    from scrapers.gratis_torrent.config import Config  # noqa: F401
 
-    print("  ✓ src.scrapers.gratis_torrent.config")
+    print("  ✓ scrapers.gratis_torrent.config")
 
 
 def test_pydantic_validation():
     """Testa validação do modelo Pydantic"""
     print("Testando validação Pydantic...")
 
-    from src.scrapers.gratis_torrent.models import Movie
+    from scrapers.gratis_torrent.models import Movie
     from pydantic import ValidationError
 
     # Teste 1: Dados válidos
@@ -171,7 +171,7 @@ def test_config():
     """Testa configurações do projeto"""
     print("Testando configurações...")
 
-    from src.scrapers.gratis_torrent.config import Config
+    from scrapers.gratis_torrent.config import Config
 
     # Verificar propriedades essenciais
     assert Config.GCP_PROJECT_ID is not None, "GCP_PROJECT_ID não configurado"
@@ -196,7 +196,7 @@ def test_parser_functions():
     """Testa funções do parser"""
     print("Testando funções do parser...")
 
-    from src.scrapers.gratis_torrent.parser import (
+    from scrapers.gratis_torrent.parser import (
         clean_genre,
         safe_convert_float,
         safe_convert_int,
@@ -228,7 +228,7 @@ def test_model_serialization():
     """Testa serialização do modelo"""
     print("Testando serialização do modelo...")
 
-    from src.scrapers.gratis_torrent.models import Movie
+    from scrapers.gratis_torrent.models import Movie
 
     movie = Movie(
         titulo_dublado="Matrix",
@@ -278,7 +278,7 @@ def test_prefect_flow_structure():
     """Testa estrutura do Prefect Flow"""
     print("Testando estrutura do Prefect Flow...")
 
-    from src.scrapers.gratis_torrent.flow import (
+    from scrapers.gratis_torrent.flow import (
         gratis_torrent_flow,
         scrape_movies_task,
         load_to_bigquery_task,
@@ -307,7 +307,7 @@ def test_http_client_functions():
     """Testa funções do http_client"""
     print("Testando funções do http_client...")
 
-    from src.scrapers.gratis_torrent.http_client import collect_movie_links
+    from scrapers.gratis_torrent.http_client import collect_movie_links
     from bs4 import BeautifulSoup
 
     # Teste collect_movie_links com HTML mockado
@@ -334,7 +334,7 @@ def test_bigquery_schema():
     print("Testando schema do BigQuery...")
 
     import json
-    from src.scrapers.gratis_torrent.config import Config
+    from scrapers.gratis_torrent.config import Config
 
     # Carregar schema
     schema_file = Config.SCHEMA_FILE

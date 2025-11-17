@@ -32,6 +32,7 @@ def scrape_movies_task() -> list[dict]:
     logger.info("Starting movie scraping task")
     movies = scrape_all_movies()
     logger.info(f"Scraped {len(movies)} movies")
+
     return movies
 
 

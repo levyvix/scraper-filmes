@@ -154,7 +154,13 @@ def clean_genre(genre: str | None) -> str | None:
     return genre.replace(" / ", ", ")
 
 
-def create_movie_object(extracted: dict, info_text: str, sinopse: str | None, url: str, poster_url: str | None) -> Movie | None:
+def create_movie_object(
+    extracted: dict,
+    info_text: str,
+    sinopse: str | None,
+    url: str,
+    poster_url: str | None,
+) -> Movie | None:
     """
     Create and validate Movie object from extracted data.
 

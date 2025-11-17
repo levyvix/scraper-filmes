@@ -155,10 +155,10 @@ def load_data_to_staging(client: bigquery.Client, data: list[dict]) -> None:
     )
 
     # Convert datetime objects to ISO 8601 strings for JSON serialization
-    serialized_data = json.loads(json.dumps(data, default=_json_serial))
+    # serialized_data = json.loads(json.dumps(data, default=_json_serial))
 
-    logger.info(f"Loading {len(serialized_data)} movies to staging table")
-    load_job = client.load_table_from_json(serialized_data, table_ref, job_config=job_config)
+    logger.info(f"Loading {len(data)} movies to staging table")
+    load_job = client.load_table_from_json(data, table_ref, job_config=job_config)
     load_job.result()
 
     logger.info("Data loaded to staging table successfully")

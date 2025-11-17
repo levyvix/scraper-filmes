@@ -4,14 +4,8 @@ Sistema automatizado de scraping de filmes do site GratisTorrent e exportação 
 
 ## 🚀 Início Rápido
 
-### 1. Instalar Dependências
 
-```bash
-# O projeto usa UV para gerenciamento de dependências
-uv sync
-```
-
-### 2. Configurar Variáveis de Ambiente (Opcional)
+### Configurar Variáveis de Ambiente (Opcional)
 
 ```bash
 # Copiar arquivo de exemplo
@@ -21,14 +15,14 @@ cp .env.example .env
 # O arquivo .env é carregado automaticamente pelos scripts
 ```
 
-### 3. Executar os Scrapers
+### Executar os Scrapers
 
 ```bash
 # Scraper do GratisTorrent (com BigQuery e Prefect)
-uv run main.py
+uv run run_gratis.py
 
 # Scraper do Comando Torrents (simples, sem BigQuery)
-uv run src/scrapers/comando_torrents/main.py
+uv run run_comando.py
 ```
 
 ## 📊 Funcionalidades
@@ -50,10 +44,10 @@ uv run src/scrapers/comando_torrents/main.py
 
 ## 📂 Estrutura dos Scrapers
 
-### 1. GratisTorrent (`main.py`)
+### 1. GratisTorrent (`run_gratis.py`)
 Scraper completo com integração BigQuery e Prefect. Ideal para produção.
 
-**Localização:** `src/scrapers/gratis_torrent/`
+**Localização do módulo:** `scrapers/gratis_torrent/`
 
 **Características:**
 - Cliente HTTP customizado com retry
@@ -61,10 +55,10 @@ Scraper completo com integração BigQuery e Prefect. Ideal para produção.
 - Orquestração Prefect
 - Armazenamento SQLite local
 
-### 2. Comando Torrents (`src/scrapers/comando_torrents/`)
+### 2. Comando Torrents (`run_comando.py`)
 Scraper standalone simplificado focado em performance e stealth.
 
-**Localização:** `src/scrapers/comando_torrents/main.py`
+**Localização do Módulo:** `scrapers/comando_torrents/`
 
 **Características:**
 - **Stealth Scraping:** Usa `StealthySession` com bypass de Cloudflare
@@ -87,15 +81,8 @@ class Movie(BaseModel):
     dublado: bool | None
     sinopse: str | None
     link: str | None
-```
-
-**Uso:**
-```bash
-# Executar scraper
-uv run src/scrapers/comando_torrents/main.py
-
-# Cache é armazenado em ./comando_cache/
-# Resultados são salvos em src/scrapers/comando_torrents/movies.json
+    poster_url: str | None
+    date_updated: str | None
 ```
 
 ## 📚 Documentação

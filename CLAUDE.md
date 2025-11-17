@@ -29,22 +29,16 @@ cp .env.example .env  # Edit with GCP_PROJECT_ID if using BigQuery
 ### Development
 ```bash
 # Run main GratisTorrent scraper
-uv run main.py
+uv run run_gratis.py
 
 # Run Comando Torrents scraper (lightweight, local output)
-uv run src/scrapers/comando_torrents/main.py
-
-# Run all tests (custom suite + pytest)
-uv run tests/test_suite.py && uvx pytest tests/
+uv run run_comando.py
 
 # Run specific test file
-uvx pytest tests/scrapers/gratis_torrent/test_parser.py -v
-
-# Test BigQuery connectivity
-uv run scripts/test_bigquery.py
+uv run pytest scrapers -v
 
 # Linting and formatting (with 120 char line length)
-uvx ruff check . && uvx ruff format --line-length 120
+uvx ruff check --fix . && uvx ruff format --line-length 120
 
 # Type checking
 uvx mypy --ignore-missing-imports .
@@ -72,40 +66,40 @@ Cloud Storage (movies_raw.filmes dataset)
 
 ### Key Components
 
-1. **Data Models** (`src/scrapers/gratis_torrent/models.py`)
+1. **Data Models** (`scrapers/gratis_torrent/models.py`)
    - `Movie`: Pydantic BaseModel with 12 fields
    - Field validations: IMDB (0-10), year (≥1888), duration (≥1 min)
    - All fields nullable by design for partial data
 
-2. **Parser** (`src/scrapers/gratis_torrent/parser.py`)
+2. **Parser** (`scrapers/gratis_torrent/parser.py`)
    - Regex-based field extraction (12 patterns)
    - Safe type conversions (float, int) with fallbacks
    - Functions: `extract_movie_fields()`, `parse_movie_page()`, `clean_genre()`, etc.
    - Handles partial failures gracefully
 
-3. **HTTP Client** (`src/scrapers/gratis_torrent/http_client.py`)
+3. **HTTP Client** (`scrapers/gratis_torrent/http_client.py`)
    - `fetch_page()`: BeautifulSoup wrapper with 40s timeout
    - `collect_movie_links()`: CSS selector `#capas_pequenas > div > a`
    - Link deduplication while preserving order
 
-4. **Scraper** (`src/scrapers/gratis_torrent/scraper.py`)
+4. **Scraper** (`scrapers/gratis_torrent/scraper.py`)
    - Entry point: `scrape_all_movies()`
    - Uses DiskCache (1-hour TTL) in `./movie_cache/`
    - Returns list of movie dictionaries
    - Logs progress to console
 
-5. **Prefect Workflow** (`src/scrapers/gratis_torrent/flow.py`)
+5. **Prefect Workflow** (`scrapers/gratis_torrent/flow.py`)
    - Task 1: `scrape-movies` (2 retries, 30s delay)
    - Task 2: `load-to-bigquery` (3 retries, 60s delay)
    - Output: `{"movies_scraped": N, "rows_loaded": M}`
 
-6. **BigQuery Integration** (`src/scrapers/gratis_torrent/bigquery_client.py`)
+6. **BigQuery Integration** (`scrapers/gratis_torrent/bigquery_client.py`)
    - Setup: Creates dataset and tables if missing
    - Pipeline: Load to staging → MERGE to main (dedup on `link` field) → truncate staging
    - Handles schema from `schema.json`
    - Returns row count of merged/inserted records
 
-7. **Configuration** (`src/scrapers/gratis_torrent/config.py`)
+7. **Configuration** (`scrapers/gratis_torrent/config.py`)
    - Dataset: `movies_raw` (us-central)
    - Tables: `filmes` (main), `stg_filmes` (staging)
    - Base URL: `https://gratistorrent.com/lancamentos/`
@@ -154,7 +148,7 @@ uv run tests/test_suite.py && uvx pytest tests/
 uvx pytest tests/scrapers/gratis_torrent/test_models.py -v
 
 # With coverage
-uvx pytest tests/ --cov=src/scrapers --cov-report=term-missing
+uvx pytest tests/ --cov=scrapers --cov-report=term-missing
 ```
 
 ## Configuration and Environment
@@ -166,7 +160,7 @@ GCP_PROJECT_ID=your-gcp-project-id  # Required for BigQuery
 
 ### Project Structure
 - **Config precedence**: .env → hardcoded defaults (config.py) → Prefect parameters
-- **BigQuery schema**: `src/scrapers/gratis_torrent/schema.json`
+- **BigQuery schema**: `scrapers/gratis_torrent/schema.json`
 - **Prefect config**: `prefect.yaml` (hourly schedule)
 - **Docker**: Minimal Dockerfile for containerization
 
@@ -237,8 +231,8 @@ Both share: Pydantic validation, similar data models, error handling patterns
 
 ## Useful References
 
-- Data Models: `src/scrapers/gratis_torrent/models.py:1-50`
-- Parser entry point: `src/scrapers/gratis_torrent/parser.py:parse_movie_page()`
-- Scraper entry point: `src/scrapers/gratis_torrent/scraper.py:scrape_all_movies()`
-- Flow definition: `src/scrapers/gratis_torrent/flow.py:gratis_torrent_flow()`
-- BigQuery pipeline: `src/scrapers/gratis_torrent/bigquery_client.py:load_movies_to_bigquery()`
+- Data Models: `scrapers/gratis_torrent/models.py:1-50`
+- Parser entry point: `scrapers/gratis_torrent/parser.py:parse_movie_page()`
+- Scraper entry point: `scrapers/gratis_torrent/scraper.py:scrape_all_movies()`
+- Flow definition: `scrapers/gratis_torrent/flow.py:gratis_torrent_flow()`
+- BigQuery pipeline: `scrapers/gratis_torrent/bigquery_client.py:load_movies_to_bigquery()`

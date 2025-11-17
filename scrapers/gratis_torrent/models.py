@@ -21,4 +21,4 @@ class Movie(BaseModel):
     sinopse: str | None = None
     link: str | None = None
     poster_url: str | None = None
-    date_updated: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    date_updated: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())

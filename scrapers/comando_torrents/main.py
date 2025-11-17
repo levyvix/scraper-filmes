@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from scrapling.fetchers import StealthySession
 from scrapling.parser import Adaptor, Selector
-from utils.parse_utils import parse_rating, parse_year
-from utils.models import Movie
+from scrapers.utils.parse_utils import parse_rating, parse_year
+from scrapers.utils.models import Movie
 from scrapers.comando_torrents.config import Config
 from pydantic import ValidationError
 from diskcache import Cache
@@ -186,7 +186,11 @@ def main():
 
 def save_to_json(config, list_movies: list[Movie]):
     json_path = Path(__file__).parent / config.JSON_FILE_NAME
-    json_data = json.dumps([movie.model_dump(mode="json") for movie in list_movies], indent=2, ensure_ascii=False)
+    json_data = json.dumps(
+        [movie.model_dump(mode="json") for movie in list_movies],
+        indent=2,
+        ensure_ascii=False,
+    )
     json_path.write_text(json_data, encoding="utf-8")
     return json_path
 
