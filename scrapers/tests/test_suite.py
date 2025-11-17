@@ -3,16 +3,11 @@ Test Suite - Scraper de Filmes
 Executa testes de todos os componentes do projeto
 
 Uso:
-    uv run python tests/test_suite.py
+    uv run pytest scrapers/
 """
 
 import sys
 from pathlib import Path
-
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.insert(0, str(project_root))
-
 
 class TestRunner:
     """Gerenciador de execução de testes"""
