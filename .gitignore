@@ -1,6 +1,6 @@
 *.pyc
 *.png
-/__pycache__/
+__pycache__/
 *.db
 .env
 *.json
@@ -9,3 +9,4 @@
 !**/schema.json
 comando_cache/
 *_cache
+.venv
