@@ -1,11 +1,10 @@
-# Scraper de Filmes - GratisTorrent
+# Scraper de Filmes
 
-Sistema automatizado de scraping de filmes do site GratisTorrent e exportação para BigQuery.
+Sistema automatizado de scraping de filmes do site GratisTorrent/ComandoTorrents e exportação para BigQuery e orquestração com Prefect.
 
 ## 🚀 Início Rápido
 
-
-### Configurar Variáveis de Ambiente (Opcional)
+### Configurar Variáveis de Ambiente
 
 ```bash
 # Copiar arquivo de exemplo
@@ -14,15 +13,18 @@ cp .env.example .env
 # Editar .env com suas configurações (especialmente GCP_PROJECT_ID para BigQuery)
 # O arquivo .env é carregado automaticamente pelos scripts
 ```
+### Configurar BigQuery
+
+[BIG_QUERY_SETUP](./docs/BIGQUERY_SETUP.md)
 
 ### Executar os Scrapers
 
 ```bash
-# Scraper do GratisTorrent (com BigQuery e Prefect)
-uv run run_gratis.py
-
 # Scraper do Comando Torrents (simples, sem BigQuery)
 uv run run_comando.py
+
+# Scraper do GratisTorrent (com BigQuery e Prefect)
+uv run run_gratis.py
 ```
 
 ## 📊 Funcionalidades
