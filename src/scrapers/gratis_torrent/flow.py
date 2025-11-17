@@ -20,6 +20,7 @@ from datetime import timedelta
     retry_delay_seconds=30,
     cache_policy=INPUTS + TASK_SOURCE,
     cache_expiration=timedelta(hours=1),
+    log_prints=True,
 )
 def scrape_movies_task() -> list[dict]:
     """
@@ -42,7 +43,7 @@ def load_jsonl(path: Path) -> list[dict]:
     return items
 
 
-@task(name="load-to-bigquery", retries=3, retry_delay_seconds=60)
+@task(name="load-to-bigquery", retries=3, retry_delay_seconds=60, log_prints=True)
 def load_to_bigquery_task(movies_path: Path) -> int:
     """
     Task to load movies to BigQuery.
