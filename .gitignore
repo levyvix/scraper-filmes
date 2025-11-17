@@ -8,6 +8,4 @@
 *.jsonl
 !**/schema.json
 comando_cache/
-.mypy_cache/
-.pytest_cache/
-.venv
+*_cache
