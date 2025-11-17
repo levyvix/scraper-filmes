@@ -142,13 +142,10 @@ Located in `tests/scrapers/gratis_torrent/`:
 ### Running Tests
 ```bash
 # All tests
-uv run tests/test_suite.py && uvx pytest tests/
-
-# Specific test file
-uvx pytest tests/scrapers/gratis_torrent/test_models.py -v
+uv run pytest scrapers/
 
 # With coverage
-uvx pytest tests/ --cov=scrapers --cov-report=term-missing
+uv run pytest scrapers/ --cov=scrapers --cov-report=term-missing
 ```
 
 ## Configuration and Environment
@@ -228,11 +225,3 @@ Both share: Pydantic validation, similar data models, error handling patterns
 - **Cache hit rate**: Depends on scrape frequency vs. 1-hour TTL
 - **Prefect tasks**: Simple retries, not distributed; scale via Prefect Cloud
 - **BigQuery**: Staging table ensures transactional safety; MERGE is atomic
-
-## Useful References
-
-- Data Models: `scrapers/gratis_torrent/models.py:1-50`
-- Parser entry point: `scrapers/gratis_torrent/parser.py:parse_movie_page()`
-- Scraper entry point: `scrapers/gratis_torrent/scraper.py:scrape_all_movies()`
-- Flow definition: `scrapers/gratis_torrent/flow.py:gratis_torrent_flow()`
-- BigQuery pipeline: `scrapers/gratis_torrent/bigquery_client.py:load_movies_to_bigquery()`
