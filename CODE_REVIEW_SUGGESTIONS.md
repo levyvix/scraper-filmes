@@ -104,8 +104,17 @@ def setup_logging(level="INFO", log_file="scraper.log"):
 
 ---
 
-#### 3. Improve Error Handling and Retry Logic
+#### 3. Improve Error Handling and Retry Logic ✅
+**Status:** COMPLETED (2025-11-18)
+
 **Issue:** Silent failures and inconsistent error handling across scrapers.
+
+**Implementation:**
+- ✅ Added `tenacity` library for retry logic
+- ✅ Created custom exceptions in `scrapers/utils/exceptions.py`
+- ✅ Added retry decorators with exponential backoff (3 attempts, 4-10s wait)
+- ✅ Updated both `gratis_torrent` and `comando_torrents` scrapers
+- ✅ Improved error messages with exception chaining and detailed logging
 
 **Current Code (gratis_torrent/scraper.py):**
 ```python

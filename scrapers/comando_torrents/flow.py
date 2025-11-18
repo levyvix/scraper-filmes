@@ -22,6 +22,8 @@ logger = setup_logging(level="INFO", log_file="comando_torrents.log")
     log_prints=True,
 )
 def scrape_movies_task(url_base: str) -> list[Movie]:
+    from scrapers.utils.data_quality import DataQualityChecker
+
     logger.info(f"Fetching movie links from {url_base}")
     links = get_movie_links(url_base)
 
@@ -32,13 +34,36 @@ def scrape_movies_task(url_base: str) -> list[Movie]:
     logger.info(f"Found {len(links)} movie links. Starting to scrape...")
 
     list_movies: list[Movie] = []
+    quality_checker = DataQualityChecker(min_fields_filled=0.7)
+    failed_count = 0
+
     for index, link in enumerate(links, start=1):
         logger.info(f"Processing movie {index}/{len(links)}: {link}")
 
         movie = parse_detail(str(link))
         if movie:
-            list_movies.append(movie)
-            
+            # Validate movie quality before adding to list
+            if quality_checker.check_movie(movie):
+                list_movies.append(movie)
+            else:
+                logger.warning(f"Movie {link} failed quality checks")
+                failed_count += 1
+        else:
+            failed_count += 1
+
+    logger.info(
+        f"Successfully scraped {len(list_movies)} movies. "
+        f"Failed: {failed_count} out of {len(links)}"
+    )
+
+    # Log quality report
+    if list_movies:
+        report = quality_checker.check_batch(list_movies)
+        logger.info(
+            f"Quality Report: {report['pass_rate']:.1%} pass rate "
+            f"({report['passed_quality']}/{report['total_movies']} movies)"
+        )
+
     return list_movies
 
 
