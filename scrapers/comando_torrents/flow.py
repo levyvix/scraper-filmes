@@ -3,10 +3,14 @@ from pathlib import Path
 from datetime import timedelta
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
+from scrapers.utils.logging_config import setup_logging
 from scrapers.utils.models import Movie
 from scrapers.comando_torrents.config import Config
 from scrapers.comando_torrents.scraper import get_movie_links
 from scrapers.comando_torrents.parser import parse_detail
+
+# Initialize logging configuration
+logger = setup_logging(level="INFO", log_file="comando_torrents.log")
 
 
 @task(
@@ -18,18 +22,18 @@ from scrapers.comando_torrents.parser import parse_detail
     log_prints=True,
 )
 def scrape_movies_task(url_base: str) -> list[Movie]:
-    print(f"Fetching movie links from {url_base}")
+    logger.info(f"Fetching movie links from {url_base}")
     links = get_movie_links(url_base)
 
     if not links:
-        print("Error: No movie links found. Please check the website or your connection.")
+        logger.error("No movie links found. Please check the website or your connection.")
         return []
 
-    print(f"Found {len(links)} movie links. Starting to scrape...")
+    logger.info(f"Found {len(links)} movie links. Starting to scrape...")
 
     list_movies: list[Movie] = []
     for index, link in enumerate(links, start=1):
-        print(f"Processing movie {index}/{len(links)}: {link}")
+        logger.info(f"Processing movie {index}/{len(links)}: {link}")
 
         movie = parse_detail(str(link))
         if movie:
@@ -58,9 +62,9 @@ def comando_torrents_flow():
     list_movies = scrape_movies_task(config.URL_BASE)
 
     if not list_movies:
-        print("Error: No movies were successfully scraped.")
+        logger.error("No movies were successfully scraped.")
         return
 
     json_path = save_to_json_task(config, list_movies)
 
-    print(f"Success: Saved {len(list_movies)} movies to {json_path}")
+    logger.success(f"Saved {len(list_movies)} movies to {json_path}")

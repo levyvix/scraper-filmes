@@ -1,6 +1,7 @@
 from scrapling.fetchers import StealthySession
 from scrapling.parser import Adaptor, Selector
 from diskcache import Cache
+from loguru import logger
 
 cache = Cache("./comando_cache")
 
@@ -13,8 +14,7 @@ def fetch_page_html(url: str) -> tuple[str, str] | None:
             page: Selector = session.fetch(url)
             return (page.html_content, url)
     except Exception as error:
-        print(f"Error: Failed to fetch page from {url}")
-        print(f"Details: {error}")
+        logger.error(f"Failed to fetch page from {url}: {error}")
         return None
 
 
@@ -37,6 +37,5 @@ def get_movie_links(url: str) -> list[str]:
         links = page.css("article > header > h2 > a::attr(href)")
         return [str(link) for link in links]
     except Exception as error:
-        print(f"Error: Failed to fetch movie links from {url}")
-        print(f"Details: {error}")
+        logger.error(f"Failed to fetch movie links from {url}: {error}")
         return []

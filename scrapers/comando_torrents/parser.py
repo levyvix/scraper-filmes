@@ -2,6 +2,7 @@ from scrapling.parser import Adaptor
 from scrapers.utils.parse_utils import parse_rating, parse_year
 from scrapers.utils.models import Movie
 from pydantic import ValidationError
+from loguru import logger
 from scrapers.comando_torrents.scraper import fetch_page
 
 
@@ -29,19 +30,16 @@ def parse_detail(link: str) -> Movie | None:
         if not page:
             return None
     except Exception as error:
-        print(f"Error: Failed to fetch page from {link}")
-        print(f"Details: {error}")
+        logger.error(f"Failed to fetch page from {link}: {error}")
         return None
 
     info_texts = page.css("div.entry-content.cf > p:nth-child(3)::text")
     if not info_texts:
-        print(f"Error: No movie information found at {link}")
-        print("Reason: The page structure may have changed or content is missing")
+        logger.error(f"No movie information found at {link}. The page structure may have changed or content is missing.")
         return None
 
     if len(info_texts) < 12:
-        print(f"Error: Incomplete movie data at {link}")
-        print(f"Details: Expected 12 fields, found {len(info_texts)}")
+        logger.warning(f"Incomplete movie data at {link}. Expected 12 fields, found {len(info_texts)}")
         return None
 
     imdb_text = extract_text_or_none(page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(7)::text")
@@ -82,6 +80,5 @@ def parse_detail(link: str) -> Movie | None:
         )
         return movie
     except ValidationError as error:
-        print(f"Error: Invalid movie data at {link}")
-        print(f"Details: {error}")
+        logger.error(f"Invalid movie data at {link}: {error}")
         return None

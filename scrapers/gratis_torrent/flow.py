@@ -6,18 +6,23 @@ from pathlib import Path
 
 from prefect import flow, task
 from prefect.cache_policies import INPUTS, TASK_SOURCE
-from loguru import logger
+from datetime import timedelta
 
+from scrapers.utils.logging_config import setup_logging
 from scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
 from scrapers.gratis_torrent.scraper import scrape_all_movies
 from scrapers.gratis_torrent.config import Config
-from datetime import timedelta
+
+# Initialize logging configuration
+logger = setup_logging(level="INFO", log_file="gratis_torrent.log")
 
 
 @task(
     name="scrape-movies",
     retries=2,
     retry_delay_seconds=30,
+    cache_policy=INPUTS + TASK_SOURCE,
+    cache_expiration=timedelta(hours=1),
     log_prints=True,
 )
 def scrape_movies_task() -> list[dict]:
