@@ -15,6 +15,8 @@ Até novembro de 2025, o site **não possui proteção anti-robô** (diferente d
 - **Google BigQuery** – Data Warehouse  
   Banco de dados OLAP serverless no Google Cloud.  
   Possui um excelente free tier (1 TB de processamento/mês), mais do que suficiente para este projeto. Ótima escolha para aprender e trabalhar com ferramentas modernas de dados na nuvem.
+- **Shared Utils** (`scrapers/utils/`) – Módulo compartilhado  
+  Funções utilitárias e modelos de dados reutilizáveis entre diferentes scrapers, promovendo DRY (Don't Repeat Yourself) e facilitando manutenção.
 
 ## Objetivos de arquitetura
 
@@ -25,8 +27,10 @@ O código foi estruturado de forma **modular**, separando claramente as responsa
 - Carregamento no BigQuery
 - Orquestração com Prefect
 - Cache local
+- **Utilitários compartilhados** (`scrapers/utils/`) - Funções e modelos reutilizáveis
 
 Essa separação facilita manutenção, testes e futuras evoluções do projeto.
+
 
 ---
 

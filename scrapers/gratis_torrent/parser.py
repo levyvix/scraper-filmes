@@ -7,6 +7,7 @@ from loguru import logger
 from pydantic import ValidationError
 
 from scrapers.gratis_torrent.models import Movie
+from scrapers.utils.parse_utils import parse_int, parse_rating, parse_year
 
 
 def extract_poster_url(soup: BeautifulSoup) -> str | None:
@@ -43,44 +44,7 @@ def extract_regex_field(pattern: str, text: str, group: int = 1) -> str | None:
     return match.group(group).strip()
 
 
-def safe_convert_float(value: str | None) -> float | None:
-    """
-    Convert string to float, return None if conversion fails.
 
-    Args:
-        value: String value to convert
-
-    Returns:
-        Float value or None if conversion fails
-    """
-    if not value:
-        return None
-
-    try:
-        return float(value)
-    except (ValueError, TypeError):
-        logger.warning(f"Cannot convert '{value}' to float. Skipping this field.")
-        return None
-
-
-def safe_convert_int(value: str | None) -> int | None:
-    """
-    Convert string to integer, return None if conversion fails.
-
-    Args:
-        value: String value to convert
-
-    Returns:
-        Integer value or None if conversion fails
-    """
-    if not value:
-        return None
-
-    try:
-        return int(value)
-    except (ValueError, TypeError):
-        logger.warning(f"Cannot convert '{value}' to integer. Skipping this field.")
-        return None
 
 
 def extract_sinopse(soup: BeautifulSoup) -> str | None:
@@ -178,12 +142,12 @@ def create_movie_object(
         movie = Movie(
             titulo_dublado=extracted["titulo_dublado"],
             titulo_original=extracted["titulo_original"],
-            imdb=safe_convert_float(extracted["imdb"]),
-            ano=safe_convert_int(extracted["ano"]),
+            imdb=parse_rating(extracted["imdb"]),
+            ano=parse_year(extracted["ano"]),
             genero=clean_genre(extracted["genero"]),
             tamanho=extracted["tamanho"],
-            duracao_minutos=safe_convert_int(extracted["duracao_minutos"]),
-            qualidade_video=safe_convert_float(extracted["qualidade_video"]),
+            duracao_minutos=parse_int(extracted["duracao_minutos"]),
+            qualidade_video=parse_rating(extracted["qualidade_video"]),
             qualidade=extracted["qualidade"],
             dublado="Português" in info_text,
             sinopse=sinopse,

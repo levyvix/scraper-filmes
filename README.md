@@ -56,6 +56,8 @@ Scraper completo com integração BigQuery e Prefect. Ideal para produção.
 - Integração com BigQuery
 - Orquestração Prefect
 - Armazenamento SQLite local
+- Utiliza `scrapers/utils` para funções comuns e modelos
+
 
 ### 2. Comando Torrents (`run_comando.py`)
 Scraper standalone simplificado focado em performance e stealth.
@@ -86,6 +88,17 @@ class Movie(BaseModel):
     poster_url: str | None
     date_updated: str | None
 ```
+
+### 3. Shared Utils (`scrapers/utils/`)
+Módulo de utilitários compartilhados entre os scrapers.
+
+**Localização do Módulo:** `scrapers/utils/`
+
+**Componentes:**
+- `parse_utils.py`: Funções auxiliares para limpeza e extração de texto.
+- `models.py`: Modelos de dados base (Pydantic) compartilhados.
+- `send_mail.py`: Utilitário para envio de notificações.
+
 
 ## 📚 Documentação
 

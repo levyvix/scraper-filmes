@@ -18,8 +18,6 @@ from datetime import timedelta
     name="scrape-movies",
     retries=2,
     retry_delay_seconds=30,
-    cache_policy=INPUTS + TASK_SOURCE,
-    cache_expiration=timedelta(hours=1),
     log_prints=True,
 )
 def scrape_movies_task() -> list[dict]:

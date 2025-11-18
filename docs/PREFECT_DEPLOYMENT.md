@@ -47,21 +47,10 @@ Este comando cria o work pool que gerenciará a execução dos flows.
 ### 3. Deploy do Flow
 
 ```bash
-# Usando o deployment configurado
-uv run prefect deploy -n default
+# Usando o deployment configurado no prefect.yaml
+uv run prefect deploy -n gratis-torrent
 ```
 
-Ou usar o script automatizado:
-
-```bash
-./scripts/deploy_prefect.sh
-```
-
-Ou manualmente com o arquivo de configuração:
-
-```bash
-uv run prefect --no-prompt deploy --prefect-file config/prefect.yaml --all
-```
 
 ### 4. Iniciar um Worker
 
@@ -207,4 +196,5 @@ Para usar Prefect Cloud em vez de local:
 uv run prefect cloud login --key YOUR_API_KEY
 ```
 
-4. Deploy normalmente com `./scripts/deploy_prefect.sh`
+4. Deploy normalmente com `uv run prefect deploy -n gratis-torrent`
+

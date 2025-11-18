@@ -48,7 +48,7 @@ def scrape_movie_details(url: str) -> Movie | None:
     return parse_movie_page(soup, url)
 
 
-@cache.memoize(expire=3600)
+# @cache.memoize(expire=3600)
 def scrape_all_movies() -> list[dict]:
     """
     Scrape all movies from the main page.

@@ -19,3 +19,14 @@ def parse_year(year_text: str | None) -> int | None:
         return None
 
     return int(clean_year)
+
+
+def parse_int(text: str | None) -> int | None:
+    """Convert text to integer, return None if invalid."""
+    if not text:
+        return None
+
+    try:
+        return int(text.strip())
+    except (ValueError, TypeError):
+        return None

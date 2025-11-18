@@ -1,3 +1,3 @@
-from scrapers.comando_torrents import main
+from scrapers.comando_torrents.flow import comando_torrents_flow
 
-main.main()
+comando_torrents_flow()
