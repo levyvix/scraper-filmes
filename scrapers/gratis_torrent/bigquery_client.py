@@ -2,22 +2,17 @@
 
 import json
 import warnings
-from datetime import datetime
+from typing import Any
 
 from google.cloud import bigquery
+from google.cloud.exceptions import GoogleCloudError
 from loguru import logger
 
 from scrapers.gratis_torrent.config import Config
+from scrapers.utils.exceptions import BigQueryException
 
 # Suppress quota project warning for user credentials
 warnings.filterwarnings("ignore", message=".*quota project.*")
-
-
-def _json_serial(obj):
-    """JSON serializer for objects not serializable by default json code"""
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
 
 
 def get_client() -> bigquery.Client:
@@ -41,7 +36,9 @@ def load_schema() -> list[bigquery.SchemaField]:
         FileNotFoundError: If schema file is not found
     """
     if not Config.SCHEMA_FILE.exists():
-        raise FileNotFoundError(f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}")
+        raise FileNotFoundError(
+            f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}"
+        )
 
     schema_raw = json.loads(Config.SCHEMA_FILE.read_text("utf-8"))
     schema = [
@@ -63,13 +60,25 @@ def create_dataset(client: bigquery.Client) -> None:
 
     Args:
         client: BigQuery client instance
+
+    Raises:
+        BigQueryException: If dataset creation fails
     """
     dataset_id = f"{Config.GCP_PROJECT_ID}.{Config.DATASET_ID}"
     dataset = bigquery.Dataset(dataset_id)
     dataset.location = Config.LOCATION
 
-    client.create_dataset(dataset, exists_ok=True)
-    logger.info(f"Dataset {dataset_id} ready")
+    try:
+        client.create_dataset(dataset, exists_ok=True)
+        logger.info(f"Dataset {dataset_id} ready")
+    except GoogleCloudError as e:
+        logger.error(f"Failed to create dataset {dataset_id}: {e}")
+        raise BigQueryException(f"Failed to create dataset {dataset_id}") from e
+    except Exception as e:
+        logger.error(f"Unexpected error creating dataset {dataset_id}: {e}")
+        raise BigQueryException(
+            f"Unexpected error creating dataset {dataset_id}"
+        ) from e
 
 
 def delete_table(client: bigquery.Client, table_name: str) -> None:
@@ -85,7 +94,9 @@ def delete_table(client: bigquery.Client, table_name: str) -> None:
     logger.info(f"Table {table_id} deleted")
 
 
-def create_table(client: bigquery.Client, table_name: str, force_recreate: bool = False) -> None:
+def create_table(
+    client: bigquery.Client, table_name: str, force_recreate: bool = False
+) -> None:
     """
     Create BigQuery table if it doesn't exist.
 
@@ -124,44 +135,81 @@ def create_table(client: bigquery.Client, table_name: str, force_recreate: bool 
             updated_schema = table.schema + fields_to_add
             table.schema = updated_schema
             client.update_table(table, ["schema"])
-            logger.info(f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}")
+            logger.info(
+                f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}"
+            )
         else:
             logger.info(f"Table {table_id} already exists and schema is up to date.")
 
-    except Exception as e:
+    except GoogleCloudError as e:
         if "Not found: Table" in str(e):
-            table_reference = bigquery.Table(table_id, schema=schema)
-            client.create_table(table_reference)
-            logger.info(f"Table {table_id} created with new schema")
+            try:
+                table_reference = bigquery.Table(table_id, schema=schema)
+                client.create_table(table_reference)
+                logger.info(f"Table {table_id} created with new schema")
+            except GoogleCloudError as create_error:
+                logger.error(f"Failed to create table {table_id}: {create_error}")
+                raise BigQueryException(
+                    f"Failed to create table {table_id}"
+                ) from create_error
         else:
             logger.error(f"Error creating or updating table {table_id}: {e}")
-            raise
+            raise BigQueryException(
+                f"Failed to create or update table {table_id}"
+            ) from e
+    except Exception as e:
+        logger.error(f"Unexpected error with table {table_id}: {e}")
+        raise BigQueryException(f"Unexpected error with table {table_id}") from e
 
 
-def load_data_to_staging(client: bigquery.Client, data: list[dict]) -> None:
+def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]) -> int:
     """
     Load movie data into BigQuery staging table.
 
     Args:
         client: BigQuery client instance
         data: List of movie dictionaries to load
+
+    Returns:
+        Number of rows loaded
+
+    Raises:
+        BigQueryException: If load fails
     """
+    if not data:
+        logger.warning("No data to load to staging")
+        return 0
+
     table_id = Config.get_full_table_id(Config.STAGING_TABLE_ID)
-    table_ref = client.get_table(table_id)
 
-    job_config = bigquery.LoadJobConfig(
-        schema=load_schema(),
-        source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
-    )
+    try:
+        table_ref = client.get_table(table_id)
 
-    # Convert datetime objects to ISO 8601 strings for JSON serialization
-    # serialized_data = json.loads(json.dumps(data, default=_json_serial))
+        job_config = bigquery.LoadJobConfig(
+            schema=load_schema(),
+            source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+        )
 
-    logger.info(f"Loading {len(data)} movies to staging table")
-    load_job = client.load_table_from_json(data, table_ref, job_config=job_config)
-    load_job.result()
+        logger.info(f"Loading {len(data)} rows to {table_id}")
+        load_job = client.load_table_from_json(data, table_ref, job_config=job_config)
 
-    logger.info("Data loaded to staging table successfully")
+        # Wait for job to complete with timeout
+        result = load_job.result(timeout=300)  # 5 minute timeout
+
+        if load_job.errors:
+            logger.error(f"Load job had errors: {load_job.errors}")
+            raise BigQueryException(f"Load failed with errors: {load_job.errors}")
+
+        rows_loaded = int(result.output_rows) if result.output_rows else 0
+        logger.info(f"Successfully loaded {rows_loaded} rows to staging")
+        return rows_loaded
+
+    except GoogleCloudError as e:
+        logger.error(f"BigQuery error loading to staging: {e}")
+        raise BigQueryException(f"Failed to load to staging: {e}") from e
+    except Exception as e:
+        logger.error(f"Unexpected error loading to staging: {e}")
+        raise BigQueryException(f"Unexpected load failure: {e}") from e
 
 
 def merge_staging_to_main(client: bigquery.Client) -> int:
@@ -173,6 +221,9 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
 
     Returns:
         Number of rows affected
+
+    Raises:
+        BigQueryException: If merge fails
     """
     target_table = Config.get_full_table_id(Config.TABLE_ID)
     source_table = Config.get_full_table_id(Config.STAGING_TABLE_ID)
@@ -231,15 +282,24 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
     );
     """
 
-    merge_query = client.query(merge_statement, location=Config.LOCATION)
-    merge_query.result()
+    try:
+        logger.info(f"Merging data from {source_table} to {target_table}")
+        merge_query = client.query(merge_statement, location=Config.LOCATION)
 
-    rows_affected = merge_query.num_dml_affected_rows
-    if rows_affected is None:
-        rows_affected = 0
-    logger.info(f"Merge completed: {rows_affected} rows affected")
+        # Wait for query to complete with timeout
+        merge_query.result(timeout=300)  # 5 minute timeout
 
-    return rows_affected
+        rows_affected = merge_query.num_dml_affected_rows or 0
+        logger.info(f"Merge completed: {rows_affected} rows affected")
+
+        return rows_affected
+
+    except GoogleCloudError as e:
+        logger.error(f"BigQuery error during merge: {e}")
+        raise BigQueryException(f"Failed to merge staging to main: {e}") from e
+    except Exception as e:
+        logger.error(f"Unexpected error during merge: {e}")
+        raise BigQueryException(f"Unexpected merge failure: {e}") from e
 
 
 def truncate_staging_table(client: bigquery.Client) -> None:
@@ -248,14 +308,28 @@ def truncate_staging_table(client: bigquery.Client) -> None:
 
     Args:
         client: BigQuery client instance
+
+    Raises:
+        BigQueryException: If truncate fails
     """
     staging_table = Config.get_full_table_id(Config.STAGING_TABLE_ID)
 
-    truncate_query = f"TRUNCATE TABLE `{staging_table}`;"
-    truncate_result = client.query(truncate_query, location=Config.LOCATION)
-    truncate_result.result()
+    try:
+        logger.info(f"Truncating staging table {staging_table}")
+        truncate_query = f"TRUNCATE TABLE `{staging_table}`;"
+        truncate_result = client.query(truncate_query, location=Config.LOCATION)
 
-    logger.info("Staging table truncated successfully")
+        # Wait for query to complete with timeout
+        truncate_result.result(timeout=300)  # 5 minute timeout
+
+        logger.info("Staging table truncated successfully")
+
+    except GoogleCloudError as e:
+        logger.error(f"BigQuery error truncating staging table: {e}")
+        raise BigQueryException(f"Failed to truncate staging table: {e}") from e
+    except Exception as e:
+        logger.error(f"Unexpected error truncating staging table: {e}")
+        raise BigQueryException(f"Unexpected truncate failure: {e}") from e
 
 
 def setup_tables(client: bigquery.Client, recreate_staging: bool = True) -> None:
@@ -271,7 +345,7 @@ def setup_tables(client: bigquery.Client, recreate_staging: bool = True) -> None
     create_table(client, Config.STAGING_TABLE_ID, force_recreate=recreate_staging)
 
 
-def load_movies_to_bigquery(movies: list[dict]) -> int:
+def load_movies_to_bigquery(movies: list[dict[str, Any]]) -> int:
     """
     Complete pipeline to load movies to BigQuery.
 

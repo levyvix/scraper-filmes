@@ -197,4 +197,3 @@ uv run prefect cloud login --key YOUR_API_KEY
 ```
 
 4. Deploy normalmente com `uv run prefect deploy -n gratis-torrent`
-

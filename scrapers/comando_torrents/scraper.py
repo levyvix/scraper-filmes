@@ -2,13 +2,13 @@ from scrapling.fetchers import StealthySession
 from scrapling.parser import Adaptor, Selector
 from diskcache import Cache
 from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_exponential
+from scrapers.utils.rate_limiter import rate_limit
 
 cache = Cache("./comando_cache")
 
 
-from tenacity import retry, stop_after_attempt, wait_exponential
-
-
+@rate_limit(calls_per_second=2.0)  # Max 2 requests per second
 @cache.memoize()
 @retry(
     stop=stop_after_attempt(3),
@@ -77,5 +77,7 @@ def get_movie_links(url: str) -> list[str]:
         logger.error(f"Failed to fetch movie links from {url}: {error}")
         return []
     except Exception as error:
-        logger.error(f"Unexpected error fetching movie links from {url}: {error}", exc_info=True)
+        logger.error(
+            f"Unexpected error fetching movie links from {url}: {error}", exc_info=True
+        )
         return []

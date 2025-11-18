@@ -5,8 +5,10 @@ from bs4 import BeautifulSoup
 from loguru import logger
 
 from scrapers.gratis_torrent.config import Config
+from scrapers.utils.rate_limiter import rate_limit
 
 
+@rate_limit(calls_per_second=2.0)  # Max 2 requests per second
 def fetch_page(url: str, timeout: int = Config.REQUEST_TIMEOUT) -> BeautifulSoup:
     """
     Fetch and parse HTML page.

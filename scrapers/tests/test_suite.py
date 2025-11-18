@@ -1,3 +1,4 @@
+""
 """
 Test Suite - Scraper de Filmes
 Executa testes de todos os componentes do projeto
@@ -7,17 +8,18 @@ Uso:
 """
 
 import sys
-from pathlib import Path
+from typing import Any, Callable
+
 
 class TestRunner:
     """Gerenciador de execução de testes"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.passed = 0
         self.failed = 0
-        self.errors = []
+        self.errors: list[tuple[str, str]] = []
 
-    def test(self, name: str, func):
+    def test(self, name: str, func: Callable[[], None]) -> None:
         """Executa um teste e registra resultado"""
         try:
             print(f"\n{'=' * 60}")
@@ -35,7 +37,7 @@ class TestRunner:
             self.failed += 1
             self.errors.append((name, str(e)))
 
-    def summary(self):
+    def summary(self) -> bool:
         """Imprime resumo dos testes"""
         print(f"\n{'=' * 60}")
         print("RESUMO DOS TESTES")
@@ -60,7 +62,7 @@ class TestRunner:
 # =============================================================================
 
 
-def test_imports():
+def test_imports() -> None:
     """Testa importações dos módulos principais"""
     print("Testando importações...")
 
@@ -95,7 +97,7 @@ def test_imports():
     print("  ✓ scrapers.gratis_torrent.config")
 
 
-def test_pydantic_validation():
+def test_pydantic_validation() -> None:
     """Testa validação do modelo Pydantic"""
     print("Testando validação Pydantic...")
 
@@ -116,6 +118,7 @@ def test_pydantic_validation():
         dublado=True,
         sinopse="Super-heróis se unem",
         link="http://example.com",
+        duracao=None,
     )
     print(f"  ✓ Dados válidos aceitos: {movie.titulo_dublado}")
     assert movie.qualidade_video == 9.0, "qualidade_video deve ser float"
@@ -136,6 +139,7 @@ def test_pydantic_validation():
             dublado=True,
             sinopse="Teste",
             link="http://example.com",
+            duracao=None,
         )
         raise AssertionError("IMDB > 10 deveria ser rejeitado")
     except ValidationError:
@@ -156,13 +160,14 @@ def test_pydantic_validation():
             dublado=True,
             sinopse="Teste",
             link="http://example.com",
+            duracao=None,
         )
         raise AssertionError("Ano < 1888 deveria ser rejeitado")
     except ValidationError:
         print("  ✓ Ano inválido rejeitado")
 
 
-def test_config():
+def test_config() -> None:
     """Testa configurações do projeto"""
     print("Testando configurações...")
 
@@ -187,30 +192,26 @@ def test_config():
     print(f"  ✓ Full table ID: {full_table_id}")
 
 
-def test_parser_functions():
+def test_parser_functions() -> None:
     """Testa funções do parser"""
     print("Testando funções do parser...")
 
-    from scrapers.gratis_torrent.parser import (
-        clean_genre,
-        safe_convert_float,
-        safe_convert_int,
-        extract_regex_field,
-    )
+    from scrapers.gratis_torrent.parser import clean_genre, extract_regex_field
+    from scrapers.utils.parse_utils import parse_int, parse_rating
 
     # Teste 1: clean_genre
     assert clean_genre("Action / Sci-Fi") == "Action, Sci-Fi"
     print("  ✓ clean_genre funciona")
 
-    # Teste 2: safe_convert_float
-    assert safe_convert_float("8.5") == 8.5
-    assert safe_convert_float("invalid") is None
-    print("  ✓ safe_convert_float funciona")
+    # Teste 2: parse_rating
+    assert parse_rating("8.5") == 8.5
+    assert parse_rating("invalid") is None
+    print("  ✓ parse_rating funciona")
 
-    # Teste 3: safe_convert_int
-    assert safe_convert_int("120") == 120
-    assert safe_convert_int("invalid") is None
-    print("  ✓ safe_convert_int funciona")
+    # Teste 3: parse_int
+    assert parse_int("120") == 120
+    assert parse_int("invalid") is None
+    print("  ✓ parse_int funciona")
 
     # Teste 4: extract_regex_field
     text = "Título: The Matrix"
@@ -219,7 +220,7 @@ def test_parser_functions():
     print("  ✓ extract_regex_field funciona")
 
 
-def test_model_serialization():
+def test_model_serialization() -> None:
     """Testa serialização do modelo"""
     print("Testando serialização do modelo...")
 
@@ -238,6 +239,7 @@ def test_model_serialization():
         dublado=True,
         sinopse="A hacker discovers reality.",
         link="https://example.com/matrix",
+        duracao=None,
     )
 
     # Teste model_dump
@@ -269,7 +271,7 @@ def test_model_serialization():
     print(f"  ✓ Todos os {len(required_fields)} campos presentes")
 
 
-def test_prefect_flow_structure():
+def test_prefect_flow_structure() -> None:
     """Testa estrutura do Prefect Flow"""
     print("Testando estrutura do Prefect Flow...")
 
@@ -289,16 +291,21 @@ def test_prefect_flow_structure():
     ]
 
     for task, expected_name in tasks:
-        assert task.name == expected_name, f"Nome da task incorreto: {task.name}"
-        print(f"  ✓ Task: {task.name}")
+        task_obj: Any = task
+        assert (
+            task_obj.name == expected_name
+        ), f"Nome da task incorreto: {task_obj.name}"
+        print(f"  ✓ Task: {task_obj.name}")
 
     # Verificar retries configurados
-    assert scrape_movies_task.retries == 2, "scrape_movies_task deve ter 2 retries"
-    assert load_to_bigquery_task.retries == 3, "load_to_bigquery_task deve ter 3 retries"
+    scrape_task: Any = scrape_movies_task
+    load_task: Any = load_to_bigquery_task
+    assert scrape_task.retries == 2, "scrape_movies_task deve ter 2 retries"
+    assert load_task.retries == 3, "load_to_bigquery_task deve ter 3 retries"
     print("  ✓ Retries configurados corretamente")
 
 
-def test_http_client_functions():
+def test_http_client_functions() -> None:
     """Testa funções do http_client"""
     print("Testando funções do http_client...")
 
@@ -308,10 +315,10 @@ def test_http_client_functions():
     # Teste collect_movie_links com HTML mockado
     html = """
     <html>
-        <div id="capas_pequenas">
-            <div><a href="https://example.com/movie1">Movie 1</a></div>
-            <div><a href="https://example.com/movie2">Movie 2</a></div>
-            <div><a href="https://example.com/movie1">Movie 1 Again</a></div>
+        <div id=\"capas_pequenas\">
+            <div><a href=\"https://example.com/movie1\">Movie 1</a></div>
+            <div><a href=\"https://example.com/movie2\">Movie 2</a></div>
+            <div><a href=\"https://example.com/movie1\">Movie 1 Again</a></div>
         </div>
     </html>
     """
@@ -324,7 +331,7 @@ def test_http_client_functions():
     print(f"  ✓ collect_movie_links funciona (encontrou {len(links)} links únicos)")
 
 
-def test_bigquery_schema():
+def test_bigquery_schema() -> None:
     """Testa schema do BigQuery"""
     print("Testando schema do BigQuery...")
 
@@ -336,7 +343,9 @@ def test_bigquery_schema():
     assert schema_file.exists(), f"Schema file não encontrado: {schema_file}"
 
     with open(schema_file, "r") as f:
-        schema = json.load(f)
+        schema_data = json.load(f)
+
+    schema: list[dict[str, str]] = schema_data
 
     # Verificar estrutura do schema
     assert isinstance(schema, list), "Schema deve ser uma lista"
@@ -375,8 +384,8 @@ def test_bigquery_schema():
     }
 
     for field_name, expected_type in type_mapping.items():
-        field = next(f for f in schema if f["name"] == field_name)
-        assert field["type"] == expected_type, f"Tipo incorreto para {field_name}"
+        field_dict = next(f for f in schema if f["name"] == field_name)
+        assert field_dict["type"] == expected_type, f"Tipo incorreto para {field_name}"
 
     print("  ✓ Tipos de dados corretos no schema")
 
@@ -386,7 +395,7 @@ def test_bigquery_schema():
 # =============================================================================
 
 
-def main():
+def main() -> int:
     """Executa todos os testes"""
     print("\n" + "=" * 60)
     print("🧪 SUITE DE TESTES - SCRAPER DE FILMES")

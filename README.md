@@ -4,6 +4,46 @@ Sistema automatizado de scraping de filmes do site GratisTorrent/ComandoTorrents
 
 ## 🚀 Início Rápido
 
+### Instalação
+
+Este projeto usa [uv](https://docs.astral.sh/uv/) para gerenciamento de dependências.
+
+```bash
+# Instalar apenas dependências principais (produção)
+uv sync
+
+# Instalar com dependências de desenvolvimento (testes, linting, type checking)
+uv sync --group dev
+
+# Instalar tudo (recomendado para desenvolvimento)
+uv sync --all-groups
+```
+
+**Grupos de Dependências:**
+- **main**: Dependências necessárias para executar os scrapers
+- **dev**: Ferramentas de desenvolvimento (pytest, mypy, pre-commit, types-requests)
+
+### Configurar Pre-commit Hooks (Desenvolvimento)
+
+Pre-commit hooks garantem qualidade de código antes de cada commit:
+
+```bash
+# Instalar hooks (após uv sync --group dev)
+uv run pre-commit install
+
+# Executar manualmente em todos os arquivos
+uv run pre-commit run --all-files
+
+# Os hooks rodarão automaticamente em cada commit
+```
+
+**Hooks configurados:**
+- Remoção de espaços em branco
+- Formatação com Ruff
+- Linting com Ruff
+- Type checking com MyPy
+- Validação de YAML/JSON/TOML
+
 ### Configurar Variáveis de Ambiente
 
 ```bash

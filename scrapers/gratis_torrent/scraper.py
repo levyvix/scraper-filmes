@@ -1,13 +1,14 @@
 """Main scraper orchestration module."""
 
+from typing import Any
 from loguru import logger
+from diskcache import Cache
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from scrapers.gratis_torrent.config import Config
 from scrapers.gratis_torrent.http_client import collect_movie_links, fetch_page
 from scrapers.gratis_torrent.models import Movie
 from scrapers.gratis_torrent.parser import parse_movie_page
-
-from diskcache import Cache
 
 
 cache = Cache("movie_cache")
@@ -30,9 +31,6 @@ def scrape_movie_links() -> list[str]:
     except FetchException as e:
         logger.error(f"Cannot access {Config.BASE_URL}: {e}")
         return []
-
-
-from tenacity import retry, stop_after_attempt, wait_exponential
 
 
 @retry(
@@ -74,7 +72,7 @@ def scrape_movie_details(url: str) -> Movie | None:
 
 
 # @cache.memoize(expire=3600)
-def scrape_all_movies() -> list[dict]:
+def scrape_all_movies() -> list[dict[str, Any]]:
     """
     Scrape all movies from the main page.
 

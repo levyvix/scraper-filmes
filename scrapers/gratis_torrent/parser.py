@@ -20,9 +20,11 @@ def extract_poster_url(soup: BeautifulSoup) -> str | None:
     Returns:
         Poster URL string or None if not found
     """
-    poster_element = soup.select_one("body > div:nth-child(3) > div > div.col-12.col-sm-8.col-lg-9.my-1 > img")
+    poster_element = soup.select_one(
+        "body > div:nth-child(3) > div > div.col-12.col-sm-8.col-lg-9.my-1 > img"
+    )
     if poster_element and "src" in poster_element.attrs:
-        return poster_element["src"]
+        return str(poster_element["src"])
     return None
 
 
@@ -44,9 +46,6 @@ def extract_regex_field(pattern: str, text: str, group: int = 1) -> str | None:
     return match.group(group).strip()
 
 
-
-
-
 def extract_sinopse(soup: BeautifulSoup) -> str | None:
     """
     Extract movie synopsis from the page.
@@ -61,7 +60,7 @@ def extract_sinopse(soup: BeautifulSoup) -> str | None:
     if not sinopse_element:
         return None
 
-    sinopse_text = sinopse_element.text
+    sinopse_text: str = sinopse_element.text
 
     # Remove "Descrição:" prefix if present
     if "Descrição" in sinopse_text:
@@ -96,7 +95,7 @@ def extract_movie_fields(info_text: str) -> dict[str, str | None]:
         "qualidade": r"Qualidade:\s*([0-9a-zA-Z |]+)",
     }
 
-    extracted = {}
+    extracted: dict[str, str | None] = {}
     for field_name, pattern in patterns.items():
         extracted[field_name] = extract_regex_field(pattern, info_text)
 
@@ -119,7 +118,7 @@ def clean_genre(genre: str | None) -> str | None:
 
 
 def create_movie_object(
-    extracted: dict,
+    extracted: dict[str, str | None],
     info_text: str,
     sinopse: str | None,
     url: str,
@@ -147,6 +146,7 @@ def create_movie_object(
             genero=clean_genre(extracted["genero"]),
             tamanho=extracted["tamanho"],
             duracao_minutos=parse_int(extracted["duracao_minutos"]),
+            duracao=None,
             qualidade_video=parse_rating(extracted["qualidade_video"]),
             qualidade=extracted["qualidade"],
             dublado="Português" in info_text,

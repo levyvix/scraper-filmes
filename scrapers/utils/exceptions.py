@@ -23,3 +23,9 @@ class FetchException(ScraperException):
     """Raised when HTTP requests fail."""
 
     pass
+
+
+class BigQueryException(ScraperException):
+    """Exception for BigQuery operations."""
+
+    pass

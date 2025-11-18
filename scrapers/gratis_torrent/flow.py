@@ -1,7 +1,7 @@
 """Prefect flow for GratisTorrent scraper pipeline."""
 
 import json
-
+from typing import Any
 from pathlib import Path
 
 from prefect import flow, task
@@ -25,7 +25,7 @@ logger = setup_logging(level="INFO", log_file="gratis_torrent.log")
     cache_expiration=timedelta(hours=1),
     log_prints=True,
 )
-def scrape_movies_task() -> list[dict]:
+def scrape_movies_task() -> list[dict[str, Any]]:
     """
     Task to scrape all movies from GratisTorrent.
 
@@ -39,7 +39,7 @@ def scrape_movies_task() -> list[dict]:
     return movies
 
 
-def load_jsonl(path: Path) -> list[dict]:
+def load_jsonl(path: Path) -> list[dict[str, Any]]:
     items = []
     with open(path, "r") as f:
         for line in f:
@@ -66,7 +66,7 @@ def load_to_bigquery_task(movies_path: Path) -> int:
 
 
 @flow(name="gratis-torrent-scraper", log_prints=True)
-def gratis_torrent_flow() -> dict:
+def gratis_torrent_flow() -> dict[str, Any]:
     """
     Main Prefect flow for scraping GratisTorrent and loading to BigQuery.
 

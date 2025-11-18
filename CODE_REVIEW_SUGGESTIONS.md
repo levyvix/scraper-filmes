@@ -1,7 +1,7 @@
 # Code Review & Suggestions - Scraper de Filmes
 
-**Project Type:** Junior-Level Data Engineering Project  
-**Review Date:** 2025-11-18  
+**Project Type:** Junior-Level Data Engineering Project
+**Review Date:** 2025-11-18
 **Reviewer:** Senior Data Engineer
 
 ---
@@ -82,14 +82,14 @@ import sys
 
 def setup_logging(level="INFO", log_file="scraper.log"):
     logger.remove()  # Remove default handler
-    
+
     # Console handler
     logger.add(
         sys.stderr,
         format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>",
         level=level
     )
-    
+
     # File handler with rotation
     logger.add(
         log_file,
@@ -98,7 +98,7 @@ def setup_logging(level="INFO", log_file="scraper.log"):
         compression="zip",
         level="DEBUG"
     )
-    
+
     return logger
 ```
 
@@ -138,13 +138,13 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 def scrape_movie_details(url: str) -> Optional[Movie]:
     """
     Scrape details for a single movie with retry logic.
-    
+
     Args:
         url: URL of the movie page
-        
+
     Returns:
         Movie object or None if scraping fails after retries
-        
+
     Raises:
         ScraperException: If critical error occurs
     """
@@ -152,14 +152,14 @@ def scrape_movie_details(url: str) -> Optional[Movie]:
         soup = fetch_page(url)
         if not soup:
             raise ScraperException(f"Failed to fetch page: {url}")
-        
+
         movie = parse_movie_page(soup, url)
         if not movie:
             logger.warning(f"No movie data extracted from {url}")
             return None
-            
+
         return movie
-        
+
     except Exception as e:
         logger.error(f"Error scraping {url}: {e}", exc_info=True)
         raise ScraperException(f"Failed to scrape {url}") from e
@@ -198,30 +198,30 @@ from pydantic import Field, validator
 
 class Config(BaseSettings):
     """Configuration settings with validation."""
-    
+
     # GCP Settings
     GCP_PROJECT_ID: str = Field(..., description="Google Cloud Project ID")
     DATASET_ID: str = Field(default="movies_raw", description="BigQuery dataset")
     TABLE_ID: str = Field(default="filmes", description="Main table name")
     STAGING_TABLE_ID: str = Field(default="stg_filmes", description="Staging table")
     LOCATION: str = Field(default="US", description="BigQuery location")
-    
+
     # Scraper Settings
     BASE_URL: str = Field(
         default="https://gratistorrent.com/lancamentos/",
         description="Base URL for scraping"
     )
     REQUEST_TIMEOUT: int = Field(default=40, ge=1, le=300)
-    
+
     # Email Settings (optional)
     EMAIL: str | None = None
     EMAIL_PW: str | None = None
-    
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = True
-    
+
     @validator("GCP_PROJECT_ID")
     def validate_project_id(cls, v):
         if not v or v == "your-project-id":
@@ -276,16 +276,16 @@ from scrapers.utils.parse_utils import parse_rating, parse_year, parse_int
 
 class TestParseRating:
     """Test parse_rating function."""
-    
+
     def test_valid_rating(self):
         assert parse_rating("8.5") == 8.5
         assert parse_rating("7,5") == 7.5  # Comma separator
-    
+
     def test_invalid_rating(self):
         assert parse_rating("invalid") is None
         assert parse_rating("") is None
         assert parse_rating(None) is None
-    
+
     @pytest.mark.parametrize("input,expected", [
         ("9.0", 9.0),
         ("10", 10.0),
@@ -357,43 +357,43 @@ from scrapers.utils.models import Movie
 
 class DataQualityChecker:
     """Validate scraped data quality."""
-    
+
     def __init__(self, min_fields_filled: float = 0.7):
         self.min_fields_filled = min_fields_filled
         self.quality_issues = []
-    
+
     def check_movie(self, movie: Movie) -> bool:
         """
         Check if a movie meets quality standards.
-        
+
         Returns:
             True if movie passes quality checks
         """
         issues = []
-        
+
         # Check required fields
         if not movie.titulo_dublado and not movie.titulo_original:
             issues.append("Missing both titles")
-        
+
         if not movie.link:
             issues.append("Missing link")
-        
+
         # Check field completeness
         total_fields = len(movie.model_fields)
-        filled_fields = sum(1 for field, value in movie.model_dump().items() 
+        filled_fields = sum(1 for field, value in movie.model_dump().items()
                            if value is not None)
         completeness = filled_fields / total_fields
-        
+
         if completeness < self.min_fields_filled:
             issues.append(f"Low completeness: {completeness:.1%}")
-        
+
         # Check data validity
         if movie.ano and (movie.ano < 1888 or movie.ano > 2030):
             issues.append(f"Invalid year: {movie.ano}")
-        
+
         if movie.imdb and (movie.imdb < 0 or movie.imdb > 10):
             issues.append(f"Invalid IMDB: {movie.imdb}")
-        
+
         if issues:
             self.quality_issues.append({
                 "link": movie.link,
@@ -401,19 +401,19 @@ class DataQualityChecker:
             })
             logger.warning(f"Quality issues for {movie.link}: {', '.join(issues)}")
             return False
-        
+
         return True
-    
+
     def check_batch(self, movies: List[Movie]) -> dict:
         """
         Check quality of a batch of movies.
-        
+
         Returns:
             Dictionary with quality metrics
         """
         total = len(movies)
         passed = sum(1 for movie in movies if self.check_movie(movie))
-        
+
         return {
             "total_movies": total,
             "passed_quality": passed,
@@ -427,23 +427,33 @@ def scrape_all_movies() -> list[dict]:
     links = scrape_movie_links()
     movies_list = []
     quality_checker = DataQualityChecker(min_fields_filled=0.7)
-    
+
     for link in links:
         movie = scrape_movie_details(link)
         if movie and quality_checker.check_movie(movie):
             movies_list.append(movie.model_dump())
-    
+
     # Log quality report
     report = quality_checker.check_batch([Movie(**m) for m in movies_list])
     logger.info(f"Quality Report: {report['pass_rate']:.1%} pass rate")
-    
+
     return movies_list
 ```
 
 ---
 
-#### 7. Improve BigQuery Error Handling
+#### 7. Improve BigQuery Error Handling ✅
+**Status:** COMPLETED (2025-11-18)
+
 **Issue:** BigQuery operations could fail silently or with unclear errors.
+
+**Implementation:**
+- ✅ Added `BigQueryException` to `scrapers/utils/exceptions.py`
+- ✅ Updated all BigQuery operations with comprehensive error handling
+- ✅ Added timeout configuration (300 seconds) to all long-running operations
+- ✅ Improved logging with detailed context for all operations
+- ✅ Changed `load_data_to_staging()` return type to `int` (returns row count)
+- ✅ All exceptions use proper error chaining with `from e`
 
 **Current Code (bigquery_client.py):**
 ```python
@@ -461,39 +471,39 @@ from loguru import logger
 def load_data_to_staging(client: bigquery.Client, data: list[dict]) -> int:
     """
     Load movie data into BigQuery staging table.
-    
+
     Returns:
         Number of rows loaded
-        
+
     Raises:
         BigQueryException: If load fails
     """
     if not data:
         logger.warning("No data to load to staging")
         return 0
-    
+
     table_id = Config.get_full_table_id(Config.STAGING_TABLE_ID)
-    
+
     try:
         job_config = bigquery.LoadJobConfig(
             schema=load_schema(),
             write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
         )
-        
+
         logger.info(f"Loading {len(data)} rows to {table_id}")
         job = client.load_table_from_json(data, table_id, job_config=job_config)
-        
+
         # Wait for job to complete
         result = job.result(timeout=300)  # 5 minute timeout
-        
+
         if job.errors:
             logger.error(f"Load job had errors: {job.errors}")
             raise BigQueryException(f"Load failed with errors: {job.errors}")
-        
+
         rows_loaded = result.output_rows
         logger.info(f"Successfully loaded {rows_loaded} rows to staging")
         return rows_loaded
-        
+
     except GoogleCloudError as e:
         logger.error(f"BigQuery error loading to staging: {e}")
         raise BigQueryException(f"Failed to load to staging: {e}") from e
@@ -508,8 +518,18 @@ class BigQueryException(Exception):
 
 ---
 
-#### 8. Add Rate Limiting
+---
+
+#### 8. Add Rate Limiting ✅
+**Status:** COMPLETED (2025-11-18)
+
 **Issue:** No rate limiting could get IP blocked.
+
+**Implementation:**
+- ✅ Created `scrapers/utils/rate_limiter.py` with `RateLimiter` class and decorator
+- ✅ Applied `@rate_limit` decorator to both scrapers' fetch functions
+- ✅ Configured to 2 requests per second (0.5s minimum interval)
+- ✅ Verified correct timing enforcement with unit tests
 
 **Recommended:**
 ```python
@@ -520,11 +540,11 @@ from loguru import logger
 
 class RateLimiter:
     """Simple rate limiter for HTTP requests."""
-    
+
     def __init__(self, calls_per_second: float = 1.0):
         self.min_interval = 1.0 / calls_per_second
         self.last_call = 0.0
-    
+
     def wait(self):
         """Wait if necessary to respect rate limit."""
         elapsed = time.time() - self.last_call
@@ -537,7 +557,7 @@ class RateLimiter:
 def rate_limit(calls_per_second: float = 1.0):
     """Decorator to rate limit function calls."""
     limiter = RateLimiter(calls_per_second)
-    
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -557,6 +577,7 @@ def fetch_page(url: str, timeout: int = Config.REQUEST_TIMEOUT) -> BeautifulSoup
         logger.error(f"Failed to fetch {url}: {e}")
         return None
 ```
+
 
 ---
 
@@ -637,49 +658,49 @@ from scrapers.utils.send_mail import send_email
 
 class ScraperMonitor:
     """Monitor scraper health and send alerts."""
-    
+
     def __init__(self, min_movies_threshold: int = 10):
         self.min_movies_threshold = min_movies_threshold
         self.start_time = datetime.now()
-    
+
     def check_results(self, movies_scraped: int, rows_loaded: int):
         """Check if scraping results are healthy."""
         issues = []
-        
+
         if movies_scraped < self.min_movies_threshold:
             issues.append(f"Low movie count: {movies_scraped} (expected >= {self.min_movies_threshold})")
-        
+
         if rows_loaded == 0 and movies_scraped > 0:
             issues.append(f"No rows loaded despite scraping {movies_scraped} movies")
-        
+
         load_rate = rows_loaded / movies_scraped if movies_scraped > 0 else 0
         if load_rate < 0.5:
             issues.append(f"Low load rate: {load_rate:.1%}")
-        
+
         if issues:
             self.send_alert(issues, movies_scraped, rows_loaded)
             return False
-        
+
         return True
-    
+
     def send_alert(self, issues: list[str], movies_scraped: int, rows_loaded: int):
         """Send alert email about scraping issues."""
         duration = (datetime.now() - self.start_time).total_seconds()
-        
+
         subject = "🚨 Scraper Alert - Issues Detected"
         body = f"""
         Scraper completed with issues:
-        
+
         Issues:
         {chr(10).join(f"- {issue}" for issue in issues)}
-        
+
         Stats:
         - Movies Scraped: {movies_scraped}
         - Rows Loaded: {rows_loaded}
         - Duration: {duration:.1f}s
         - Timestamp: {datetime.now().isoformat()}
         """
-        
+
         try:
             send_email(subject, body)
             logger.info("Alert email sent")
@@ -689,18 +710,18 @@ class ScraperMonitor:
 # Use in flow
 def gratis_torrent_flow() -> dict:
     monitor = ScraperMonitor(min_movies_threshold=10)
-    
+
     movies = scrape_movies_task()
     # ... save to disk ...
     rows_affected = load_to_bigquery_task(Config.MOVIES_JSON_PATH)
-    
+
     result = {
         "movies_scraped": len(movies),
         "rows_loaded": rows_affected,
     }
-    
+
     monitor.check_results(len(movies), rows_affected)
-    
+
     return result
 ```
 
@@ -716,13 +737,13 @@ def gratis_torrent_flow() -> dict:
 def parse_rating(rating_text: str | None) -> float | None:
     """
     Convert rating text to float.
-    
+
     Args:
         rating_text: String representation of rating (e.g., "8.5" or "7,5")
-    
+
     Returns:
         Float rating or None if invalid
-        
+
     Examples:
         >>> parse_rating("8.5")
         8.5
@@ -885,24 +906,24 @@ import yagmail
 def send_email(subject: str, body: str, to: str | None = None) -> bool:
     """
     Send email notification.
-    
+
     Args:
         subject: Email subject
         body: Email body
         to: Recipient email (uses EMAIL env var if not provided)
-        
+
     Returns:
         True if email sent successfully
     """
     email = os.getenv("EMAIL")
     email_pw = os.getenv("EMAIL_PW")
-    
+
     if not email or not email_pw:
         logger.warning("Email credentials not configured, skipping email")
         return False
-    
+
     recipient = to or email
-    
+
     try:
         yag = yagmail.SMTP(email, email_pw)
         yag.send(
@@ -912,7 +933,7 @@ def send_email(subject: str, body: str, to: str | None = None) -> bool:
         )
         logger.info(f"Email sent successfully to {recipient}")
         return True
-        
+
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
         return False

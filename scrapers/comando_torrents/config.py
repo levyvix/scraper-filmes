@@ -26,4 +26,3 @@ class ComandoTorrentsConfig(BaseSettings):
 
 # Singleton instance for backward compatibility
 Config = ComandoTorrentsConfig()
-

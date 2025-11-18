@@ -21,7 +21,9 @@ class GratisTorrentConfig(BaseSettings):
         default="https://gratistorrent.com/lancamentos/",
         description="Base URL for scraping",
     )
-    REQUEST_TIMEOUT: int = Field(default=40, ge=1, le=300, description="Request timeout in seconds")
+    REQUEST_TIMEOUT: int = Field(
+        default=40, ge=1, le=300, description="Request timeout in seconds"
+    )
 
     # Email Settings (optional)
     EMAIL: str | None = Field(default=None, description="Email for notifications")
@@ -67,5 +69,3 @@ class GratisTorrentConfig(BaseSettings):
 
 # Singleton instance for backward compatibility
 Config = GratisTorrentConfig()
-
-

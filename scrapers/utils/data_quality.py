@@ -1,6 +1,6 @@
 """Data quality validation for scraped movies."""
 
-from typing import List
+from typing import Any, Sequence
 from loguru import logger
 from scrapers.utils.models import Movie
 
@@ -16,7 +16,7 @@ class DataQualityChecker:
             min_fields_filled: Minimum proportion of fields that should be filled (0.0-1.0)
         """
         self.min_fields_filled = min_fields_filled
-        self.quality_issues: list[dict] = []
+        self.quality_issues: list[dict[str, Any]] = []
 
     def check_movie(self, movie: Movie) -> bool:
         """
@@ -66,7 +66,7 @@ class DataQualityChecker:
 
         return True
 
-    def check_batch(self, movies: List[Movie]) -> dict:
+    def check_batch(self, movies: Sequence[Movie]) -> dict[str, Any]:
         """
         Check quality of a batch of movies.
 
