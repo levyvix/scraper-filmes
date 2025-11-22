@@ -10,7 +10,7 @@ class Movie(BaseModel):
     ano: int | None = Field(None, ge=1888)
     genero: str | None = None
     tamanho: str | None = None
-    duracao: str | None = None
+    duracao: str | None = Field(None, description="Duration in minutes")
     qualidade_video: float | None = Field(
         None, ge=0, description="Video quality score (0-10)"
     )

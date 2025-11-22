@@ -1,5 +1,20 @@
 # Proposal: Comprehensive Test Coverage for All Scrapers
 
+## Why
+
+The project currently has fragmented test coverage across scrapers and utilities, with several critical modules having no test coverage at all. This creates risk when deploying production features, making refactoring unsafe, and making it difficult to trust data quality checks. Comprehensive test coverage enables confident refactoring, early bug detection, reliable CI/CD pipelines, and executable documentation.
+
+## What Changes
+
+- Add 50+ new unit tests for shared utilities (data_quality, send_mail, exceptions)
+- Add 40+ parser tests for GratisTorrent scraper with edge cases and HTML fixtures
+- Add 30+ integration tests for BigQuery client (setup, merge, deduplication)
+- Add 20+ tests for Comando Torrents scraper (config, parser, scraper, flow)
+- Create reusable test fixtures for HTML samples, mock responses, and test data
+- Fix existing pytest-loguru incompatibility issues (7 failing tests)
+- Update test documentation with coverage targets and patterns
+- Achieve ≥80% overall coverage with module-specific targets (85%+ for parsers, 80%+ for others)
+
 ## Summary
 
 Achieve **80% minimum test coverage** across all scraper modules (gratis_torrent, comando_torrents) and utilities. Current coverage is fragmented:

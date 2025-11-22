@@ -68,4 +68,4 @@ class GratisTorrentConfig(BaseSettings):
 
 
 # Singleton instance for backward compatibility
-Config = GratisTorrentConfig()
+Config = GratisTorrentConfig()  # type: ignore

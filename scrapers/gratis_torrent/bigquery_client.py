@@ -200,7 +200,7 @@ def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]) ->
             logger.error(f"Load job had errors: {load_job.errors}")
             raise BigQueryException(f"Load failed with errors: {load_job.errors}")
 
-        rows_loaded = int(result.output_rows) if result.output_rows else 0
+        rows_loaded = int(result.output_rows) if result.output_rows else 0  # type: ignore
         logger.info(f"Successfully loaded {rows_loaded} rows to staging")
         return rows_loaded
 
