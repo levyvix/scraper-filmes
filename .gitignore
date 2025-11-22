@@ -11,3 +11,4 @@ comando_cache/
 *_cache
 .venv
 *.log
+htmlcov

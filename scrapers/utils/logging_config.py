@@ -4,12 +4,12 @@ This module provides a unified logging setup using loguru that integrates
 with Prefect's logging system when running within Prefect tasks.
 """
 
-from loguru import logger, Logger
+from loguru import logger
 import sys
 from pathlib import Path
 
 
-def setup_logging(level: str = "INFO", log_file: str = "scraper.log") -> Logger:
+def setup_logging(level: str = "INFO", log_file: str = "scraper.log") -> "logger":
     """
     Configure logging with console and file handlers.
 

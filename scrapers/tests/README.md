@@ -253,6 +253,66 @@ jobs:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 ```
 
+## Test Fixtures
+
+The `fixtures/` directory contains reusable test data and mocks:
+
+### test_data.py
+
+Movie objects for validation testing:
+- `VALID_MOVIE_COMPLETE` - Movie with all fields populated
+- `VALID_MOVIE_MINIMAL` - Movie with minimal fields
+- `PARTIAL_MOVIE_NO_RATING` - Movie missing rating field
+- `PARTIAL_MOVIE_NO_YEAR` - Movie missing year field
+- `MOVIE_WITH_SPECIAL_CHARS` - Movie with special characters
+- `INVALID_MOVIE_RATING_TOO_HIGH` - Invalid rating (>10)
+- `INVALID_MOVIE_RATING_NEGATIVE` - Invalid rating (<0)
+- `INVALID_MOVIE_YEAR_TOO_OLD` - Invalid year (<1888)
+- `BOUNDARY_MOVIE_*` - Boundary value tests (rating 0/10, year 1888)
+
+### mock_responses.py
+
+Mock HTTP responses and API objects:
+- `MockHTTPResponse` - Simulates requests.Response
+- `MockBigQueryClient` - Simulates google.cloud.bigquery.Client
+- `MockBigQueryJob` - Simulates BigQuery load jobs
+- `MockPrefectTaskResult` - Simulates Prefect task results
+- Pre-built BeautifulSoup objects for different scenarios
+
+### gratis_html.py
+
+Pre-rendered HTML for GratisTorrent scraper tests:
+- Complete, minimal, malformed movie pages
+- Listing pages with links (normal, duplicates, empty)
+- Helper functions: `get_complete_movie_soup()`, `get_listing_with_links_soup()`, etc.
+
+### comando_html.py
+
+Pre-rendered HTML for Comando Torrents scraper tests:
+- Complete, minimal, malformed torrent pages
+- High/low quality torrents
+- Cloudflare-protected pages
+- Listing pages with torrents
+- Helper functions with similar naming pattern
+
+## Coverage Targets
+
+| Module | Target | Current |
+|--------|--------|---------|
+| gratis_torrent/scraper.py | 100% | 100% |
+| gratis_torrent/parser.py | 90% | 24% |
+| gratis_torrent/http_client.py | 100% | 28% |
+| gratis_torrent/flow.py | 85% | 0% |
+| gratis_torrent/bigquery_client.py | 80% | 0% |
+| comando_torrents/config.py | 90% | 0% |
+| comando_torrents/parser.py | 85% | 0% |
+| comando_torrents/scraper.py | 85% | 0% |
+| comando_torrents/flow.py | 80% | 0% |
+| utils/data_quality.py | 85% | 18% |
+| utils/send_mail.py | 80% | 0% |
+| utils/exceptions.py | 100% | 100% |
+| **Overall** | **80%** | **39%** |
+
 ## Related Documentation
 
 - [Project README](/README.md)

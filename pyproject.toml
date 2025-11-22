@@ -30,6 +30,7 @@ dev = [
     "pre-commit>=4.4.0",
     "pytest>=9.0.1",
     "pytest-cov>=7.0.0",
+    "pytest-loguru>=0.4.0",
     "types-requests>=2.32.4.20250913",
 ]
 
@@ -71,3 +72,11 @@ module = [
     "yagmail.*",
 ]
 ignore_missing_imports = true
+
+# Relax type checking for test files
+[[tool.mypy.overrides]]
+module = "scrapers.tests.*"
+disallow_untyped_defs = false
+disallow_any_generics = false
+check_untyped_defs = false
+warn_return_any = false

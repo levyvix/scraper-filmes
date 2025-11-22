@@ -114,7 +114,7 @@ def clean_genre(genre: str | None) -> str | None:
     """
     if not genre:
         return None
-    return genre.replace(" / ", ", ")
+    return genre.replace(" / ", ", ").replace(" | ", ", ")
 
 
 def create_movie_object(
