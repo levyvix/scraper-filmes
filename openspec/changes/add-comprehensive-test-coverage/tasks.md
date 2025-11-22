@@ -1,5 +1,7 @@
 # Implementation Tasks: Comprehensive Test Coverage
 
+> **📋 Test Tracking**: See [`docs/TEST_TRACKING.md`](../../docs/TEST_TRACKING.md) for detailed coverage progress, test execution strategy, and per-module status. This document tracks which tests are working to avoid re-running unnecessary test suites during development.
+
 ## Prerequisites
 
 - [ ] Review `proposal.md` and understand full scope
