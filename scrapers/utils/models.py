@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class Movie(BaseModel):
-    """Movie data model with data validation."""
+    """Movie data model with validation."""
 
     titulo_dublado: str | None = None
     titulo_original: str | None = None
