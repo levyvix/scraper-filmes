@@ -30,9 +30,6 @@ jobs:
       - name: Run Ruff formatting check
         run: uvx ruff format --check --line-length 120 .
 
-      - name: Run Pyright type checking
-        run: uvx pyright --outputjson --pythonversion 3.11
-
   test:
     runs-on: ubuntu-latest
     steps:

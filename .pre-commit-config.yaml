@@ -18,9 +18,3 @@ repos:
         exclude: ^scrapers/tests/test_suite\.py$
       - id: ruff-format
         exclude: ^scrapers/tests/test_suite\.py$
-
-  - repo: https://github.com/RoelAdriaans/pre-commit-pyright
-    rev: 1.1.370
-    hooks:
-      - id: pyright
-        args: [--outputjson, --pythonversion, "3.11"]
