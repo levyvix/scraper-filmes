@@ -4,6 +4,7 @@ from typing import Any
 from loguru import logger
 from diskcache import Cache
 from tenacity import retry, stop_after_attempt, wait_exponential
+from bs4 import BeautifulSoup
 
 from scrapers.gratis_torrent.config import Config
 from scrapers.gratis_torrent.http_client import collect_movie_links, fetch_page
@@ -24,7 +25,7 @@ def scrape_movie_links() -> list[str]:
     from scrapers.utils.exceptions import FetchException
 
     try:
-        soup = fetch_page(Config.BASE_URL)
+        soup: BeautifulSoup = fetch_page(Config.BASE_URL)
         links = collect_movie_links(soup)
         logger.info(f"Found {len(links)} unique movie links. Scraping details...")
         return links
