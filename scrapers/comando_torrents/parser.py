@@ -56,11 +56,22 @@ def parse_detail(link: str) -> Movie | None:
     year_text = extract_text_or_none(
         page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(10)::text"
     )
-    # TODO: consertar busca por ano do filme
+    # Extract year with multiple fallback strategies
+    # First try: Direct CSS selector (most reliable)
     year = parse_year(year_text)
+
+    # Second try: Fallback to structured data at index 3 if CSS selector fails
     if not year:
         year_fallback = safe_list_get(info_texts_str, 3)
         year = parse_year(year_fallback)
+
+    # Third try: Search for any 4-digit number that looks like a year (1888-2100)
+    if not year and info_texts_str:
+        for text in info_texts_str:
+            potential_year = parse_year(text)
+            if potential_year and 1888 <= potential_year <= 2100:
+                year = potential_year
+                break
 
     sinopse_list = page.css("div.entry-content.cf > p:nth-child(4)::text")
     sinopse = str(sinopse_list[0]).strip() if sinopse_list else None

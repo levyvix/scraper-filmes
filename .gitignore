@@ -1,14 +1,53 @@
-*.pyc
-*.png
-__pycache__/
-*.db
-.env
-*.json
-*.csv
+# Data files
 *.jsonl
-!**/schema.json
+*.csv
+movies.json
 comando_cache/
-*_cache
-.venv
+movie_cache/
+*_cache/
+
+# Keep schema files
+!schema.json
+!**/schema.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.png
+
+# Logs
 *.log
-htmlcov
+logs/
+
+# Database
+*.db
