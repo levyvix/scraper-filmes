@@ -41,7 +41,9 @@ def load_schema() -> list[bigquery.SchemaField]:
         FileNotFoundError: If schema file is not found
     """
     if not Config.SCHEMA_FILE.exists():
-        raise FileNotFoundError(f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}")
+        raise FileNotFoundError(
+            f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}"
+        )
 
     schema_raw = json.loads(Config.SCHEMA_FILE.read_text("utf-8"))
     schema = [
@@ -85,7 +87,9 @@ def delete_table(client: bigquery.Client, table_name: str) -> None:
     logger.info(f"Table {table_id} deleted")
 
 
-def create_table(client: bigquery.Client, table_name: str, force_recreate: bool = False) -> None:
+def create_table(
+    client: bigquery.Client, table_name: str, force_recreate: bool = False
+) -> None:
     """
     Create BigQuery table if it doesn't exist.
 
@@ -124,7 +128,9 @@ def create_table(client: bigquery.Client, table_name: str, force_recreate: bool 
             updated_schema = table.schema + fields_to_add
             table.schema = updated_schema
             client.update_table(table, ["schema"])
-            logger.info(f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}")
+            logger.info(
+                f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}"
+            )
         else:
             logger.info(f"Table {table_id} already exists and schema is up to date.")
 
@@ -158,15 +164,17 @@ def load_data_to_staging(client: bigquery.Client, data: list[dict]) -> None:
     serialized_data = json.loads(json.dumps(data, default=_json_serial))
 
     logger.info(f"Loading {len(serialized_data)} movies to staging table")
-    load_job = client.load_table_from_json(serialized_data, table_ref, job_config=job_config)
+    load_job = client.load_table_from_json(
+        serialized_data, table_ref, job_config=job_config
+    )
     load_job.result()
 
-    logger.info("Data loaded to staging table successfully")
+    logger.success("Data loaded to staging table successfully")
 
 
 def merge_staging_to_main(client: bigquery.Client) -> int:
     """
-    Merge data from staging table to main table.
+    Merge data from staging table to main table. Following the schema defined in the SCHEMA_FILE in Config object.
 
     Args:
         client: BigQuery client instance
@@ -176,57 +184,23 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
     """
     target_table = Config.get_full_table_id(Config.TABLE_ID)
     source_table = Config.get_full_table_id(Config.STAGING_TABLE_ID)
+    schema = json.loads(Config.SCHEMA_FILE.read_text())
 
+    columns = [col_obj.name for col_obj in schema]
     merge_statement = f"""
-    MERGE INTO `{target_table}` AS target
-    USING `{source_table}` AS source
-    ON target.link = source.link
-    WHEN MATCHED THEN
-    UPDATE SET
-        target.titulo_dublado = source.titulo_dublado,
-        target.titulo_original = source.titulo_original,
-        target.imdb = source.imdb,
-        target.ano = source.ano,
-        target.genero = source.genero,
-        target.tamanho = source.tamanho,
-        target.duracao_minutos = source.duracao_minutos,
-        target.qualidade_video = source.qualidade_video,
-        target.qualidade = source.qualidade,
-        target.dublado = source.dublado,
-        target.sinopse = source.sinopse,
-        target.poster_url = source.poster_url,
+    merge into `{target_table}` as target
+    using `{source_table}` as source
+    on target.link = source.link
+    when matched then
+    update set
+        {",".join(f"target.{col}=source.{col}" for col in columns if col != "date_updated")},
         target.date_updated = CURRENT_TIMESTAMP()
     WHEN NOT MATCHED THEN
     INSERT (
-        titulo_dublado,
-        titulo_original,
-        imdb,
-        ano,
-        genero,
-        tamanho,
-        duracao_minutos,
-        qualidade_video,
-        qualidade,
-        dublado,
-        sinopse,
-        link,
-        poster_url,
-        date_updated
+        {columns}
     )
     VALUES (
-        source.titulo_dublado,
-        source.titulo_original,
-        source.imdb,
-        source.ano,
-        source.genero,
-        source.tamanho,
-        source.duracao_minutos,
-        source.qualidade_video,
-        source.qualidade,
-        source.dublado,
-        source.sinopse,
-        source.link,
-        source.poster_url,
+        {",".join(f"source.{col}" for col in columns if col != "date_updated")},
         CURRENT_TIMESTAMP()
     );
     """

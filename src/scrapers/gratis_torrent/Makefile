@@ -1,2 +1,2 @@
 run:
-	uv run -m src.scrapers.gratis_torrent.flow
+	uv run -m scrapers.gratis_torrent.flow

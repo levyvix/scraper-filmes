@@ -1,72 +1,72 @@
 [
-    {
-        "name": "titulo_dublado",
-        "type": "STRING",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "titulo_original",
-        "type": "STRING",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "imdb",
-        "type": "FLOAT64",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "ano",
-        "type": "INT64",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "genero",
-        "type": "STRING",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "tamanho",
-        "type": "STRING",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "duracao_minutos",
-        "type": "INTEGER",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "qualidade_video",
-        "type": "FLOAT",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "qualidade",
-        "type": "STRING",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "dublado",
-        "type": "BOOL",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "sinopse",
-        "type": "STRING",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "link",
-        "type": "STRING",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "date_updated",
-        "type": "TIMESTAMP",
-        "mode": "NULLABLE"
-    },
-    {
-        "name": "poster_url",
-        "type": "STRING",
-        "mode": "NULLABLE"
-    }
+  {
+    "name": "titulo_dublado",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "titulo_original",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "imdb",
+    "type": "FLOAT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "ano",
+    "type": "INT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "genero",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "tamanho",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "duracao_minutos",
+    "type": "INTEGER",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "qualidade_video",
+    "type": "FLOAT",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "qualidade",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "dublado",
+    "type": "BOOL",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "sinopse",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "link",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "poster_url",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "date_updated",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE"
+  }
 ]
