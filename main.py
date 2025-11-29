@@ -1,9 +1,8 @@
 """
 Script to run the GratisTorrent scraper standalone (no Prefect server required).
-
-This script calls the scraper logic directly without Prefect orchestration.
-For Prefect-managed runs, use: prefect deploy -n default
 """
+
+import sys
 
 from loguru import logger
 

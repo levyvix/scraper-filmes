@@ -1,6 +1,6 @@
 *.pyc
 *.png
-/__pycache__/
+__pycache__/
 *.db
 .env
 *.json
@@ -8,7 +8,7 @@
 *.jsonl
 !**/schema.json
 comando_cache/
-.mypy_cache/
-.pytest_cache/
+*_cache
 .venv
-movie_cache
+*.log
+htmlcov

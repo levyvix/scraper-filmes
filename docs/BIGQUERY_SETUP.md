@@ -21,9 +21,10 @@ gcloud auth application-default login
 # 2. Configurar o projeto
 gcloud config set project <nome-do-projeto>
 
-# 3. Testar a conexão
-uv run python scripts/test_bigquery.py
+# 3. Testar a conexão executando o scraper
+uv run run_gratis.py
 ```
+
 
 ### Opção 2: Service Account (Para Produção)
 
@@ -36,18 +37,14 @@ Use uma conta de serviço com arquivo JSON de credenciais:
 # 2. Configurar a variável de ambiente
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your-credentials.json"
 
-# 3. Testar a conexão
-uv run python test_bigquery.py
+# 3. Testar a conexão executando o scraper
+uv run run_gratis.py
 ```
 
 ## Testando a Integração
 
-### 1. Teste de Conexão
+O scraper GratisTorrent automaticamente cria as tabelas e insere os dados no BigQuery quando executado.
 
-```bash
-# Executa verificações de credenciais e conexão
-uv run python test_bigquery.py
-```
 
 
 ## Estrutura do BigQuery

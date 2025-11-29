@@ -1,0 +1,62 @@
+"""HTTP client for fetching web pages."""
+
+import requests
+from bs4 import BeautifulSoup
+from loguru import logger
+
+from scrapers.gratis_torrent.config import Config
+from scrapers.utils.rate_limiter import rate_limit
+
+
+@rate_limit(calls_per_second=2.0)  # Max 2 requests per second
+def fetch_page(url: str, timeout: int = Config.REQUEST_TIMEOUT) -> BeautifulSoup:
+    """
+    Fetch and parse HTML page.
+
+    Args:
+        url: URL to fetch
+        timeout: Request timeout in seconds
+
+    Returns:
+        BeautifulSoup object
+
+    Raises:
+        FetchException: If request fails
+    """
+    from scrapers.utils.exceptions import FetchException
+
+    try:
+        response = requests.get(url, timeout=timeout)
+        response.raise_for_status()
+        return BeautifulSoup(response.text, "html.parser")
+    except requests.Timeout as e:
+        logger.error(f"Timeout fetching {url}: {e}")
+        raise FetchException(f"Request timeout for {url}") from e
+    except requests.HTTPError as e:
+        logger.error(f"HTTP error fetching {url}: {e.response.status_code}")
+        raise FetchException(f"HTTP {e.response.status_code} for {url}") from e
+    except requests.RequestException as e:
+        logger.error(f"Failed to fetch {url}: {e}")
+        raise FetchException(f"Request failed for {url}") from e
+
+
+def collect_movie_links(soup: BeautifulSoup) -> list[str]:
+    """
+    Collect all unique movie links from the page.
+
+    Args:
+        soup: BeautifulSoup object of the page
+
+    Returns:
+        List of unique movie URLs
+    """
+    elements = soup.select("#capas_pequenas > div > a")
+
+    links = []
+    for element in elements:
+        link = element.get("href")
+        if link:
+            links.append(link)
+
+    # Remove duplicates while preserving order
+    return list(set(links))

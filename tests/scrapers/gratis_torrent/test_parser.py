@@ -201,8 +201,9 @@ class TestCreateMovieObject:
         info_text = "Idioma: Português"
         sinopse = "A computer hacker learns about the true nature of reality."
         url = "https://example.com/matrix"
+        poster_url = "https://example.com/poster.jpg"
 
-        movie = create_movie_object(extracted, info_text, sinopse, url)
+        movie = create_movie_object(extracted, info_text, sinopse, url, poster_url)
 
         assert movie is not None
         assert movie.titulo_dublado == "The Matrix"
@@ -227,8 +228,9 @@ class TestCreateMovieObject:
         }
         info_text = "Idioma: English"
         url = "https://example.com/matrix"
+        poster_url = "https://example.com/poster.jpg"
 
-        movie = create_movie_object(extracted, info_text, None, url)
+        movie = create_movie_object(extracted, info_text, None, url, poster_url)
 
         assert movie is not None
         assert movie.dublado is False
@@ -248,8 +250,9 @@ class TestCreateMovieObject:
         }
         info_text = "Idioma: English"
         url = "https://example.com/movie"
+        poster_url = "https://example.com/poster.jpg"
 
-        movie = create_movie_object(extracted, info_text, None, url)
+        movie = create_movie_object(extracted, info_text, None, url, poster_url)
 
         assert movie is None
 

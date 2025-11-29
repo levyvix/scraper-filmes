@@ -1,17 +1,50 @@
-# Scraper de Filmes - GratisTorrent
+# Scraper de Filmes
 
 Sistema automatizado de scraping de filmes do site GratisTorrent e Comando Torrents com exportação para BigQuery.
 
 ## 🚀 Início Rápido
 
-### 1. Instalar Dependências
+### Instalação
+
+Este projeto usa [uv](https://docs.astral.sh/uv/) para gerenciamento de dependências.
 
 ```bash
-# O projeto usa UV para gerenciamento de dependências
+# Instalar apenas dependências principais (produção)
 uv sync
+
+# Instalar com dependências de desenvolvimento (testes, linting, type checking)
+uv sync --group dev
+
+# Instalar tudo (recomendado para desenvolvimento)
+uv sync --all-groups
 ```
 
-### 2. Configurar Variáveis de Ambiente (Opcional)
+**Grupos de Dependências:**
+- **main**: Dependências necessárias para executar os scrapers
+- **dev**: Ferramentas de desenvolvimento (pytest, mypy, pre-commit, types-requests)
+
+### Configurar Pre-commit Hooks (Desenvolvimento)
+
+Pre-commit hooks garantem qualidade de código antes de cada commit:
+
+```bash
+# Instalar hooks (após uv sync --group dev)
+uv run pre-commit install
+
+# Executar manualmente em todos os arquivos
+uv run pre-commit run --all-files
+
+# Os hooks rodarão automaticamente em cada commit
+```
+
+**Hooks configurados:**
+- Remoção de espaços em branco
+- Formatação com Ruff
+- Linting com Ruff
+- Type checking com MyPy
+- Validação de YAML/JSON/TOML
+
+### Configurar Variáveis de Ambiente
 
 ```bash
 # Copiar arquivo de exemplo
@@ -20,15 +53,18 @@ cp .env.example .env
 # Editar .env com suas configurações (especialmente GCP_PROJECT_ID para BigQuery)
 # O arquivo .env é carregado automaticamente pelos scripts
 ```
+### Configurar BigQuery
 
-### 3. Executar os Scrapers
+[BIG_QUERY_SETUP](./docs/BIGQUERY_SETUP.md)
+
+### Executar os Scrapers
 
 ```bash
-# Scraper do GratisTorrent (com BigQuery e Prefect)
-uv run main.py
-
 # Scraper do Comando Torrents (simples, sem BigQuery)
-uv run src/scrapers/comando_torrents/main.py
+uv run run_comando.py
+
+# Scraper do GratisTorrent (com BigQuery e Prefect)
+uv run run_gratis.py
 ```
 
 ## 📊 Funcionalidades
@@ -59,11 +95,13 @@ Scraper completo com integração BigQuery e Prefect. Ideal para produção.
 - Cliente HTTP customizado com retry
 - Integração com BigQuery
 - Orquestração Prefect
+- Armazenamento SQLite local
 
-### 2. Comando Torrents (`src/scrapers/comando_torrents/`)
+
+### 2. Comando Torrents (`run_comando.py`)
 Scraper standalone simplificado focado em performance e stealth.
 
-**Localização:** `src/scrapers/comando_torrents/main.py`
+**Localização do Módulo:** `scrapers/comando_torrents/`
 
 **Características:**
 - **Stealth Scraping:** Usa `StealthySession` com bypass de Cloudflare
@@ -86,18 +124,20 @@ class Movie(BaseModel):
     dublado: bool | None
     sinopse: str | None
     link: str | None
-    date_updated: str
-    poster_url: str
+    poster_url: str | None
+    date_updated: str | None
 ```
 
-**Uso:**
-```bash
-# Executar scraper
-uv run src/scrapers/comando_torrents/main.py
+### 3. Shared Utils (`scrapers/utils/`)
+Módulo de utilitários compartilhados entre os scrapers.
 
-# Cache é armazenado em ./comando_cache/
-# Resultados são salvos em src/scrapers/comando_torrents/movies.json
-```
+**Localização do Módulo:** `scrapers/utils/`
+
+**Componentes:**
+- `parse_utils.py`: Funções auxiliares para limpeza e extração de texto.
+- `models.py`: Modelos de dados base (Pydantic) compartilhados.
+- `send_mail.py`: Utilitário para envio de notificações.
+
 
 ## 📚 Documentação
 

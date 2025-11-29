@@ -1,3 +1,22 @@
+<!-- OPENSPEC:START -->
+# OpenSpec Instructions
+
+These instructions are for AI assistants working in this project.
+
+Always open `@/openspec/AGENTS.md` when the request:
+- Mentions planning or proposals (words like proposal, spec, change, plan)
+- Introduces new capabilities, breaking changes, architecture shifts, or big performance/security work
+- Sounds ambiguous and you need the authoritative spec before coding
+
+Use `@/openspec/AGENTS.md` to learn:
+- How to create and apply change proposals
+- Spec format and conventions
+- Project structure and guidelines
+
+Keep this managed block so 'openspec update' can refresh the instructions.
+
+<!-- OPENSPEC:END -->
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -29,22 +48,16 @@ cp .env.example .env  # Edit with GCP_PROJECT_ID if using BigQuery
 ### Development
 ```bash
 # Run main GratisTorrent scraper
-uv run main.py
+uv run run_gratis.py
 
 # Run Comando Torrents scraper (lightweight, local output)
-uv run src/scrapers/comando_torrents/main.py
-
-# Run all tests (custom suite + pytest)
-uv run tests/test_suite.py && uvx pytest tests/
+uv run run_comando.py
 
 # Run specific test file
-uvx pytest tests/scrapers/gratis_torrent/test_parser.py -v
-
-# Test BigQuery connectivity
-uv run scripts/test_bigquery.py
+uv run pytest scrapers -v
 
 # Linting and formatting (with 120 char line length)
-uvx ruff check . && uvx ruff format --line-length 120
+uvx ruff check --fix . && uvx ruff format --line-length 120
 
 # Type checking
 uvx mypy --ignore-missing-imports .
@@ -59,7 +72,9 @@ HTTP Client (fetch_page)
     ↓
 Parser (parse_movie_page, extract_regex_field, etc.)
     ↓
-Models (Pydantic validation - Movie class)
+Shared Utils (parse_utils.py - parse_rating, parse_year, parse_int)
+    ↓
+Models (Pydantic validation - Movie class from utils/models.py)
     ↓
 Scraper (orchestration, DiskCache memoization)
     ↓
@@ -70,9 +85,10 @@ BigQuery Client (staging → merge → dedup)
 Cloud Storage (movies_raw.filmes dataset)
 ```
 
+
 ### Key Components
 
-1. **Data Models** (`src/utils/models.py`)
+1. **Data Models** (`src/scrapers/gratis_torrent/models.py`)
    - `Movie`: Pydantic BaseModel with 12 fields
    - Field validations: IMDB (0-10), year (≥1888), duration (≥1 min)
    - All fields nullable by design for partial data
@@ -80,7 +96,7 @@ Cloud Storage (movies_raw.filmes dataset)
 2. **Parser** (`src/scrapers/gratis_torrent/parser.py`)
    - Utilizes functions from `src/utils/parse_utils.py` for common parsing tasks
    - Regex-based field extraction (12 patterns)
-   - Safe type conversions (float, int) with fallbacks
+   - Uses shared utils for type conversions
    - Functions: `extract_movie_fields()`, `parse_movie_page()`, `clean_genre()`, etc.
    - Handles partial failures gracefully
 
@@ -94,24 +110,25 @@ Cloud Storage (movies_raw.filmes dataset)
    - `collect_movie_links()`: CSS selector `#capas_pequenas > div > a`
    - Link deduplication while preserving order
 
-4. **Scraper** (`src/scrapers/gratis_torrent/scraper.py`)
+5. **Scraper** (`scrapers/gratis_torrent/scraper.py`)
    - Entry point: `scrape_all_movies()`
    - Uses DiskCache (1-hour TTL) in `./movie_cache/`
    - Returns list of movie dictionaries
    - Logs progress to console
 
-5. **Prefect Workflow** (`src/scrapers/gratis_torrent/flow.py`)
+6. **Prefect Workflow** (`scrapers/gratis_torrent/flow.py`)
    - Task 1: `scrape-movies` (2 retries, 30s delay)
    - Task 2: `load-to-bigquery` (3 retries, 60s delay)
    - Output: `{"movies_scraped": N, "rows_loaded": M}`
 
-6. **BigQuery Integration** (`src/scrapers/gratis_torrent/bigquery_client.py`)
+7. **BigQuery Integration** (`scrapers/gratis_torrent/bigquery_client.py`)
    - Setup: Creates dataset and tables if missing
    - Pipeline: Load to staging → MERGE to main (dedup on `link` field) → truncate staging
    - Handles schema from `schema.json`
    - Returns row count of merged/inserted records
 
-7. **Configuration** (`src/scrapers/gratis_torrent/config.py`)
+8. **Configuration** (`scrapers/gratis_torrent/config.py`)
+
    - Dataset: `movies_raw` (us-central)
    - Tables: `filmes` (main), `stg_filmes` (staging)
    - Base URL: `https://gratistorrent.com/lancamentos/`
@@ -154,13 +171,10 @@ Located in `tests/scrapers/gratis_torrent/`:
 ### Running Tests
 ```bash
 # All tests
-uv run tests/test_suite.py && uvx pytest tests/
-
-# Specific test file
-uvx pytest tests/scrapers/gratis_torrent/test_models.py -v
+uv run pytest scrapers/
 
 # With coverage
-uvx pytest tests/ --cov=src/scrapers --cov-report=term-missing
+uv run pytest scrapers/ --cov=scrapers --cov-report=term-missing
 ```
 
 ## Configuration and Environment
@@ -172,7 +186,7 @@ GCP_PROJECT_ID=your-gcp-project-id  # Required for BigQuery
 
 ### Project Structure
 - **Config precedence**: .env → hardcoded defaults (config.py) → Prefect parameters
-- **BigQuery schema**: `src/scrapers/gratis_torrent/schema.json`
+- **BigQuery schema**: `scrapers/gratis_torrent/schema.json`
 - **Prefect config**: `prefect.yaml` (hourly schedule)
 - **Docker**: Minimal Dockerfile for containerization
 
@@ -202,6 +216,7 @@ See `docs/BIGQUERY_SETUP.md` for:
 - Full workflow with retries and monitoring
 - BigQuery integration for centralized data
 - Prefect orchestration with scheduling
+- Uses shared utils for parsing and validation
 - Use for: Regular, reliable data collection
 
 ### Comando Torrents (Lightweight)
@@ -209,29 +224,33 @@ See `docs/BIGQUERY_SETUP.md` for:
 - Stealth scraping with Scrapling (Cloudflare bypass)
 - Local JSON output (`movies.json`)
 - DiskCache for optimization
+- Uses shared utils for parsing and validation
 - Use for: Quick scraping, specific site, no infrastructure
 
-Both share: Pydantic validation, similar data models, error handling patterns
+Both share: Pydantic validation from `scrapers/utils/models.py`, parsing utilities from `scrapers/utils/parse_utils.py`, similar data models, error handling patterns
+
 
 ## Incremental Development Notes
 
 ### When Adding New Fields to Movies
-1. Update `Movie` model in `models.py` (add field and validation if needed)
-2. Add regex pattern in `parser.py` `extract_movie_fields()`
-3. Update BigQuery schema in `schema.json`
+1. Update `Movie` model in `scrapers/utils/models.py` (add field and validation if needed)
+2. Add regex pattern in scraper-specific `parser.py` `extract_movie_fields()`
+3. Update BigQuery schema in `schema.json` (if using GratisTorrent scraper)
 4. Update tests in `test_models.py` and `test_parser.py`
-5. Run full test suite: `uv run tests/test_suite.py && uvx pytest tests/`
+5. Run full test suite: `uv run pytest scrapers/`
 
 ### When Modifying Parsing Logic
 - Parser functions in `parser.py` are independent; test them in isolation
+- Use shared utils from `scrapers/utils/parse_utils.py` for common parsing tasks
 - Use `create_movie_object()` for end-to-end validation
 - Regex patterns should include named groups for clarity
 - Add test cases for edge cases (missing fields, malformed data)
 
 ### When Changing BigQuery Schema
 1. Update `schema.json` (field names and types)
-2. Update `Movie` model to match schema
-3. Run `scripts/test_bigquery.py` to verify connectivity
+2. Update `Movie` model in `scrapers/utils/models.py` to match schema
+3. Run the scraper to verify connectivity: `uv run run_gratis.py`
+
 4. First MERGE will create new schema version (tables are idempotent)
 
 ## Performance Considerations
