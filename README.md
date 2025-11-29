@@ -1,6 +1,6 @@
 # Scraper de Filmes
 
-Sistema automatizado de scraping de filmes do site GratisTorrent/ComandoTorrents e exportação para BigQuery e orquestração com Prefect.
+Sistema automatizado de scraping de filmes do site GratisTorrent e Comando Torrents com exportação para BigQuery.
 
 ## 🚀 Início Rápido
 
@@ -86,17 +86,16 @@ uv run run_gratis.py
 
 ## 📂 Estrutura dos Scrapers
 
-### 1. GratisTorrent (`run_gratis.py`)
-Scraper completo com integração BigQuery e Prefect. Ideal para produção.
+**Localização:** `src/scrapers/gratis_torrent/`
 
-**Localização do módulo:** `scrapers/gratis_torrent/`
+### 1. GratisTorrent (`flow.py`)
+Scraper completo com integração BigQuery e Prefect. Ideal para produção.
 
 **Características:**
 - Cliente HTTP customizado com retry
 - Integração com BigQuery
 - Orquestração Prefect
 - Armazenamento SQLite local
-- Utiliza `scrapers/utils` para funções comuns e modelos
 
 
 ### 2. Comando Torrents (`run_comando.py`)
@@ -143,7 +142,7 @@ Módulo de utilitários compartilhados entre os scrapers.
 ## 📚 Documentação
 
 - [BIGQUERY_SETUP.md](docs/BIGQUERY_SETUP.md) - Guia de configuração do BigQuery
-- [PREFECT_DEPLOYMENT.md](docs/PREFECT_DEPLOYMENT.md) - Guia completo de deployment com Prefect
+- [PREFECT_DEPLOYMENT.md](docs/PREFECT_DEPLOYMENT.md) - Guia completo de deployment com Prefect (Local)
 
 ## 🛠️ Tecnologias
 
@@ -154,16 +153,13 @@ Módulo de utilitários compartilhados entre os scrapers.
 
 ### GratisTorrent Scraper
 - **BeautifulSoup4** - Parsing de HTML
-- **SQLAlchemy** - ORM para SQLite
 - **Prefect** - Orquestração de workflows
 - **Google Cloud BigQuery** - Data warehouse (opcional)
-- **Docker** - Containerização
 
 ### Comando Torrents Scraper
 - **Scrapling** - Stealth scraping com bypass Cloudflare
 - **DiskCache** - Cache em disco persistente
-- **Pydantic** - Validação de dados
 
 ## 📝 Licença
 
-Este projeto é para fins educacionais.
+Este projeto é para fins educacionais. Nenhuma informação coletada com esse projeto é usado para fins comerciais.

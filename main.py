@@ -9,10 +9,6 @@ from loguru import logger
 from scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
 from scrapers.gratis_torrent.scraper import scrape_all_movies
 
-logger.remove()
-logger.add("logs/main.log", level="DEBUG")
-logger.add(sys.stderr)
-
 
 def main() -> dict:
     """

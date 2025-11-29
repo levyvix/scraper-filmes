@@ -35,7 +35,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Prerequisites
 - Python 3.11+
-- UV for dependency management (see `.claude/CLAUDE.md` for conventions)
+- UV for dependency management
 
 ### Setup
 ```bash
@@ -88,28 +88,24 @@ Cloud Storage (movies_raw.filmes dataset)
 
 ### Key Components
 
-1. **Shared Utils** (`scrapers/utils/`)
-   - `parse_utils.py`: Reusable parsing functions
-     - `parse_rating()`: Convert rating text to float (handles comma/dot)
-     - `parse_year()`: Convert year text to int with validation
-     - `parse_int()`: Generic integer parser with error handling
-   - `models.py`: Base Movie model (Pydantic BaseModel)
-     - Shared across both scrapers for consistency
-     - Field validations: IMDB (0-10), year (≥1888)
-   - `send_mail.py`: Email notification utility
-
-2. **Data Models** (`scrapers/gratis_torrent/models.py`)
-   - Extends base `Movie` from `scrapers/utils/models.py`
-   - Additional scraper-specific fields if needed
+1. **Data Models** (`src/scrapers/gratis_torrent/models.py`)
+   - `Movie`: Pydantic BaseModel with 12 fields
+   - Field validations: IMDB (0-10), year (≥1888), duration (≥1 min)
    - All fields nullable by design for partial data
 
-3. **Parser** (`scrapers/gratis_torrent/parser.py`)
+2. **Parser** (`src/scrapers/gratis_torrent/parser.py`)
+   - Utilizes functions from `src/utils/parse_utils.py` for common parsing tasks
    - Regex-based field extraction (12 patterns)
    - Uses shared utils for type conversions
    - Functions: `extract_movie_fields()`, `parse_movie_page()`, `clean_genre()`, etc.
    - Handles partial failures gracefully
 
-4. **HTTP Client** (`scrapers/gratis_torrent/http_client.py`)
+3. **Utility Parsing Functions** (`src/utils/parse_utils.py`)
+   - `parse_rating()`: Converts rating text to float
+   - `parse_year()`: Converts year text to integer
+   - Provides robust type conversion with error handling for common fields
+
+3. **HTTP Client** (`src/scrapers/gratis_torrent/http_client.py`)
    - `fetch_page()`: BeautifulSoup wrapper with 40s timeout
    - `collect_movie_links()`: CSS selector `#capas_pequenas > div > a`
    - Link deduplication while preserving order
@@ -263,3 +259,11 @@ Both share: Pydantic validation from `scrapers/utils/models.py`, parsing utiliti
 - **Cache hit rate**: Depends on scrape frequency vs. 1-hour TTL
 - **Prefect tasks**: Simple retries, not distributed; scale via Prefect Cloud
 - **BigQuery**: Staging table ensures transactional safety; MERGE is atomic
+
+## Useful References
+
+- Data Models: `src/utils/models.py`
+- Parser entry point: `src/scrapers/gratis_torrent/parser.py:parse_movie_page()`
+- Scraper entry point: `src/scrapers/gratis_torrent/scraper.py:scrape_all_movies()`
+- Flow definition: `src/scrapers/gratis_torrent/flow.py:gratis_torrent_flow()`
+- BigQuery pipeline: `src/scrapers/gratis_torrent/bigquery_client.py:load_movies_to_bigquery()`
