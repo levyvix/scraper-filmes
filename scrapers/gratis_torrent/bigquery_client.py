@@ -163,7 +163,7 @@ def create_table(
         raise BigQueryException(f"Unexpected error with table {table_id}") from e
 
 
-def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]) -> int:
+def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]):
     """
     Load movie data into BigQuery staging table.
 
@@ -194,8 +194,6 @@ def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]) ->
     load_job = client.load_table_from_json(data, table_ref, job_config=job_config)
     load_result = load_job.result()
     logger.success("Data loaded to staging table successfully")
-
-    return load_result.num_dml_affected_rows or None  # type: ignore
 
 
 def merge_staging_to_main(client: bigquery.Client) -> int:
