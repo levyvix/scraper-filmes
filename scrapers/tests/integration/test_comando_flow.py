@@ -1,6 +1,11 @@
 """Tests for comando_torrents Prefect flow."""
 
+import pytest
 from unittest.mock import patch, MagicMock
+
+# Check if scrapling is available
+pytest.importorskip("scrapling", reason="scrapling and camoufox are optional dependencies")
+
 from scrapers.comando_torrents.flow import (
     scrape_movies_task,
     save_to_json_task,

@@ -2,6 +2,10 @@
 
 import pytest
 from unittest.mock import Mock, patch
+
+# Check if scrapling is available
+pytest.importorskip("scrapling", reason="scrapling and camoufox are optional dependencies")
+
 from scrapling.parser import Adaptor
 from scrapers.comando_torrents.scraper import (
     fetch_page,

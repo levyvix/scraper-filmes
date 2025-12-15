@@ -1,8 +1,15 @@
-from scrapling.fetchers import StealthySession
-from scrapling.parser import Adaptor, Selector
+try:
+    from scrapling.fetchers import StealthySession
+    from scrapling.parser import Adaptor, Selector
+except ImportError as e:
+    raise ImportError(
+        "scrapling and camoufox are required for comando_torrents scraper. Install with: uv add scrapling camoufox"
+    ) from e
+
 from diskcache import Cache
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
+
 from scrapers.utils.rate_limiter import rate_limit
 
 cache = Cache("./comando_cache")
