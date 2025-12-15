@@ -7,7 +7,7 @@ from scrapers.gratis_torrent.config import Config, GratisTorrentConfig
 
 def test_config_properties():
     """Tests the essential properties of the Config class."""
-    assert Config.GCP_PROJECT_ID is not None
+    assert Config.GCP_PROJECT_ID == "galvanic-flame-384620"
     assert Config.DATASET_ID == "movies_raw"
     assert Config.TABLE_ID == "filmes"
     assert Config.LOCATION == "US"

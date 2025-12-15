@@ -36,8 +36,9 @@ class GratisTorrentConfig(BaseSettings):
     """
 
     # GCP Settings
-    GCP_PROJECT_ID: str | None = Field(
-        default=None, description="Google Cloud Project ID. Loaded from env vars or .env"
+    GCP_PROJECT_ID: str = Field(
+        default="galvanic-flame-384620",
+        description="Google Cloud Project ID. Loaded from env vars, .env, or default",
     )
     GCP_CREDENTIALS_METHOD: str = Field(
         default="ADC",
@@ -71,10 +72,10 @@ class GratisTorrentConfig(BaseSettings):
 
     @field_validator("GCP_PROJECT_ID")
     @classmethod
-    def validate_project_id(cls, v: str | None) -> str | None:
-        """Validate that GCP_PROJECT_ID is set to a valid value if provided."""
-        if v and v in ("your-project-id", "YOUR_PROJECT_ID", ""):
-            raise ValueError("GCP_PROJECT_ID must be set to a valid project ID in .env file")
+    def validate_project_id(cls, v: str) -> str:
+        """Validate that GCP_PROJECT_ID is set to a valid value."""
+        if v in ("your-project-id", "YOUR_PROJECT_ID", "", "None", None):
+            raise ValueError("GCP_PROJECT_ID must be set to a valid project ID")
         return v
 
     @field_validator("GCP_CREDENTIALS_METHOD")
