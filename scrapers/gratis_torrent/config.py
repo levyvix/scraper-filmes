@@ -1,16 +1,51 @@
 """Configuration module for GratisTorrent scraper."""
 
+import logging
+import os
 from pathlib import Path
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+logger = logging.getLogger(__name__)
+
 
 class GratisTorrentConfig(BaseSettings):
-    """Configuration settings with validation."""
+    """Configuration settings with validation.
+
+    Environment Variable Precedence:
+        1. Environment variables (highest priority) - set at runtime or via Prefect job_variables
+        2. .env file - loaded from .env in project root
+        3. Default values (lowest priority) - hardcoded in this file
+
+    Example for Prefect Deployment:
+        In prefect.yaml, set job_variables:
+            job_variables:
+              GCP_PROJECT_ID: "your-project-id"
+              GCP_CREDENTIALS_METHOD: "ADC"  # or "FILE"
+              GCP_CREDENTIALS_PATH: "/path/to/service-account.json"  # if using FILE
+
+    Example for Local Development:
+        Create .env file:
+            GCP_PROJECT_ID=your-project-id
+            GCP_CREDENTIALS_METHOD=ADC
+
+    Credential Methods:
+        - ADC: Use Application Default Credentials (gcloud, workload identity, etc.)
+        - FILE: Use service account JSON file (set GCP_CREDENTIALS_PATH)
+    """
 
     # GCP Settings
-    GCP_PROJECT_ID: str = Field(..., description="Google Cloud Project ID")
+    GCP_PROJECT_ID: str | None = Field(
+        default=None, description="Google Cloud Project ID. Loaded from env vars or .env"
+    )
+    GCP_CREDENTIALS_METHOD: str = Field(
+        default="ADC",
+        description='Credential method: "ADC" (Application Default Credentials), "FILE" (service account JSON)',
+    )
+    GCP_CREDENTIALS_PATH: str | None = Field(
+        default=None, description="Path to GCP service account JSON file (required if METHOD=FILE)"
+    )
     DATASET_ID: str = Field(default="movies_raw", description="BigQuery dataset")
     TABLE_ID: str = Field(default="filmes", description="Main table name")
     STAGING_TABLE_ID: str = Field(default="stg_filmes", description="Staging table")
@@ -36,11 +71,31 @@ class GratisTorrentConfig(BaseSettings):
 
     @field_validator("GCP_PROJECT_ID")
     @classmethod
-    def validate_project_id(cls, v: str) -> str:
-        """Validate that GCP_PROJECT_ID is set to a valid value."""
-        if not v or v in ("your-project-id", "YOUR_PROJECT_ID", ""):
+    def validate_project_id(cls, v: str | None) -> str | None:
+        """Validate that GCP_PROJECT_ID is set to a valid value if provided."""
+        if v and v in ("your-project-id", "YOUR_PROJECT_ID", ""):
             raise ValueError("GCP_PROJECT_ID must be set to a valid project ID in .env file")
         return v
+
+    @field_validator("GCP_CREDENTIALS_METHOD")
+    @classmethod
+    def validate_credentials_method(cls, v: str) -> str:
+        """Validate credential method is one of the supported options."""
+        valid_methods = ("ADC", "FILE")
+        if v not in valid_methods:
+            raise ValueError(f"GCP_CREDENTIALS_METHOD must be one of {valid_methods}, got {v}")
+        return v
+
+    def __init__(self, **data):
+        """Initialize config and log environment variable setup."""
+        super().__init__(**data)
+        # Log which source provided the values
+        gcp_project_source = "env var" if os.environ.get("GCP_PROJECT_ID") else ".env or default"
+        credentials_method_source = "env var" if os.environ.get("GCP_CREDENTIALS_METHOD") else "default"
+        logger.info(
+            f"GCP Configuration loaded: project_id from {gcp_project_source}, "
+            f"credentials_method={self.GCP_CREDENTIALS_METHOD} from {credentials_method_source}"
+        )
 
     # File Paths (computed properties)
     @property

@@ -1,9 +1,12 @@
 """BigQuery client for data operations."""
 
 import json
+import os
 import warnings
 from typing import Any
 
+import google.auth
+import google.oauth2.service_account
 from google.cloud import bigquery
 from google.cloud.exceptions import GoogleCloudError
 
@@ -16,14 +19,67 @@ warnings.filterwarnings("ignore", message=".*quota project.*")
 logger = setup_logging()
 
 
-def get_client() -> bigquery.Client:
-    """
-    Create and return BigQuery client.
+def get_gcp_credentials():
+    """Load GCP credentials based on configuration method.
+
+    Supports two credential methods:
+        - "ADC": Application Default Credentials (gcloud, workload identity, etc.)
+        - "FILE": Service account JSON file (set GCP_CREDENTIALS_PATH)
 
     Returns:
-        Configured BigQuery client
+        Credentials object for GCP authentication
+
+    Raises:
+        ValueError: If FILE method is selected but path is not set
+        FileNotFoundError: If credential file is not found
+        Exception: If credential loading fails for any reason
     """
-    return bigquery.Client(project=Config.GCP_PROJECT_ID)
+    method = Config.GCP_CREDENTIALS_METHOD
+    logger.info(f"Loading GCP credentials using method: {method}")
+
+    if method == "FILE":
+        # Load credentials from service account JSON file
+        cred_path = Config.GCP_CREDENTIALS_PATH
+        if not cred_path:
+            raise ValueError(
+                'GCP_CREDENTIALS_METHOD is "FILE" but GCP_CREDENTIALS_PATH is not set. '
+                "Set GCP_CREDENTIALS_PATH environment variable or in .env"
+            )
+
+        if not os.path.exists(cred_path):
+            raise FileNotFoundError(f"Credential file not found at: {cred_path}")
+
+        try:
+            credentials = google.oauth2.service_account.Credentials.from_service_account_file(cred_path)
+            logger.info(f"Successfully loaded credentials from file: {cred_path}")
+            return credentials
+        except Exception as e:
+            logger.error(f"Failed to load credentials from file {cred_path}: {e}")
+            raise
+
+    # Default: Application Default Credentials
+    try:
+        credentials, project = google.auth.default()
+        logger.info(f"Successfully loaded Application Default Credentials (project: {project})")
+        return credentials
+    except Exception as e:
+        logger.error(f"Failed to load Application Default Credentials: {e}")
+        raise
+
+
+def get_client() -> bigquery.Client:
+    """
+    Create and return BigQuery client with discovered credentials.
+
+    Returns:
+        Configured BigQuery client with appropriate credentials
+
+    Raises:
+        ValueError: If credentials cannot be loaded
+        FileNotFoundError: If credential file is missing
+    """
+    credentials = get_gcp_credentials()
+    return bigquery.Client(project=Config.GCP_PROJECT_ID, credentials=credentials)
 
 
 def load_schema() -> list[bigquery.SchemaField]:

@@ -9,12 +9,35 @@ from prefect.cache_policies import INPUTS, TASK_SOURCE
 from datetime import timedelta
 
 from scrapers.utils.logging_config import setup_logging
-from scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
+from scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery, get_gcp_credentials
 from scrapers.gratis_torrent.scraper import scrape_all_movies
 from scrapers.gratis_torrent.config import Config
 
 # Initialize logging configuration
 logger = setup_logging(level="INFO", log_file="gratis_torrent.log")
+
+
+@task(name="validate-credentials", log_prints=True)
+def validate_credentials_task() -> bool:
+    """
+    Task to validate GCP credentials at flow startup.
+
+    Detects which credential method is configured and validates it can be loaded.
+
+    Returns:
+        True if credentials are valid
+
+    Raises:
+        ValueError: If credentials cannot be loaded
+    """
+    logger.info("Validating GCP credentials...")
+    try:
+        get_gcp_credentials()
+        logger.success(f"GCP credentials validated (method: {Config.GCP_CREDENTIALS_METHOD})")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to validate GCP credentials: {e}")
+        raise ValueError(f"Credential validation failed: {e}") from e
 
 
 @task(
@@ -82,6 +105,9 @@ def gratis_torrent_flow() -> dict[str, Any]:
         Dictionary with pipeline statistics
     """
     logger.info("Starting GratisTorrent scraper flow")
+
+    # Validate credentials before running scraper
+    validate_credentials_task()
 
     # Scrape movies
     movies = scrape_movies_task()

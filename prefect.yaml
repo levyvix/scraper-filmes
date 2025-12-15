@@ -37,7 +37,9 @@ deployments:
   work_pool:
     name: defaultp
     work_queue_name: null
-    job_variables: {}
+    job_variables:
+      GCP_PROJECT_ID: "galvanic-flame-384620"
+      GCP_CREDENTIALS_METHOD: "ADC"
   schedules:
   - interval: 3600.0
     anchor_date: '2025-10-12T04:36:33.394872+00:00'
