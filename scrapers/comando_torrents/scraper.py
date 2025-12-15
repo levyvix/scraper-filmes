@@ -1,7 +1,7 @@
 try:
     from scrapling.fetchers import StealthySession
     from scrapling.parser import Adaptor, Selector
-except ImportError as e:
+except (ImportError, FileNotFoundError) as e:
     raise ImportError(
         "scrapling and camoufox are required for comando_torrents scraper. Install with: uv add scrapling camoufox"
     ) from e

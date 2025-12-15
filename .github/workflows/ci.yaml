@@ -45,5 +45,9 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Fetch camoufox (for comando_torrents scraper)
+        run: uv run python -m camoufox fetch || true
+        continue-on-error: true
+
       - name: Run tests
         run: uv run pytest . -v --cov=scrapers --cov-report=term-missing

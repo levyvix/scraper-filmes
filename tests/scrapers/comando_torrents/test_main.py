@@ -1,9 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-# Check if scrapling is available
-pytest.importorskip("scrapling", reason="scrapling and camoufox are optional dependencies")
-
 from scrapers.comando_torrents.parser import (
     extract_text_or_none,
     safe_list_get,
