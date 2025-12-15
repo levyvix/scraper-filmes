@@ -6,13 +6,14 @@ from typing import Any
 
 from google.cloud import bigquery
 from google.cloud.exceptions import GoogleCloudError
-from loguru import logger
 
 from scrapers.gratis_torrent.config import Config
 from scrapers.utils.exceptions import BigQueryException
+from scrapers.utils.logging_config import setup_logging
 
 # Suppress quota project warning for user credentials
 warnings.filterwarnings("ignore", message=".*quota project.*")
+logger = setup_logging()
 
 
 def get_client() -> bigquery.Client:
@@ -182,21 +183,19 @@ def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]) ->
 
     table_id = Config.get_full_table_id(Config.STAGING_TABLE_ID)
 
-    try:
-        table_ref = client.get_table(table_id)
+    table_ref = client.get_table(table_id)
 
-        job_config = bigquery.LoadJobConfig(
-            schema=load_schema(),
-            source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
-        )
-
-    logger.info(f"Loading {len(serialized_data)} movies to staging table")
-    load_job = client.load_table_from_json(
-        serialized_data, table_ref, job_config=job_config
+    job_config = bigquery.LoadJobConfig(
+        schema=load_schema(),
+        source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
     )
-    load_job.result()
 
+    logger.info(f"Loading {len(data)} movies to staging table")
+    load_job = client.load_table_from_json(data, table_ref, job_config=job_config)
+    load_result = load_job.result()
     logger.success("Data loaded to staging table successfully")
+
+    return load_result.num_dml_affected_rows or None  # type: ignore
 
 
 def merge_staging_to_main(client: bigquery.Client) -> int:
@@ -308,18 +307,25 @@ def load_movies_to_bigquery(movies: list[dict[str, Any]]) -> int:
     Returns:
         Number of rows merged into main table
     """
+    logger.info("Getting client...")
     client = get_client()
 
     # Setup tables
+    logger.info("Setting up BQ Tables...")
     setup_tables(client)
 
     # Load to staging
-    load_data_to_staging(client, movies)
+    logger.info("Loading data to staging table...")
+    rows_loaded = load_data_to_staging(client, movies)
+    logger.success(f"Number of rows loaded to staging: {rows_loaded}")
 
     # Merge to main
+    logger.info("Merging staging table to main table...")
     rows_affected = merge_staging_to_main(client)
+    logger.debug(f"{rows_affected} rows affected after merging")
 
     # Clean up staging
+    logger.info("Truncating staging table...")
     truncate_staging_table(client)
 
     return rows_affected

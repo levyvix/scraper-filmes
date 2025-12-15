@@ -59,7 +59,12 @@ def load_to_bigquery_task(movies_path: Path) -> int:
         Number of rows affected in BigQuery
     """
     logger.info("Starting BigQuery load task")
+    logger.info(f"Loading movies from {movies_path}...")
     movies = load_jsonl(movies_path)
+    if not movies:
+        logger.warning("Could not find any movies to load...")
+        raise ValueError(f"No movies found in {movies_path}.")
+    logger.success(f"{len(movies)} movies loaded from {movies_path}.")
     rows_affected = load_movies_to_bigquery(movies)
     logger.info(f"Loaded {rows_affected} new movies to BigQuery")
     return rows_affected
@@ -81,7 +86,7 @@ def gratis_torrent_flow() -> dict[str, Any]:
     # Scrape movies
     movies = scrape_movies_task()
 
-    # Save to disk
+    # Save to disk (jsonl)
     with open(Config.MOVIES_JSON_PATH, "w") as f:
         for movie in movies:
             f.write(json.dumps(movie) + "\n")
