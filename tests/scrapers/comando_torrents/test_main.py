@@ -33,7 +33,9 @@ def mock_config():
 def mock_stealthy_session():
     with patch("src.scrapers.comando_torrents.main.StealthySession") as MockSession:
         mock_session_instance = MockSession.return_value
-        mock_session_instance.fetch.return_value = MockPage(html_content="<html><body>Test</body></html>", url="http://test.com")
+        mock_session_instance.fetch.return_value = MockPage(
+            html_content="<html><body>Test</body></html>", url="http://test.com"
+        )
         yield mock_session_instance
 
 
@@ -130,7 +132,7 @@ def test_parse_detail_success(mock_parse_year, mock_parse_rating, mock_fetch_pag
             "Quality: 1080p",
             "Video Quality: 7.0",
             "Extra Info",  # 12th element for safe_list_get
-            "Another Extra Info", # Added missing element
+            "Another Extra Info",  # Added missing element
         ],
         ["Synopsis"],  # For sinopse_list
     ]
@@ -151,7 +153,7 @@ def test_parse_detail_success(mock_parse_year, mock_parse_rating, mock_fetch_pag
     assert movie.poster_url == "image.jpg"
     assert movie.link == "http://test.com/movie"
     assert movie.qualidade_video == 7.0
-    assert movie.dublado == True
+    assert movie.dublado
 
 
 @patch("src.scrapers.comando_torrents.main.parse_rating", return_value=None)
@@ -209,7 +211,9 @@ def test_get_movie_links_no_links_found(mock_fetch_page):
 @patch("src.scrapers.comando_torrents.main.Adaptor")
 @patch("src.scrapers.comando_torrents.main.Cache")
 @patch("src.scrapers.comando_torrents.main.Config")
-def test_main_flow(MockConfig, MockCache, MockAdaptor, MockSession, mock_save_to_json, mock_parse_detail, mock_get_movie_links):
+def test_main_flow(
+    MockConfig, MockCache, MockAdaptor, MockSession, mock_save_to_json, mock_parse_detail, mock_get_movie_links
+):
     mock_config_instance = MockConfig.return_value
     mock_config_instance.URL_BASE = "http://test.com/base"
     mock_get_movie_links.return_value = ["http://test.com/movie1", "http://test.com/movie2"]
@@ -240,7 +244,9 @@ def test_main_flow(MockConfig, MockCache, MockAdaptor, MockSession, mock_save_to
 @patch("src.scrapers.comando_torrents.main.Adaptor")
 @patch("src.scrapers.comando_torrents.main.Cache")
 @patch("src.scrapers.comando_torrents.main.Config")
-def test_main_no_links_found(MockConfig, MockCache, MockAdaptor, MockSession, mock_save_to_json, mock_parse_detail, mock_get_movie_links):
+def test_main_no_links_found(
+    MockConfig, MockCache, MockAdaptor, MockSession, mock_save_to_json, mock_parse_detail, mock_get_movie_links
+):
     mock_config_instance = MockConfig.return_value
     mock_config_instance.URL_BASE = "http://test.com/base"
     mock_get_movie_links.return_value = []

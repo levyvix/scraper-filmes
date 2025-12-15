@@ -29,9 +29,7 @@ def scrape_movies_task(url_base: str) -> list[Movie]:
     links = get_movie_links(url_base)
 
     if not links:
-        logger.error(
-            "No movie links found. Please check the website or your connection."
-        )
+        logger.error("No movie links found. Please check the website or your connection.")
         return []
 
     logger.info(f"Found {len(links)} movie links. Starting to scrape...")
@@ -54,10 +52,7 @@ def scrape_movies_task(url_base: str) -> list[Movie]:
         else:
             failed_count += 1
 
-    logger.info(
-        f"Successfully scraped {len(list_movies)} movies. "
-        f"Failed: {failed_count} out of {len(links)}"
-    )
+    logger.info(f"Successfully scraped {len(list_movies)} movies. Failed: {failed_count} out of {len(links)}")
 
     # Log quality report
     if list_movies:

@@ -39,9 +39,7 @@ class DataQualityChecker:
 
         # Check field completeness
         total_fields = len(movie.model_fields)
-        filled_fields = sum(
-            1 for field, value in movie.model_dump().items() if value is not None
-        )
+        filled_fields = sum(1 for field, value in movie.model_dump().items() if value is not None)
         completeness = filled_fields / total_fields
 
         if completeness < self.min_fields_filled:

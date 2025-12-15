@@ -2,7 +2,6 @@
 Script to run the GratisTorrent scraper standalone (no Prefect server required).
 """
 
-
 from loguru import logger
 
 from scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery

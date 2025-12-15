@@ -111,10 +111,7 @@ def scrape_all_movies() -> list[dict[str, Any]]:
             failed_links.append(link)
             continue
 
-    logger.info(
-        f"Successfully scraped {len(movies_list)} movies. "
-        f"Failed: {len(failed_links)} out of {len(links)}"
-    )
+    logger.info(f"Successfully scraped {len(movies_list)} movies. Failed: {len(failed_links)} out of {len(links)}")
 
     if failed_links:
         logger.warning(f"Failed links: {failed_links[:5]}...")  # Show first 5

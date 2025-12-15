@@ -60,9 +60,7 @@ class TestComandoTorrentsFlow:
     @patch("scrapers.comando_torrents.flow.ComandoTorrentsConfig")
     @patch("scrapers.comando_torrents.flow.save_to_json_task")
     @patch("scrapers.comando_torrents.flow.scrape_movies_task")
-    def test_comando_torrents_flow_structure_with_mocks(
-        self, mock_scrape, mock_save, mock_config_class
-    ):
+    def test_comando_torrents_flow_structure_with_mocks(self, mock_scrape, mock_save, mock_config_class):
         """Test flow execution with mocks."""
         # Setup
         mock_config = MagicMock()

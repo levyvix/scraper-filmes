@@ -20,9 +20,7 @@ def extract_poster_url(soup: BeautifulSoup) -> str | None:
     Returns:
         Poster URL string or None if not found
     """
-    poster_element = soup.select_one(
-        "body > div:nth-child(3) > div > div.col-12.col-sm-8.col-lg-9.my-1 > img"
-    )
+    poster_element = soup.select_one("body > div:nth-child(3) > div > div.col-12.col-sm-8.col-lg-9.my-1 > img")
     if poster_element and "src" in poster_element.attrs:
         return str(poster_element["src"])
     return None

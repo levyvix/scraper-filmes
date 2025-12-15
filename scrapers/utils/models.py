@@ -11,12 +11,8 @@ class Movie(BaseModel):
     genero: str | None = None
     tamanho: str | None = None
     duracao: str | None = Field(None, description="Duration in minutes")
-    qualidade_video: float | None = Field(
-        None, ge=0, description="Video quality score (0-10)"
-    )
-    qualidade: str | None = Field(
-        None, description="Quality description (e.g., '1080p', '720p BluRay')"
-    )
+    qualidade_video: float | None = Field(None, ge=0, description="Video quality score (0-10)")
+    qualidade: str | None = Field(None, description="Quality description (e.g., '1080p', '720p BluRay')")
     dublado: bool | None = None
     sinopse: str | None = None
     link: str | None = None

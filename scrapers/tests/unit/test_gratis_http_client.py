@@ -17,9 +17,7 @@ class MockResponse:
 
     def raise_for_status(self):
         if self.status_code >= 400:
-            http_error = requests.HTTPError(
-                f"{self.status_code} Client Error: Mocked Error", response=self
-            )
+            http_error = requests.HTTPError(f"{self.status_code} Client Error: Mocked Error", response=self)
             raise http_error
 
 

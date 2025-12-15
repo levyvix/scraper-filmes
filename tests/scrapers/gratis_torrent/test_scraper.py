@@ -119,6 +119,7 @@ def disable_cache_memoize():
     with patch("src.scrapers.gratis_torrent.scraper.cache.memoize", lambda f, *args, **kwargs: f):
         yield
 
+
 # Unit tests for scrape_all_movies
 @patch("src.scrapers.gratis_torrent.scraper.scrape_movie_links")
 @patch("src.scrapers.gratis_torrent.scraper.scrape_movie_details")

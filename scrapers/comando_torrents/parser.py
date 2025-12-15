@@ -43,19 +43,13 @@ def parse_detail(link: str) -> Movie | None:
     info_texts_str = [str(t) for t in info_texts]
 
     if len(info_texts_str) < 12:
-        logger.warning(
-            f"Incomplete movie data at {link}. Expected 12 fields, found {len(info_texts_str)}"
-        )
+        logger.warning(f"Incomplete movie data at {link}. Expected 12 fields, found {len(info_texts_str)}")
         return None
 
-    imdb_text = extract_text_or_none(
-        page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(7)::text"
-    )
+    imdb_text = extract_text_or_none(page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(7)::text")
     imdb_rating = parse_rating(imdb_text)
 
-    year_text = extract_text_or_none(
-        page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(10)::text"
-    )
+    year_text = extract_text_or_none(page, "div.entry-content.cf > p:nth-child(3) > a:nth-child(10)::text")
     # TODO: consertar busca por ano do filme
     year = parse_year(year_text)
     if not year:

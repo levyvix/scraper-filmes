@@ -30,9 +30,7 @@ class TestRateLimiter:
         # Second call immediately after (elapsed = 0), sleep needed. We control the time precisely here.
         mock_time.side_effect = [100.0, 100.0]  # Subsequent time calls
         limiter.wait()
-        assert mock_sleep.called_once_with(
-            1.0
-        )  # Should sleep for min_interval - (100-100) = 1.0
+        assert mock_sleep.called_once_with(1.0)  # Should sleep for min_interval - (100-100) = 1.0
         assert limiter.last_call == 100.0  # last_call updated
 
         # Third call after enough time (elapsed = 1.5 from current last_call), no sleep needed

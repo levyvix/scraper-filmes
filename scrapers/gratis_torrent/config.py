@@ -21,9 +21,7 @@ class GratisTorrentConfig(BaseSettings):
         default="https://gratistorrent.com/lancamentos/",
         description="Base URL for scraping",
     )
-    REQUEST_TIMEOUT: int = Field(
-        default=40, ge=1, le=300, description="Request timeout in seconds"
-    )
+    REQUEST_TIMEOUT: int = Field(default=40, ge=1, le=300, description="Request timeout in seconds")
 
     # Email Settings (optional)
     EMAIL: str | None = Field(default=None, description="Email for notifications")
@@ -41,9 +39,7 @@ class GratisTorrentConfig(BaseSettings):
     def validate_project_id(cls, v: str) -> str:
         """Validate that GCP_PROJECT_ID is set to a valid value."""
         if not v or v in ("your-project-id", "YOUR_PROJECT_ID", ""):
-            raise ValueError(
-                "GCP_PROJECT_ID must be set to a valid project ID in .env file"
-            )
+            raise ValueError("GCP_PROJECT_ID must be set to a valid project ID in .env file")
         return v
 
     # File Paths (computed properties)
