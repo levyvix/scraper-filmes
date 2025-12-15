@@ -223,7 +223,7 @@ class TestPrefectFlowCredentialValidation:
         assert callable(validate_credentials_task)
         assert callable(gratis_torrent_flow)
 
-    @patch("scrapers.gratis_torrent.bigquery_client.get_gcp_credentials")
+    @patch("scrapers.gratis_torrent.flow.get_gcp_credentials")
     def test_credential_validation_task_success(self, mock_get_creds):
         """Test that credential validation task succeeds with valid credentials."""
         from scrapers.gratis_torrent.flow import validate_credentials_task
