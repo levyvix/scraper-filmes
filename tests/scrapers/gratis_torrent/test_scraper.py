@@ -1,25 +1,25 @@
 import pytest
 from unittest.mock import MagicMock, patch
-from src.scrapers.gratis_torrent.scraper import (
+from scrapers.gratis_torrent.scraper import (
     scrape_movie_links,
     scrape_movie_details,
     scrape_all_movies,
 )
-from src.utils.models import Movie
+from scrapers.utils.models import Movie
 from bs4 import BeautifulSoup
 
 
 # Mock external dependencies
 @pytest.fixture
 def mock_config():
-    with patch("src.scrapers.gratis_torrent.scraper.Config") as MockConfig:
+    with patch("scrapers.gratis_torrent.scraper.Config") as MockConfig:
         MockConfig.BASE_URL = "http://test.com/base"
         yield MockConfig
 
 
 @pytest.fixture
 def mock_fetch_page():
-    with patch("src.scrapers.gratis_torrent.scraper.fetch_page") as mock:
+    with patch("scrapers.gratis_torrent.scraper.fetch_page") as mock:
         mock_soup = MagicMock(spec=BeautifulSoup)
         mock_a_tag1 = MagicMock()
         mock_a_tag1.get.return_value = "http://test.com/movie1"
@@ -32,7 +32,7 @@ def mock_fetch_page():
 
 @pytest.fixture
 def mock_parse_movie_page():
-    with patch("src.scrapers.gratis_torrent.scraper.parse_movie_page") as mock:
+    with patch("scrapers.gratis_torrent.scraper.parse_movie_page") as mock:
         yield mock
 
 
@@ -50,7 +50,10 @@ def test_scrape_movie_links_success(mock_fetch_page, mock_config):
 
 
 def test_scrape_movie_links_fetch_page_fails(mock_fetch_page, mock_config):
-    mock_fetch_page.return_value = None
+    # Simulate fetch_page raising a FetchException
+    from scrapers.utils.exceptions import FetchException
+
+    mock_fetch_page.side_effect = FetchException("Network error")
 
     links = scrape_movie_links()
 
@@ -93,12 +96,16 @@ def test_scrape_movie_details_success(mock_fetch_page, mock_parse_movie_page):
 
 
 def test_scrape_movie_details_fetch_page_fails(mock_fetch_page, mock_parse_movie_page):
-    mock_fetch_page.return_value = None
+    # Simulate fetch_page raising an exception
+    from scrapers.utils.exceptions import ScraperException, FetchException
 
-    movie = scrape_movie_details("http://test.com/movie")
+    mock_fetch_page.side_effect = FetchException("Network error")
 
-    assert movie is None
-    mock_fetch_page.assert_called_once_with("http://test.com/movie")
+    with pytest.raises(ScraperException):
+        scrape_movie_details("http://test.com/movie")
+
+    # Retry decorator retries 3 times, so fetch_page is called 3 times
+    assert mock_fetch_page.call_count == 3
     mock_parse_movie_page.assert_not_called()
 
 
@@ -116,26 +123,37 @@ def test_scrape_movie_details_parse_movie_page_fails(mock_fetch_page, mock_parse
 
 @pytest.fixture(autouse=True)
 def disable_cache_memoize():
-    with patch("src.scrapers.gratis_torrent.scraper.cache.memoize", lambda f, *args, **kwargs: f):
+    with patch(
+        "scrapers.gratis_torrent.scraper.cache.memoize",
+        lambda f, *args, **kwargs: f,
+    ):
         yield
 
 
 # Unit tests for scrape_all_movies
-@patch("src.scrapers.gratis_torrent.scraper.scrape_movie_links")
-@patch("src.scrapers.gratis_torrent.scraper.scrape_movie_details")
+@patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
+@patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
 def test_scrape_all_movies_success(mock_scrape_movie_details, mock_scrape_movie_links):
-    mock_scrape_movie_links.return_value = ["http://test.com/movie1", "http://test.com/movie2"]
+    mock_scrape_movie_links.return_value = [
+        "http://test.com/movie1",
+        "http://test.com/movie2",
+    ]
+    # Create movies with all required fields to pass quality check
     mock_scrape_movie_details.side_effect = [
         Movie(
             titulo_dublado="Movie 1",
+            titulo_original="Movie Original 1",
             ano=2020,
-            imdb="7.0",
+            imdb=7.0,
             sinopse="Desc 1",
+            genero="Action",
             qualidade="1080p",
             poster_url="img1.jpg",
             link="http://test.com/movie1",
             qualidade_video=7.0,
             dublado=True,
+            tamanho="2GB",
+            duracao="120",
         ),
         None,  # Simulate a failed scrape
     ]
@@ -148,8 +166,8 @@ def test_scrape_all_movies_success(mock_scrape_movie_details, mock_scrape_movie_
     assert mock_scrape_movie_details.call_count == 2
 
 
-@patch("src.scrapers.gratis_torrent.scraper.scrape_movie_links")
-@patch("src.scrapers.gratis_torrent.scraper.scrape_movie_details")
+@patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
+@patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
 def test_scrape_all_movies_no_links(mock_scrape_movie_details, mock_scrape_movie_links):
     mock_scrape_movie_links.return_value = []
 
@@ -160,10 +178,13 @@ def test_scrape_all_movies_no_links(mock_scrape_movie_details, mock_scrape_movie
     mock_scrape_movie_details.assert_not_called()
 
 
-@patch("src.scrapers.gratis_torrent.scraper.scrape_movie_links")
-@patch("src.scrapers.gratis_torrent.scraper.scrape_movie_details")
+@patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
+@patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
 def test_scrape_all_movies_all_details_fail(mock_scrape_movie_details, mock_scrape_movie_links):
-    mock_scrape_movie_links.return_value = ["http://test.com/movie1", "http://test.com/movie2"]
+    mock_scrape_movie_links.return_value = [
+        "http://test.com/movie1",
+        "http://test.com/movie2",
+    ]
     mock_scrape_movie_details.return_value = None
 
     movies = scrape_all_movies()

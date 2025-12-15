@@ -2,16 +2,15 @@
 
 from bs4 import BeautifulSoup
 
-from src.scrapers.gratis_torrent.parser import (
+from scrapers.gratis_torrent.parser import (
     clean_genre,
     create_movie_object,
     extract_movie_fields,
     extract_regex_field,
     extract_sinopse,
     parse_movie_page,
-    safe_convert_float,
-    safe_convert_int,
 )
+from scrapers.utils.parse_utils import parse_rating, parse_int
 
 
 class TestExtractRegexField:
@@ -40,51 +39,51 @@ class TestExtractRegexField:
 
 
 class TestSafeConvertFloat:
-    """Tests for safe_convert_float function."""
+    """Tests for parse_rating function."""
 
     def test_convert_valid_float(self):
         """Test converting valid float string."""
-        assert safe_convert_float("8.5") == 8.5
+        assert parse_rating("8.5") == 8.5
 
     def test_convert_valid_integer_string(self):
         """Test converting integer string to float."""
-        assert safe_convert_float("8") == 8.0
+        assert parse_rating("8") == 8.0
 
     def test_convert_none(self):
         """Test converting None."""
-        assert safe_convert_float(None) is None
+        assert parse_rating(None) is None
 
     def test_convert_empty_string(self):
         """Test converting empty string."""
-        assert safe_convert_float("") is None
+        assert parse_rating("") is None
 
     def test_convert_invalid_string(self):
         """Test converting invalid string."""
-        assert safe_convert_float("not a number") is None
+        assert parse_rating("not a number") is None
 
 
 class TestSafeConvertInt:
-    """Tests for safe_convert_int function."""
+    """Tests for parse_int function."""
 
     def test_convert_valid_integer(self):
         """Test converting valid integer string."""
-        assert safe_convert_int("120") == 120
+        assert parse_int("120") == 120
 
     def test_convert_none(self):
         """Test converting None."""
-        assert safe_convert_int(None) is None
+        assert parse_int(None) is None
 
     def test_convert_empty_string(self):
         """Test converting empty string."""
-        assert safe_convert_int("") is None
+        assert parse_int("") is None
 
     def test_convert_invalid_string(self):
         """Test converting invalid string."""
-        assert safe_convert_int("not a number") is None
+        assert parse_int("not a number") is None
 
     def test_convert_float_string(self):
         """Test converting float string."""
-        assert safe_convert_int("8.5") is None
+        assert parse_int("8.5") is None
 
 
 class TestExtractSinopse:
