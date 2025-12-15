@@ -1,8 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, patch
 from src.scrapers.comando_torrents.main import (
-    fetch_page_html,
-    fetch_page,
     extract_text_or_none,
     safe_list_get,
     parse_detail,
@@ -11,9 +9,7 @@ from src.scrapers.comando_torrents.main import (
     save_to_json,
     __file__ as main_file,
 )
-from src.scrapers.comando_torrents.config import Config
 from src.utils.models import Movie
-from pydantic import ValidationError
 
 
 class MockPage:

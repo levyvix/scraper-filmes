@@ -2,7 +2,6 @@
 Script to run the GratisTorrent scraper standalone (no Prefect server required).
 """
 
-import sys
 
 from loguru import logger
 

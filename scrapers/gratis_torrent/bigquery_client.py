@@ -37,9 +37,7 @@ def load_schema() -> list[bigquery.SchemaField]:
         FileNotFoundError: If schema file is not found
     """
     if not Config.SCHEMA_FILE.exists():
-        raise FileNotFoundError(
-            f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}"
-        )
+        raise FileNotFoundError(f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}")
 
     schema_raw = json.loads(Config.SCHEMA_FILE.read_text("utf-8"))
     schema = [
@@ -77,9 +75,7 @@ def create_dataset(client: bigquery.Client) -> None:
         raise BigQueryException(f"Failed to create dataset {dataset_id}") from e
     except Exception as e:
         logger.error(f"Unexpected error creating dataset {dataset_id}: {e}")
-        raise BigQueryException(
-            f"Unexpected error creating dataset {dataset_id}"
-        ) from e
+        raise BigQueryException(f"Unexpected error creating dataset {dataset_id}") from e
 
 
 def delete_table(client: bigquery.Client, table_name: str) -> None:
@@ -95,9 +91,7 @@ def delete_table(client: bigquery.Client, table_name: str) -> None:
     logger.info(f"Table {table_id} deleted")
 
 
-def create_table(
-    client: bigquery.Client, table_name: str, force_recreate: bool = False
-) -> None:
+def create_table(client: bigquery.Client, table_name: str, force_recreate: bool = False) -> None:
     """
     Create BigQuery table if it doesn't exist.
 
@@ -136,9 +130,7 @@ def create_table(
             updated_schema = table.schema + fields_to_add
             table.schema = updated_schema
             client.update_table(table, ["schema"])
-            logger.info(
-                f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}"
-            )
+            logger.info(f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}")
         else:
             logger.info(f"Table {table_id} already exists and schema is up to date.")
 
@@ -150,14 +142,10 @@ def create_table(
                 logger.info(f"Table {table_id} created with new schema")
             except GoogleCloudError as create_error:
                 logger.error(f"Failed to create table {table_id}: {create_error}")
-                raise BigQueryException(
-                    f"Failed to create table {table_id}"
-                ) from create_error
+                raise BigQueryException(f"Failed to create table {table_id}") from create_error
         else:
             logger.error(f"Error creating or updating table {table_id}: {e}")
-            raise BigQueryException(
-                f"Failed to create or update table {table_id}"
-            ) from e
+            raise BigQueryException(f"Failed to create or update table {table_id}") from e
     except Exception as e:
         logger.error(f"Unexpected error with table {table_id}: {e}")
         raise BigQueryException(f"Unexpected error with table {table_id}") from e
@@ -190,10 +178,18 @@ def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]):
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
     )
 
-    logger.info(f"Loading {len(data)} movies to staging table")
-    load_job = client.load_table_from_json(data, table_ref, job_config=job_config)
-    load_result = load_job.result()
-    logger.success("Data loaded to staging table successfully")
+    try:
+        logger.info(f"Loading {len(data)} movies to staging table")
+        load_job = client.load_table_from_json(data, table_ref, job_config=job_config)
+        load_job.result()
+        logger.success("Data loaded to staging table successfully")
+        return len(data)
+    except GoogleCloudError as e:
+        logger.error(f"BigQuery error loading to staging: {e}")
+        raise BigQueryException(f"Failed to load data to staging: {e}") from e
+    except Exception as e:
+        logger.error(f"Unexpected error loading to staging: {e}")
+        raise BigQueryException(f"Unexpected load failure: {e}") from e
 
 
 def merge_staging_to_main(client: bigquery.Client) -> int:
@@ -211,9 +207,12 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
     """
     target_table = Config.get_full_table_id(Config.TABLE_ID)
     source_table = Config.get_full_table_id(Config.STAGING_TABLE_ID)
-    schema = json.loads(Config.SCHEMA_FILE.read_text())
+    schema = load_schema()
 
     columns = [col_obj.name for col_obj in schema]
+    columns_str = ",".join(columns)
+    values_list = [f"source.{col}" if col != "date_updated" else "CURRENT_TIMESTAMP()" for col in columns]
+    values_str = ",".join(values_list)
     merge_statement = f"""
     merge into `{target_table}` as target
     using `{source_table}` as source
@@ -224,11 +223,10 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
         target.date_updated = CURRENT_TIMESTAMP()
     WHEN NOT MATCHED THEN
     INSERT (
-        {columns}
+        {columns_str}
     )
     VALUES (
-        {",".join(f"source.{col}" for col in columns if col != "date_updated")},
-        CURRENT_TIMESTAMP()
+        {values_str}
     );
     """
 

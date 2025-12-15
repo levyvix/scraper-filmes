@@ -5,10 +5,7 @@ from src.scrapers.gratis_torrent.scraper import (
     scrape_movie_details,
     scrape_all_movies,
 )
-from src.scrapers.gratis_torrent.config import Config
 from src.utils.models import Movie
-from src.scrapers.gratis_torrent.http_client import fetch_page
-from src.scrapers.gratis_torrent.parser import parse_movie_page
 from bs4 import BeautifulSoup
 
 
