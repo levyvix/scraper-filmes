@@ -1,7 +1,9 @@
 """Data quality validation for scraped movies."""
 
 from typing import Any, Sequence
+
 from loguru import logger
+
 from scrapers.utils.models import Movie
 
 

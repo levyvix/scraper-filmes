@@ -1,6 +1,7 @@
 import os
-from loguru import logger
+
 import yagmail
+from loguru import logger
 
 
 def send_email(subject: str, body: str, to: str | None = None) -> bool:

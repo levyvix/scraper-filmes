@@ -1,7 +1,8 @@
 """Tests for send_mail utility module."""
 
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from scrapers.utils.send_mail import send_email
 
 

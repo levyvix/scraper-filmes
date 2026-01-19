@@ -2,7 +2,6 @@
 
 from bs4 import BeautifulSoup
 
-
 # Complete movie page with all fields
 COMPLETE_MOVIE_PAGE_HTML = """
 <html>

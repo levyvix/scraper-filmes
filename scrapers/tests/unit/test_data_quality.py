@@ -1,18 +1,19 @@
 """Tests for data quality validation module."""
 
 import pytest
-from scrapers.utils.data_quality import DataQualityChecker
-from scrapers.utils.models import Movie
+
 from scrapers.tests.fixtures.test_data import (
-    VALID_MOVIE_COMPLETE,
-    VALID_MOVIE_MINIMAL,
-    PARTIAL_MOVIE_NO_YEAR,
     BOUNDARY_MOVIE_RATING_0,
     BOUNDARY_MOVIE_RATING_10,
     BOUNDARY_MOVIE_YEAR_1888,
+    PARTIAL_MOVIE_NO_YEAR,
+    VALID_MOVIE_COMPLETE,
+    VALID_MOVIE_MINIMAL,
     VALID_MOVIES,
     get_invalid_movie_data,
 )
+from scrapers.utils.data_quality import DataQualityChecker
+from scrapers.utils.models import Movie
 
 
 class TestDataQualityCheckerInit:

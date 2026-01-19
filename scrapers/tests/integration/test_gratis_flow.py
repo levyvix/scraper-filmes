@@ -1,10 +1,11 @@
-from unittest.mock import patch
 import json
+from unittest.mock import patch
+
 from scrapers.gratis_torrent.flow import (
     gratis_torrent_flow,
-    scrape_movies_task,
-    load_to_bigquery_task,
     load_jsonl,
+    load_to_bigquery_task,
+    scrape_movies_task,
 )
 
 

@@ -1,15 +1,16 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from bs4 import BeautifulSoup
 
-from scrapers.gratis_torrent.scraper import (
-    scrape_movie_links,
-    scrape_movie_details,
-    scrape_all_movies,
-)
 from scrapers.gratis_torrent.models import Movie
-from scrapers.utils.exceptions import FetchException, ScraperException
+from scrapers.gratis_torrent.scraper import (
+    scrape_all_movies,
+    scrape_movie_details,
+    scrape_movie_links,
+)
 from scrapers.utils.data_quality import DataQualityChecker  # Import for mocking
+from scrapers.utils.exceptions import FetchException, ScraperException
 
 
 # Mock the Config.BASE_URL for testing scrape_movie_links
@@ -123,8 +124,8 @@ class TestScrapeAllMovies:
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
     @patch(
-        "scrapers.utils.data_quality.DataQualityChecker"
-    )  # Patch DataQualityChecker itself
+        "scrapers.gratis_torrent.scraper.DataQualityChecker"
+    )  # Patch DataQualityChecker as imported in scraper
     def test_scrape_all_movies_success(
         self, mock_quality_checker_cls, mock_scrape_details, mock_scrape_links, caplog
     ):  # Use caplog fixture
@@ -205,7 +206,7 @@ class TestScrapeAllMovies:
 
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
-    @patch("scrapers.utils.data_quality.DataQualityChecker")
+    @patch("scrapers.gratis_torrent.scraper.DataQualityChecker")
     def test_scrape_all_movies_quality_check_fail(
         self, mock_quality_checker_cls, mock_scrape_details, mock_scrape_links, caplog
     ):  # Use caplog fixture

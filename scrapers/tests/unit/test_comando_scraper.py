@@ -1,8 +1,10 @@
 """Tests for comando_torrents scraper module."""
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 from scrapling.parser import Adaptor
+
 from scrapers.comando_torrents.scraper import (
     fetch_page,
     get_movie_links,

@@ -1,14 +1,16 @@
 import json
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
+
+from loguru import logger
 from prefect import flow, task
 from prefect.cache_policies import INPUTS
+
+from scrapers.comando_torrents.config import ComandoTorrentsConfig
+from scrapers.comando_torrents.parser import parse_detail
+from scrapers.comando_torrents.scraper import get_movie_links
 from scrapers.utils.logging_config import setup_logging
 from scrapers.utils.models import Movie
-from scrapers.comando_torrents.config import ComandoTorrentsConfig
-from scrapers.comando_torrents.scraper import get_movie_links
-from scrapers.comando_torrents.parser import parse_detail
-from loguru import logger
 
 # Initialize logging configuration
 setup_logging(level="INFO", log_file="comando_torrents.log")
@@ -55,8 +57,7 @@ def scrape_movies_task(url_base: str) -> list[Movie]:
             failed_count += 1
 
     logger.info(
-        f"Successfully scraped {len(list_movies)} movies. "
-        f"Failed: {failed_count} out of {len(links)}"
+        f"Successfully scraped {len(list_movies)} movies. Failed: {failed_count} out of {len(links)}"
     )
 
     # Log quality report

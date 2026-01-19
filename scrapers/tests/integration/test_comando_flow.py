@@ -1,10 +1,11 @@
 """Tests for comando_torrents Prefect flow."""
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from scrapers.comando_torrents.flow import (
-    scrape_movies_task,
-    save_to_json_task,
     comando_torrents_flow,
+    save_to_json_task,
+    scrape_movies_task,
 )
 from scrapers.utils.models import Movie
 

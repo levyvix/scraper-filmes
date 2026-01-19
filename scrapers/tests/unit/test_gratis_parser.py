@@ -1,13 +1,14 @@
 """Tests for GratisTorrent parser module."""
 
 from bs4 import BeautifulSoup
+
 from scrapers.gratis_torrent.parser import (
     clean_genre,
-    extract_regex_field,
-    extract_poster_url,
-    extract_sinopse,
-    extract_movie_fields,
     create_movie_object,
+    extract_movie_fields,
+    extract_poster_url,
+    extract_regex_field,
+    extract_sinopse,
     parse_movie_page,
 )
 

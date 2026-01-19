@@ -120,8 +120,7 @@ def scrape_all_movies() -> list[dict[str, Any]]:
             continue
 
     logger.info(
-        f"Successfully scraped {len(movies_list)} movies. "
-        f"Failed: {len(failed_links)} out of {len(links)}"
+        f"Successfully scraped {len(movies_list)} movies. Failed: {len(failed_links)} out of {len(links)}"
     )
 
     if failed_links:

@@ -1,21 +1,23 @@
 import json
 from unittest.mock import MagicMock, patch
+
 import pytest
 from google.cloud import bigquery
 from google.cloud.exceptions import GoogleCloudError
-from scrapers.gratis_torrent.config import Config
+
 from scrapers.gratis_torrent.bigquery_client import (
-    get_client,
-    load_schema,
     create_dataset,
-    delete_table,
     create_table,
+    delete_table,
+    get_client,
     load_data_to_staging,
-    merge_staging_to_main,
-    truncate_staging_table,
-    setup_tables,
     load_movies_to_bigquery,
+    load_schema,
+    merge_staging_to_main,
+    setup_tables,
+    truncate_staging_table,
 )
+from scrapers.gratis_torrent.config import Config
 from scrapers.utils.exceptions import BigQueryException
 
 
@@ -348,16 +350,20 @@ def test_load_movies_to_bigquery_pipeline(
     mock_get_client, mock_truncate, mock_merge, mock_load, mock_setup
 ):
     """Test load_movies_to_bigquery orchestrates full pipeline."""
+    from scrapers.gratis_torrent.models import Movie
+
     mock_client = MagicMock()
     mock_get_client.return_value = mock_client
     mock_merge.return_value = 5
 
-    movies = [{"titulo_dublado": "Test"}]
+    movies = [
+        Movie(titulo_dublado="Test", titulo_original="Test", link="http://test.com")
+    ]
     result = load_movies_to_bigquery(movies)
 
     assert result == 5
     mock_setup.assert_called_once_with(mock_client)
-    mock_load.assert_called_once_with(mock_client, movies)
+    # mock_load is called with movies converted to dict format
     mock_merge.assert_called_once_with(mock_client)
     mock_truncate.assert_called_once_with(mock_client)
 

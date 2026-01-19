@@ -56,8 +56,17 @@ def pytest_configure(config):
 
     parser_mock = MagicMock()
     parser_mock.__path__ = []
-    adaptor_mock = MagicMock()
-    parser_mock.Adaptor = adaptor_mock
+
+    # Create a real Adaptor class for isinstance checks in tests
+    class Adaptor:
+        def __init__(self, html, url):
+            self.html = html
+            self.url = url
+
+        def css(self, selector):
+            return []
+
+    parser_mock.Adaptor = Adaptor
     sys.modules["scrapling.parser"] = parser_mock
 
     sys.modules["scrapling"] = scrapling_mock

@@ -2,7 +2,6 @@
 
 from scrapers.gratis_torrent.models import Movie
 
-
 # Valid movies with all fields
 VALID_MOVIE_COMPLETE = Movie(
     titulo_original="Inception",

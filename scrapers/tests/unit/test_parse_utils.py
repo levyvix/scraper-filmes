@@ -1,5 +1,6 @@
 import pytest
-from scrapers.utils.parse_utils import parse_rating, parse_year, parse_int
+
+from scrapers.utils.parse_utils import parse_int, parse_rating, parse_year
 
 
 class TestParseRating:

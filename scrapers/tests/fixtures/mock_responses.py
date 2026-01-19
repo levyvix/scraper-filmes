@@ -1,6 +1,7 @@
 """Mock HTTP and API responses for testing."""
 
 from unittest.mock import MagicMock
+
 from bs4 import BeautifulSoup
 
 

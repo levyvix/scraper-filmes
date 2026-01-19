@@ -1,9 +1,10 @@
-from scrapling.parser import Adaptor
-from scrapers.utils.parse_utils import parse_rating, parse_year
-from scrapers.utils.models import Movie
-from pydantic import ValidationError
 from loguru import logger
+from pydantic import ValidationError
+from scrapling.parser import Adaptor
+
 from scrapers.comando_torrents.scraper import fetch_page
+from scrapers.utils.models import Movie
+from scrapers.utils.parse_utils import parse_rating, parse_year
 
 
 def extract_text_or_none(page: Adaptor, selector: str) -> str | None:

@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 
 from pydantic import Field
 
-
 from scrapers.utils.models import Movie as BaseMovie
 
 

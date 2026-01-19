@@ -1,10 +1,11 @@
 """Tests for Comando Torrents parser module."""
 
 from unittest.mock import MagicMock, patch
+
 from scrapers.comando_torrents.parser import (
     extract_text_or_none,
-    safe_list_get,
     parse_detail,
+    safe_list_get,
 )
 
 
