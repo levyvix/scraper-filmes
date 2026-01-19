@@ -1,12 +1,15 @@
-import pytest
+# mypy: ignore-errors
 from unittest.mock import MagicMock, patch
+
+import pytest
+from bs4 import BeautifulSoup
+
 from scrapers.gratis_torrent.scraper import (
-    scrape_movie_links,
-    scrape_movie_details,
     scrape_all_movies,
+    scrape_movie_details,
+    scrape_movie_links,
 )
 from scrapers.utils.models import Movie
-from bs4 import BeautifulSoup
 
 
 # Mock external dependencies
@@ -92,12 +95,14 @@ def test_scrape_movie_details_success(mock_fetch_page, mock_parse_movie_page):
 
     assert movie.titulo_dublado == "Movie Title"
     mock_fetch_page.assert_called_once_with("http://test.com/movie")
-    mock_parse_movie_page.assert_called_once_with(mock_page_content, "http://test.com/movie")
+    mock_parse_movie_page.assert_called_once_with(
+        mock_page_content, "http://test.com/movie"
+    )
 
 
 def test_scrape_movie_details_fetch_page_fails(mock_fetch_page, mock_parse_movie_page):
     # Simulate fetch_page raising an exception
-    from scrapers.utils.exceptions import ScraperException, FetchException
+    from scrapers.utils.exceptions import FetchException, ScraperException
 
     mock_fetch_page.side_effect = FetchException("Network error")
 
@@ -109,7 +114,9 @@ def test_scrape_movie_details_fetch_page_fails(mock_fetch_page, mock_parse_movie
     mock_parse_movie_page.assert_not_called()
 
 
-def test_scrape_movie_details_parse_movie_page_fails(mock_fetch_page, mock_parse_movie_page):
+def test_scrape_movie_details_parse_movie_page_fails(
+    mock_fetch_page, mock_parse_movie_page
+):
     mock_page_content = MagicMock()
     mock_fetch_page.return_value = mock_page_content
     mock_parse_movie_page.return_value = None
@@ -118,7 +125,9 @@ def test_scrape_movie_details_parse_movie_page_fails(mock_fetch_page, mock_parse
 
     assert movie is None
     mock_fetch_page.assert_called_once_with("http://test.com/movie")
-    mock_parse_movie_page.assert_called_once_with(mock_page_content, "http://test.com/movie")
+    mock_parse_movie_page.assert_called_once_with(
+        mock_page_content, "http://test.com/movie"
+    )
 
 
 @pytest.fixture(autouse=True)
@@ -180,7 +189,9 @@ def test_scrape_all_movies_no_links(mock_scrape_movie_details, mock_scrape_movie
 
 @patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
 @patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
-def test_scrape_all_movies_all_details_fail(mock_scrape_movie_details, mock_scrape_movie_links):
+def test_scrape_all_movies_all_details_fail(
+    mock_scrape_movie_details, mock_scrape_movie_links
+):
     mock_scrape_movie_links.return_value = [
         "http://test.com/movie1",
         "http://test.com/movie2",

@@ -1,4 +1,5 @@
 """Unit tests for Prefect logging integration."""
+# mypy: ignore-errors
 
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -24,7 +25,9 @@ class TestPrefectHandler:
         try:
             prefect_handler(mock_message)
         except Exception as e:
-            pytest.fail(f"prefect_handler should not raise exception outside Prefect context: {e}")
+            pytest.fail(
+                f"prefect_handler should not raise exception outside Prefect context: {e}"
+            )
 
     def test_handler_function_exists_and_callable(self):
         """Test that prefect_handler function exists and is callable."""
@@ -49,7 +52,9 @@ class TestSetupLogging:
     def test_setup_logging_outside_prefect_context(self, tmp_path, capsys):
         """Test that setup_logging() works correctly outside Prefect context."""
         log_file = tmp_path / "test.log"
-        logger = setup_logging(level="INFO", log_file=str(log_file), enable_prefect=True)
+        logger = setup_logging(
+            level="INFO", log_file=str(log_file), enable_prefect=True
+        )
 
         # Should succeed without errors
         logger.info("Test message")
@@ -61,7 +66,9 @@ class TestSetupLogging:
     def test_setup_logging_with_enable_prefect_false(self, tmp_path, capsys):
         """Test that Prefect handler is skipped when enable_prefect=False."""
         log_file = tmp_path / "test.log"
-        logger = setup_logging(level="INFO", log_file=str(log_file), enable_prefect=False)
+        logger = setup_logging(
+            level="INFO", log_file=str(log_file), enable_prefect=False
+        )
 
         # Should have console and file handlers (2 total)
         num_handlers = len(logger._core.handlers)
@@ -72,7 +79,9 @@ class TestSetupLogging:
     def test_setup_logging_with_enable_prefect_true(self, tmp_path):
         """Test that Prefect handler is added when enable_prefect=True."""
         log_file = tmp_path / "test.log"
-        logger = setup_logging(level="INFO", log_file=str(log_file), enable_prefect=True)
+        logger = setup_logging(
+            level="INFO", log_file=str(log_file), enable_prefect=True
+        )
 
         # Check that we have 3 handlers (console, file, prefect)
         num_handlers = len(logger._core.handlers)

@@ -8,7 +8,7 @@ from scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
 from scrapers.gratis_torrent.scraper import scrape_all_movies
 
 
-def main() -> dict:
+def main() -> dict[str, int]:
     """
     Run the scraper pipeline standalone.
 

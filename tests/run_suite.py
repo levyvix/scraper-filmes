@@ -5,9 +5,11 @@ Executa testes de todos os componentes do projeto
 Uso:
     uv run python tests/test_suite.py
 """
+# mypy: ignore-errors
 
 import sys
 from pathlib import Path
+from typing import Any, Callable
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -17,7 +19,13 @@ sys.path.insert(0, str(project_root))
 class TestRunner:
     """Gerenciador de execução de testes"""
 
-    def test(self, name: str, func):
+    def __init__(self) -> None:
+        """Initialize test runner with counters and error list."""
+        self.passed: int = 0
+        self.failed: int = 0
+        self.errors: list[tuple[str, str]] = []
+
+    def test(self, name: str, func: Callable[[], Any]) -> None:
         """Executa um teste e registra resultado"""
         try:
             print(f"\n{'=' * 60}")
@@ -35,7 +43,7 @@ class TestRunner:
             self.failed += 1
             self.errors.append((name, str(e)))
 
-    def summary(self):
+    def summary(self) -> bool:
         """Imprime resumo dos testes"""
         print(f"\n{'=' * 60}")
         print("RESUMO DOS TESTES")
@@ -60,7 +68,7 @@ class TestRunner:
 # =============================================================================
 
 
-def test_imports():
+def test_imports() -> None:
     """Testa importações dos módulos principais"""
     print("Testando importações...")
 
@@ -95,12 +103,12 @@ def test_imports():
     print("  ✓ src.scrapers.gratis_torrent.config")
 
 
-def test_pydantic_validation():
+def test_pydantic_validation() -> None:
     """Testa validação do modelo Pydantic"""
     print("Testando validação Pydantic...")
 
-    from src.scrapers.gratis_torrent.models import Movie
     from pydantic import ValidationError
+    from src.scrapers.gratis_torrent.models import Movie
 
     # Teste 1: Dados válidos
     movie = Movie(
@@ -162,7 +170,7 @@ def test_pydantic_validation():
         print("  ✓ Ano inválido rejeitado")
 
 
-def test_config():
+def test_config() -> None:
     """Testa configurações do projeto"""
     print("Testando configurações...")
 
@@ -187,15 +195,15 @@ def test_config():
     print(f"  ✓ Full table ID: {full_table_id}")
 
 
-def test_parser_functions():
+def test_parser_functions() -> None:
     """Testa funções do parser"""
     print("Testando funções do parser...")
 
     from src.scrapers.gratis_torrent.parser import (
         clean_genre,
+        extract_regex_field,
         safe_convert_float,
         safe_convert_int,
-        extract_regex_field,
     )
 
     # Teste 1: clean_genre
@@ -219,7 +227,7 @@ def test_parser_functions():
     print("  ✓ extract_regex_field funciona")
 
 
-def test_model_serialization():
+def test_model_serialization() -> None:
     """Testa serialização do modelo"""
     print("Testando serialização do modelo...")
 
@@ -269,14 +277,14 @@ def test_model_serialization():
     print(f"  ✓ Todos os {len(required_fields)} campos presentes")
 
 
-def test_prefect_flow_structure():
+def test_prefect_flow_structure() -> None:
     """Testa estrutura do Prefect Flow"""
     print("Testando estrutura do Prefect Flow...")
 
     from src.scrapers.gratis_torrent.flow import (
         gratis_torrent_flow,
-        scrape_movies_task,
         load_to_bigquery_task,
+        scrape_movies_task,
     )
 
     # Verificar se é um flow
@@ -294,16 +302,18 @@ def test_prefect_flow_structure():
 
     # Verificar retries configurados
     assert scrape_movies_task.retries == 2, "scrape_movies_task deve ter 2 retries"
-    assert load_to_bigquery_task.retries == 3, "load_to_bigquery_task deve ter 3 retries"
+    assert (
+        load_to_bigquery_task.retries == 3
+    ), "load_to_bigquery_task deve ter 3 retries"
     print("  ✓ Retries configurados corretamente")
 
 
-def test_http_client_functions():
+def test_http_client_functions() -> None:
     """Testa funções do http_client"""
     print("Testando funções do http_client...")
 
-    from src.scrapers.gratis_torrent.http_client import collect_movie_links
     from bs4 import BeautifulSoup
+    from src.scrapers.gratis_torrent.http_client import collect_movie_links
 
     # Teste collect_movie_links com HTML mockado
     html = """
@@ -324,11 +334,12 @@ def test_http_client_functions():
     print(f"  ✓ collect_movie_links funciona (encontrou {len(links)} links únicos)")
 
 
-def test_bigquery_schema():
+def test_bigquery_schema() -> None:
     """Testa schema do BigQuery"""
     print("Testando schema do BigQuery...")
 
     import json
+
     from src.scrapers.gratis_torrent.config import Config
 
     # Carregar schema
@@ -386,7 +397,7 @@ def test_bigquery_schema():
 # =============================================================================
 
 
-def main():
+def main() -> int:
     """Executa todos os testes"""
     print("\n" + "=" * 60)
     print("🧪 SUITE DE TESTES - SCRAPER DE FILMES")

@@ -1,10 +1,12 @@
-import pytest
+# mypy: ignore-errors
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from scrapers.comando_torrents.parser import (
     extract_text_or_none,
-    safe_list_get,
     parse_detail,
+    safe_list_get,
 )
 from scrapers.comando_torrents.scraper import (
     get_movie_links,
@@ -125,7 +127,9 @@ def test_parse_detail_success(mock_fetch_page):
     mock_adaptor_instance.css_first.side_effect = [
         MagicMock(text="7.0"),  # For imdb_text
         MagicMock(text="2020"),  # For year_text
-        MagicMock(__str__=lambda x: "image.jpg", attributes={"src": "image.jpg"}),  # For poster_url_result
+        MagicMock(
+            __str__=lambda x: "image.jpg", attributes={"src": "image.jpg"}
+        ),  # For poster_url_result
     ]
     mock_fetch_page.return_value = mock_adaptor_instance
 
@@ -162,7 +166,10 @@ def test_parse_detail_validation_error(mock_fetch_page):
 @patch("scrapers.comando_torrents.scraper.fetch_page")
 def test_get_movie_links_success(mock_fetch_page):
     mock_page_content = MagicMock()
-    mock_page_content.css.return_value = ["http://test.com/movie1", "http://test.com/movie2"]
+    mock_page_content.css.return_value = [
+        "http://test.com/movie1",
+        "http://test.com/movie2",
+    ]
     mock_fetch_page.return_value = mock_page_content
 
     links = get_movie_links("http://test.com/search")

@@ -1,4 +1,5 @@
 """Tests for parser module."""
+# mypy: ignore-errors
 
 from bs4 import BeautifulSoup
 
@@ -10,7 +11,7 @@ from scrapers.gratis_torrent.parser import (
     extract_sinopse,
     parse_movie_page,
 )
-from scrapers.utils.parse_utils import parse_rating, parse_int
+from scrapers.utils.parse_utils import parse_int, parse_rating
 
 
 class TestExtractRegexField:

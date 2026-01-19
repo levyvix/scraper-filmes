@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# mypy: ignore-errors
 """
 Script para testar a inserção de dados no BigQuery.
 
@@ -13,8 +14,8 @@ Uso:
 
 import os
 import sys
-from pathlib import Path
 import warnings
+from pathlib import Path
 
 from google.cloud import bigquery
 from loguru import logger
@@ -93,7 +94,9 @@ def main():
     if not check_credentials():
         logger.error("\nConfigure as credenciais usando um dos métodos:")
         logger.info("1. Variável de ambiente:")
-        logger.info("   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json")
+        logger.info(
+            "   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json"
+        )
         logger.info("\n2. Application Default Credentials:")
         logger.info("   gcloud auth application-default login")
         return 1
