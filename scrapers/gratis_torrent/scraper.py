@@ -1,16 +1,25 @@
 """Main scraper orchestration module."""
 
 from typing import Any
-from loguru import logger
-from diskcache import Cache
-from tenacity import retry, stop_after_attempt, wait_exponential
+
 from bs4 import BeautifulSoup
+from diskcache import Cache
+from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from scrapers.gratis_torrent.config import Config
 from scrapers.gratis_torrent.http_client import collect_movie_links, fetch_page
 from scrapers.gratis_torrent.models import Movie
 from scrapers.gratis_torrent.parser import parse_movie_page
-
+from scrapers.utils.constants import (
+    DEFAULT_MIN_FIELDS_FILLED_RATIO,
+    SCRAPER_RETRY_ATTEMPTS,
+    SCRAPER_RETRY_MULTIPLIER,
+    SCRAPER_RETRY_WAIT_MAX_SECONDS,
+    SCRAPER_RETRY_WAIT_MIN_SECONDS,
+)
+from scrapers.utils.data_quality import DataQualityChecker
+from scrapers.utils.exceptions import FetchException, ScraperException
 
 cache = Cache("movie_cache")
 
@@ -22,8 +31,6 @@ def scrape_movie_links() -> list[str]:
     Returns:
         List of movie URLs
     """
-    from scrapers.utils.exceptions import FetchException
-
     try:
         soup: BeautifulSoup = fetch_page(Config.BASE_URL)
         links = collect_movie_links(soup)
@@ -35,8 +42,12 @@ def scrape_movie_links() -> list[str]:
 
 
 @retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=4, max=10),
+    stop=stop_after_attempt(SCRAPER_RETRY_ATTEMPTS),
+    wait=wait_exponential(
+        multiplier=SCRAPER_RETRY_MULTIPLIER,
+        min=SCRAPER_RETRY_WAIT_MIN_SECONDS,
+        max=SCRAPER_RETRY_WAIT_MAX_SECONDS,
+    ),
     reraise=True,
 )
 def scrape_movie_details(url: str) -> Movie | None:
@@ -52,8 +63,6 @@ def scrape_movie_details(url: str) -> Movie | None:
     Raises:
         ScraperException: If critical error occurs after retries
     """
-    from scrapers.utils.exceptions import FetchException, ScraperException
-
     try:
         soup = fetch_page(url)
         movie = parse_movie_page(soup, url)
@@ -80,14 +89,13 @@ def scrape_all_movies() -> list[dict[str, Any]]:
     Returns:
         List of movie dictionaries
     """
-    from scrapers.utils.exceptions import ScraperException
-    from scrapers.utils.data_quality import DataQualityChecker
-
     links = scrape_movie_links()
 
     movies_list = []
     failed_links = []
-    quality_checker = DataQualityChecker(min_fields_filled=0.7)
+    quality_checker = DataQualityChecker(
+        min_fields_filled=DEFAULT_MIN_FIELDS_FILLED_RATIO
+    )
 
     for index, link in enumerate(links, start=1):
         logger.info(f"Processing movie {index}/{len(links)}: {link}")

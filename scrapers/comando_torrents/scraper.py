@@ -1,8 +1,10 @@
-from scrapling.fetchers import StealthySession
-from scrapling.parser import Adaptor, Selector
 from diskcache import Cache
 from loguru import logger
+from scrapling.fetchers import StealthySession
+from scrapling.parser import Adaptor, Selector
 from tenacity import retry, stop_after_attempt, wait_exponential
+
+from scrapers.utils.exceptions import FetchException
 from scrapers.utils.rate_limiter import rate_limit
 
 cache = Cache("./comando_cache")
@@ -28,8 +30,6 @@ def fetch_page_html(url: str) -> tuple[str, str]:
     Raises:
         FetchException: If fetching fails after retries
     """
-    from scrapers.utils.exceptions import FetchException
-
     try:
         with StealthySession(headless=True, solve_cloudflare=True) as session:
             page: Selector = session.fetch(url)
@@ -67,8 +67,6 @@ def get_movie_links(url: str) -> list[str]:
     Returns:
         List of movie URLs, empty list if fetching fails
     """
-    from scrapers.utils.exceptions import FetchException
-
     try:
         page = fetch_page(url)
         links = page.css("article > header > h2 > a::attr(href)")

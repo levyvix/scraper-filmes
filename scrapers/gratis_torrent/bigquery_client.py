@@ -9,6 +9,7 @@ from google.cloud.exceptions import GoogleCloudError
 from loguru import logger
 
 from scrapers.gratis_torrent.config import Config
+from scrapers.gratis_torrent.models import Movie
 from scrapers.utils.exceptions import BigQueryException
 
 # Suppress quota project warning for user credentials
@@ -22,6 +23,7 @@ def get_client() -> bigquery.Client:
     Returns:
         Configured BigQuery client
     """
+
     return bigquery.Client(project=Config.GCP_PROJECT_ID)
 
 
@@ -345,7 +347,11 @@ def setup_tables(client: bigquery.Client, recreate_staging: bool = True) -> None
     create_table(client, Config.STAGING_TABLE_ID, force_recreate=recreate_staging)
 
 
-def load_movies_to_bigquery(movies: list[dict[str, Any]]) -> int:
+def movies_to_dict(movies: list[Movie]) -> list[dict[str, Any]]:
+    return list(map(Movie.model_dump, movies))
+
+
+def load_movies_to_bigquery(movies: list[Movie]) -> int:
     """
     Complete pipeline to load movies to BigQuery.
 
@@ -353,7 +359,7 @@ def load_movies_to_bigquery(movies: list[dict[str, Any]]) -> int:
         movies: List of movie dictionaries
 
     Returns:
-        Number of rows merged into main table
+        int: Number of rows merged into main table
     """
     client = get_client()
 
@@ -361,7 +367,9 @@ def load_movies_to_bigquery(movies: list[dict[str, Any]]) -> int:
     setup_tables(client)
 
     # Load to staging
-    load_data_to_staging(client, movies)
+    # unload movies to list of dicts
+    movies_dict = movies_to_dict(movies)
+    load_data_to_staging(client, movies_dict)
 
     # Merge to main
     rows_affected = merge_staging_to_main(client)

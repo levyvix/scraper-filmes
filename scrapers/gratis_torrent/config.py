@@ -1,5 +1,6 @@
 """Configuration module for GratisTorrent scraper."""
 
+from functools import cached_property
 from pathlib import Path
 
 from pydantic import Field, field_validator
@@ -46,25 +47,40 @@ class GratisTorrentConfig(BaseSettings):
             )
         return v
 
-    # File Paths (computed properties)
-    @property
+    # File Paths (cached computed properties)
+    @cached_property
     def PROJECT_ROOT(self) -> Path:
-        """Get project root directory."""
+        """Get project root directory (cached)."""
         return Path(__file__).parent
 
-    @property
+    @cached_property
     def SCHEMA_FILE(self) -> Path:
-        """Get schema file path."""
+        """Get schema file path (cached)."""
         return self.PROJECT_ROOT / "schema.json"
 
-    @property
+    @cached_property
     def MOVIES_JSON_PATH(self) -> Path:
-        """Get movies JSON file path."""
+        """Get movies JSON file path (cached)."""
         return self.PROJECT_ROOT / "movies.jsonl"
 
     def get_full_table_id(self, table_name: str) -> str:
         """Get fully qualified table ID."""
         return f"{self.GCP_PROJECT_ID}.{self.DATASET_ID}.{table_name}"
+
+
+def get_config() -> GratisTorrentConfig:
+    """Factory function to create a new GratisTorrentConfig instance.
+
+    Returns a fresh instance (not a singleton), allowing for multiple
+    configurations with different settings in the same process.
+
+    Returns:
+        A new GratisTorrentConfig instance
+
+    Raises:
+        ValueError: If GCP_PROJECT_ID is not set to a valid value
+    """
+    return GratisTorrentConfig()
 
 
 # Singleton instance for backward compatibility

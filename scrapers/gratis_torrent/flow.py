@@ -11,7 +11,15 @@ from prefect.cache_policies import INPUTS, TASK_SOURCE
 
 from scrapers.gratis_torrent.bigquery_client import load_movies_to_bigquery
 from scrapers.gratis_torrent.config import Config
+from scrapers.gratis_torrent.models import Movie
 from scrapers.gratis_torrent.scraper import scrape_all_movies
+from scrapers.utils.constants import (
+    PREFECT_BIGQUERY_TASK_RETRIES,
+    PREFECT_BIGQUERY_TASK_RETRY_DELAY_SECONDS,
+    PREFECT_SCRAPE_TASK_RETRIES,
+    PREFECT_SCRAPE_TASK_RETRY_DELAY_SECONDS,
+    PREFECT_TASK_CACHE_EXPIRATION_HOURS,
+)
 from scrapers.utils.logging_config import setup_logging
 
 # Initialize logging configuration
@@ -20,10 +28,10 @@ setup_logging(level="INFO", log_file="gratis_torrent.log")
 
 @task(
     name="scrape-movies",
-    retries=2,
-    retry_delay_seconds=30,
+    retries=PREFECT_SCRAPE_TASK_RETRIES,
+    retry_delay_seconds=PREFECT_SCRAPE_TASK_RETRY_DELAY_SECONDS,
     cache_policy=INPUTS + TASK_SOURCE,
-    cache_expiration=timedelta(hours=1),
+    cache_expiration=timedelta(hours=PREFECT_TASK_CACHE_EXPIRATION_HOURS),
     log_prints=True,
 )
 def scrape_movies_task() -> list[dict[str, Any]]:
@@ -48,7 +56,12 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
     return items
 
 
-@task(name="load-to-bigquery", retries=3, retry_delay_seconds=60, log_prints=True)
+@task(
+    name="load-to-bigquery",
+    retries=PREFECT_BIGQUERY_TASK_RETRIES,
+    retry_delay_seconds=PREFECT_BIGQUERY_TASK_RETRY_DELAY_SECONDS,
+    log_prints=True,
+)
 def load_to_bigquery_task(movies_path: Path) -> int:
     """
     Task to load movies to BigQuery.
@@ -61,7 +74,8 @@ def load_to_bigquery_task(movies_path: Path) -> int:
     """
     logger.info("Starting BigQuery load task")
     movies = load_jsonl(movies_path)
-    rows_affected = load_movies_to_bigquery(movies)
+    movies_list: list[Movie] = [Movie(**movie) for movie in movies]
+    rows_affected = load_movies_to_bigquery(movies_list)
     logger.info(f"Loaded {rows_affected} new movies to BigQuery")
     return rows_affected
 
