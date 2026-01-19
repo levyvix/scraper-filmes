@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore", message=".*quota project.*")
 logger = setup_logging()
 
 
-def get_gcp_credentials():
+def get_gcp_credentials() -> Any:
     """Load GCP credentials based on configuration method.
 
     Supports two credential methods:
@@ -50,7 +50,11 @@ def get_gcp_credentials():
             raise FileNotFoundError(f"Credential file not found at: {cred_path}")
 
         try:
-            credentials = google.oauth2.service_account.Credentials.from_service_account_file(cred_path)
+            credentials = (
+                google.oauth2.service_account.Credentials.from_service_account_file(
+                    cred_path
+                )
+            )
             logger.info(f"Successfully loaded credentials from file: {cred_path}")
             return credentials
         except Exception as e:
@@ -60,7 +64,9 @@ def get_gcp_credentials():
     # Default: Application Default Credentials
     try:
         credentials, project = google.auth.default()
-        logger.info(f"Successfully loaded Application Default Credentials (project: {project})")
+        logger.info(
+            f"Successfully loaded Application Default Credentials (project: {project})"
+        )
         return credentials
     except Exception as e:
         logger.error(f"Failed to load Application Default Credentials: {e}")
@@ -93,7 +99,9 @@ def load_schema() -> list[bigquery.SchemaField]:
         FileNotFoundError: If schema file is not found
     """
     if not Config.SCHEMA_FILE.exists():
-        raise FileNotFoundError(f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}")
+        raise FileNotFoundError(
+            f"Schema file not found at {Config.PROJECT_ROOT}/{Config.SCHEMA_FILE}"
+        )
 
     schema_raw = json.loads(Config.SCHEMA_FILE.read_text("utf-8"))
     schema = [
@@ -131,7 +139,9 @@ def create_dataset(client: bigquery.Client) -> None:
         raise BigQueryException(f"Failed to create dataset {dataset_id}") from e
     except Exception as e:
         logger.error(f"Unexpected error creating dataset {dataset_id}: {e}")
-        raise BigQueryException(f"Unexpected error creating dataset {dataset_id}") from e
+        raise BigQueryException(
+            f"Unexpected error creating dataset {dataset_id}"
+        ) from e
 
 
 def delete_table(client: bigquery.Client, table_name: str) -> None:
@@ -147,7 +157,9 @@ def delete_table(client: bigquery.Client, table_name: str) -> None:
     logger.info(f"Table {table_id} deleted")
 
 
-def create_table(client: bigquery.Client, table_name: str, force_recreate: bool = False) -> None:
+def create_table(
+    client: bigquery.Client, table_name: str, force_recreate: bool = False
+) -> None:
     """
     Create BigQuery table if it doesn't exist.
 
@@ -186,7 +198,9 @@ def create_table(client: bigquery.Client, table_name: str, force_recreate: bool 
             updated_schema = table.schema + fields_to_add
             table.schema = updated_schema
             client.update_table(table, ["schema"])
-            logger.info(f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}")
+            logger.info(
+                f"Added new columns to table {table_id}: {[f.name for f in fields_to_add]}"
+            )
         else:
             logger.info(f"Table {table_id} already exists and schema is up to date.")
 
@@ -198,16 +212,20 @@ def create_table(client: bigquery.Client, table_name: str, force_recreate: bool 
                 logger.info(f"Table {table_id} created with new schema")
             except GoogleCloudError as create_error:
                 logger.error(f"Failed to create table {table_id}: {create_error}")
-                raise BigQueryException(f"Failed to create table {table_id}") from create_error
+                raise BigQueryException(
+                    f"Failed to create table {table_id}"
+                ) from create_error
         else:
             logger.error(f"Error creating or updating table {table_id}: {e}")
-            raise BigQueryException(f"Failed to create or update table {table_id}") from e
+            raise BigQueryException(
+                f"Failed to create or update table {table_id}"
+            ) from e
     except Exception as e:
         logger.error(f"Unexpected error with table {table_id}: {e}")
         raise BigQueryException(f"Unexpected error with table {table_id}") from e
 
 
-def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]):
+def load_data_to_staging(client: bigquery.Client, data: list[dict[str, Any]]) -> int:
     """
     Load movie data into BigQuery staging table.
 
@@ -267,7 +285,10 @@ def merge_staging_to_main(client: bigquery.Client) -> int:
 
     columns = [col_obj.name for col_obj in schema]
     columns_str = ",".join(columns)
-    values_list = [f"source.{col}" if col != "date_updated" else "CURRENT_TIMESTAMP()" for col in columns]
+    values_list = [
+        f"source.{col}" if col != "date_updated" else "CURRENT_TIMESTAMP()"
+        for col in columns
+    ]
     values_str = ",".join(values_list)
     merge_statement = f"""
     merge into `{target_table}` as target

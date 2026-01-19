@@ -1,16 +1,16 @@
 """Main scraper orchestration module."""
 
 from typing import Any
-from loguru import logger
-from diskcache import Cache
-from tenacity import retry, stop_after_attempt, wait_exponential
+
 from bs4 import BeautifulSoup
+from diskcache import Cache
+from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from scrapers.gratis_torrent.config import Config
 from scrapers.gratis_torrent.http_client import collect_movie_links, fetch_page
 from scrapers.gratis_torrent.models import Movie
 from scrapers.gratis_torrent.parser import parse_movie_page
-
 
 cache = Cache("movie_cache")
 
@@ -80,8 +80,8 @@ def scrape_all_movies() -> list[dict[str, Any]]:
     Returns:
         List of movie dictionaries
     """
-    from scrapers.utils.exceptions import ScraperException
     from scrapers.utils.data_quality import DataQualityChecker
+    from scrapers.utils.exceptions import ScraperException
 
     links = scrape_movie_links()
 
@@ -111,7 +111,9 @@ def scrape_all_movies() -> list[dict[str, Any]]:
             failed_links.append(link)
             continue
 
-    logger.info(f"Successfully scraped {len(movies_list)} movies. Failed: {len(failed_links)} out of {len(links)}")
+    logger.info(
+        f"Successfully scraped {len(movies_list)} movies. Failed: {len(failed_links)} out of {len(links)}"
+    )
 
     if failed_links:
         logger.warning(f"Failed links: {failed_links[:5]}...")  # Show first 5

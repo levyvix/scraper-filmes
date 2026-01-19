@@ -1,7 +1,8 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
 
 from scrapers.gratis_torrent.http_client import fetch_page
 from scrapers.utils.exceptions import FetchException
@@ -17,7 +18,9 @@ class MockResponse:
 
     def raise_for_status(self):
         if self.status_code >= 400:
-            http_error = requests.HTTPError(f"{self.status_code} Client Error: Mocked Error", response=self)
+            http_error = requests.HTTPError(
+                f"{self.status_code} Client Error: Mocked Error", response=self
+            )
             raise http_error
 
 

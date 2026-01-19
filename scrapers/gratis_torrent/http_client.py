@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from loguru import logger
 
 from scrapers.gratis_torrent.config import Config
+from scrapers.utils.exceptions import FetchException
 from scrapers.utils.rate_limiter import rate_limit
 
 
@@ -23,8 +24,6 @@ def fetch_page(url: str, timeout: int = Config.REQUEST_TIMEOUT) -> BeautifulSoup
     Raises:
         FetchException: If request fails
     """
-    from scrapers.utils.exceptions import FetchException
-
     try:
         response = requests.get(url, timeout=timeout)
         response.raise_for_status()

@@ -1,15 +1,16 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from bs4 import BeautifulSoup
 
-from scrapers.gratis_torrent.scraper import (
-    scrape_movie_links,
-    scrape_movie_details,
-    scrape_all_movies,
-)
 from scrapers.gratis_torrent.models import Movie
-from scrapers.utils.exceptions import FetchException, ScraperException
+from scrapers.gratis_torrent.scraper import (
+    scrape_all_movies,
+    scrape_movie_details,
+    scrape_movie_links,
+)
 from scrapers.utils.data_quality import DataQualityChecker  # Import for mocking
+from scrapers.utils.exceptions import FetchException, ScraperException
 
 
 # Mock the Config.BASE_URL for testing scrape_movie_links
@@ -34,7 +35,9 @@ class TestScrapeMovieLinks:
         assert links == ["link1", "link2"]
 
     @patch("scrapers.gratis_torrent.scraper.fetch_page")
-    def test_scrape_movie_links_fetch_exception(self, mock_fetch_page, caplog):  # Use caplog fixture
+    def test_scrape_movie_links_fetch_exception(
+        self, mock_fetch_page, caplog
+    ):  # Use caplog fixture
         mock_fetch_page.side_effect = FetchException("Failed to fetch")
 
         with caplog.at_level("ERROR"):  # Capture logs at ERROR level
@@ -51,17 +54,23 @@ class TestScrapeMovieDetails:
     @patch("scrapers.gratis_torrent.scraper.parse_movie_page")
     def test_scrape_movie_details_success(self, mock_parse_movie_page, mock_fetch_page):
         mock_fetch_page.return_value = BeautifulSoup("<html></html>", "html.parser")
-        mock_parse_movie_page.return_value = Movie(titulo_dublado="Test Movie", link="http://test.com/movie")
+        mock_parse_movie_page.return_value = Movie(
+            titulo_dublado="Test Movie", link="http://test.com/movie"
+        )
 
         movie = scrape_movie_details("http://test.com/movie")
 
         mock_fetch_page.assert_called_once_with("http://test.com/movie")
-        mock_parse_movie_page.assert_called_once_with(mock_fetch_page.return_value, "http://test.com/movie")
+        mock_parse_movie_page.assert_called_once_with(
+            mock_fetch_page.return_value, "http://test.com/movie"
+        )
         assert movie.titulo_dublado == "Test Movie"
 
     @patch("scrapers.gratis_torrent.scraper.fetch_page")
     @patch("scrapers.gratis_torrent.scraper.parse_movie_page")
-    def test_scrape_movie_details_no_movie_data(self, mock_parse_movie_page, mock_fetch_page):
+    def test_scrape_movie_details_no_movie_data(
+        self, mock_parse_movie_page, mock_fetch_page
+    ):
         mock_fetch_page.return_value = BeautifulSoup("<html></html>", "html.parser")
         mock_parse_movie_page.return_value = None
 
@@ -70,12 +79,16 @@ class TestScrapeMovieDetails:
         assert movie is None
 
     @patch("scrapers.gratis_torrent.scraper.fetch_page")
-    def test_scrape_movie_details_fetch_exception(self, mock_fetch_page, caplog):  # Use caplog fixture
+    def test_scrape_movie_details_fetch_exception(
+        self, mock_fetch_page, caplog
+    ):  # Use caplog fixture
         # Configure mock_fetch_page to raise FetchException for all 3 attempts
         mock_fetch_page.side_effect = [FetchException("Fetch error")] * 3
 
         with caplog.at_level("ERROR"):
-            with pytest.raises(ScraperException, match="Failed to fetch http://test.com/movie"):
+            with pytest.raises(
+                ScraperException, match="Failed to fetch http://test.com/movie"
+            ):
                 scrape_movie_details("http://test.com/movie")
 
         # Each retry logs "Error fetching..." exactly once per attempt = 3 logs total
@@ -93,20 +106,26 @@ class TestScrapeMovieDetails:
         mock_parse_movie_page.side_effect = [Exception("Parsing error")] * 3
 
         with caplog.at_level("ERROR"):
-            with pytest.raises(ScraperException, match="Failed to scrape http://test.com/movie"):
+            with pytest.raises(
+                ScraperException, match="Failed to scrape http://test.com/movie"
+            ):
                 scrape_movie_details("http://test.com/movie")
 
         # Each retry logs "Error scraping..." exactly once per attempt = 3 logs total
         assert len(caplog.records) == 3
         assert "Error scraping http://test.com/movie: Parsing error" in caplog.text
         assert mock_parse_movie_page.call_count == 3
-        mock_parse_movie_page.assert_called_with(mock_fetch_page.return_value, "http://test.com/movie")
+        mock_parse_movie_page.assert_called_with(
+            mock_fetch_page.return_value, "http://test.com/movie"
+        )
 
 
 class TestScrapeAllMovies:
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
-    @patch("scrapers.utils.data_quality.DataQualityChecker")  # Patch DataQualityChecker itself
+    @patch(
+        "scrapers.utils.data_quality.DataQualityChecker"
+    )  # Patch DataQualityChecker itself
     def test_scrape_all_movies_success(
         self, mock_quality_checker_cls, mock_scrape_details, mock_scrape_links, caplog
     ):  # Use caplog fixture
@@ -116,7 +135,9 @@ class TestScrapeAllMovies:
             Movie(titulo_dublado="Movie 2", link="link2"),
         ]
 
-        mock_quality_checker = MagicMock(spec=DataQualityChecker)  # Create a mock instance
+        mock_quality_checker = MagicMock(
+            spec=DataQualityChecker
+        )  # Create a mock instance
         mock_quality_checker.check_movie.return_value = True
         mock_quality_checker.check_batch.return_value = {
             "pass_rate": 1.0,
@@ -124,9 +145,7 @@ class TestScrapeAllMovies:
             "total_movies": 2,
             "issues": [],
         }
-        mock_quality_checker_cls.return_value = (
-            mock_quality_checker  # Return the mock instance when DataQualityChecker is called
-        )
+        mock_quality_checker_cls.return_value = mock_quality_checker  # Return the mock instance when DataQualityChecker is called
 
         with caplog.at_level("INFO"):
             movies = scrape_all_movies()
@@ -154,7 +173,9 @@ class TestScrapeAllMovies:
         mock_scrape_details.return_value = None
 
         mock_quality_checker = MagicMock(spec=DataQualityChecker)
-        mock_quality_checker.check_movie.return_value = True  # Not called if movie is None
+        mock_quality_checker.check_movie.return_value = (
+            True  # Not called if movie is None
+        )
         mock_quality_checker_cls.return_value = mock_quality_checker
 
         with caplog.at_level("WARNING"):
@@ -190,7 +211,9 @@ class TestScrapeAllMovies:
         self, mock_quality_checker_cls, mock_scrape_details, mock_scrape_links, caplog
     ):  # Use caplog fixture
         mock_scrape_links.return_value = ["link1"]
-        mock_scrape_details.return_value = Movie(titulo_dublado="Bad Movie", link="link1")
+        mock_scrape_details.return_value = Movie(
+            titulo_dublado="Bad Movie", link="link1"
+        )
 
         mock_quality_checker = MagicMock(spec=DataQualityChecker)
         mock_quality_checker.check_movie.return_value = False

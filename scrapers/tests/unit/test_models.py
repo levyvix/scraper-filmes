@@ -1,5 +1,6 @@
 import pytest
 from pydantic import ValidationError
+
 from scrapers.gratis_torrent.models import Movie
 
 

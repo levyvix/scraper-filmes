@@ -84,5 +84,7 @@ def get_movie_links(url: str) -> list[str]:
         logger.error(f"Failed to fetch movie links from {url}: {error}")
         return []
     except Exception as error:
-        logger.error(f"Unexpected error fetching movie links from {url}: {error}", exc_info=True)
+        logger.error(
+            f"Unexpected error fetching movie links from {url}: {error}", exc_info=True
+        )
         return []

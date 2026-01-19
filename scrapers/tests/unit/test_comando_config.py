@@ -1,6 +1,7 @@
 """Tests for Comando Torrents configuration module."""
 
 import os
+
 from scrapers.comando_torrents.config import ComandoTorrentsConfig, Config
 
 

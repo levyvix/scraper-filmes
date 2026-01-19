@@ -3,6 +3,7 @@
 import time
 from functools import wraps
 from typing import Any, Callable, TypeVar
+
 from loguru import logger
 
 F = TypeVar("F", bound=Callable[..., Any])

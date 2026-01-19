@@ -6,9 +6,10 @@ with Prefect's logging system when running within Prefect tasks.
 
 import sys
 from pathlib import Path
+from typing import Any
 
 
-def prefect_handler(message):
+def prefect_handler(message: Any) -> None:
     """
     Loguru sink for Prefect task log integration.
 
@@ -49,7 +50,9 @@ def prefect_handler(message):
         pass
 
 
-def setup_logging(level: str = "INFO", log_file: str = "scraper.log", enable_prefect: bool = True):
+def setup_logging(
+    level: str = "INFO", log_file: str = "scraper.log", enable_prefect: bool = True
+) -> Any:
     """
     Configure logging with console and file handlers, with optional Prefect integration.
 

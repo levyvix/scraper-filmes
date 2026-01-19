@@ -75,6 +75,8 @@ uv run run_gratis.py
 - ✅ Workflow orquestrado com Prefect
 - ✅ Exportação opcional para Google BigQuery, com atualização dinâmica de esquema para novas colunas sem perda de dados.
 - ✅ Suporte a retry e tratamento de erros
+- ✅ Monitoramento e alertas de anomalias
+- ✅ Type checking com MyPy (0 erros)
 
 ### Comando Torrents Scraper
 - ✅ Scraping stealth com bypass de Cloudflare
@@ -82,7 +84,60 @@ uv run run_gratis.py
 - ✅ Validação de dados com Pydantic
 - ✅ Exportação para JSON local
 - ✅ Parser robusto com tratamento de erros
+- ✅ Extração aprimorada de ano do filme com fallbacks múltiplos
 
+### Qualidade e Confiabilidade
+- ✅ **209 testes unitários** com **85% de cobertura**
+- ✅ **Type checking** com MyPy (configurado em pre-commit)
+- ✅ **Linting e Formatação** com Ruff
+- ✅ **Logging centralizado** com Loguru
+- ✅ **Monitoramento de saúde** com alertas por email
+- ✅ **Validação de env vars** com Pydantic Settings
+- ✅ **Rate limiting** para evitar bloqueios
+- ✅ **Data quality checks** automáticos
+
+
+## 🔧 Melhorias Implementadas (Code Review)
+
+Implementação completa de sugestões de código review focadas em qualidade e confiabilidade:
+
+### Infraestrutura
+- ✅ Consolidação de dependências (removido `requirements.txt`, mantém `pyproject.toml`)
+- ✅ Organização de `.gitignore` com seções lógicas
+- ✅ Correção do entrypoint em `prefect.yaml`
+
+### Logging e Monitoramento
+- ✅ **Logging centralizado** com Loguru em `scrapers/utils/logging_config.py`
+- ✅ **Monitoramento de saúde** em `scrapers/utils/monitoring.py`
+  - Detecção de anomalias (contagem baixa, falhas de load, taxa de sucesso)
+  - Alertas por email automáticos
+  - Integração com `send_mail.py`
+
+### Qualidade de Código
+- ✅ **Type checking** com MyPy (0 erros em 46 arquivos)
+- ✅ **Pre-commit hooks** configurados com:
+  - Formatação automática (Ruff)
+  - Linting (Ruff)
+  - Type checking (MyPy)
+  - Validação de arquivos (YAML, JSON, TOML)
+
+### Testes e Cobertura
+- ✅ **209 testes unitários** passando
+- ✅ **85% de cobertura de código**
+- ✅ Pytest configurado em `pyproject.toml`
+- ✅ Fixtures de teste atualizadas
+
+### Parser Aprimorado
+- ✅ Extração de ano em Comando Torrents com 3 estratégias de fallback:
+  1. CSS selector direto
+  2. Dados estruturados
+  3. Busca de padrão 4 dígitos (1888-2100)
+
+### Validação de Ambiente
+- ✅ Validação de variáveis com Pydantic Settings
+- ✅ Error handling robusto em `scrapers/utils/exceptions.py`
+- ✅ Rate limiting em `scrapers/utils/rate_limiter.py`
+- ✅ Data quality checks em `scrapers/utils/data_quality.py`
 
 ## 📂 Estrutura dos Scrapers
 
@@ -129,15 +184,53 @@ class Movie(BaseModel):
 ```
 
 ### 3. Shared Utils (`scrapers/utils/`)
-Módulo de utilitários compartilhados entre os scrapers.
+Módulo de utilitários compartilhados entre os scrapers com suporte a logging, monitoramento e validação.
 
 **Localização do Módulo:** `scrapers/utils/`
 
 **Componentes:**
-- `parse_utils.py`: Funções auxiliares para limpeza e extração de texto.
-- `models.py`: Modelos de dados base (Pydantic) compartilhados.
-- `send_mail.py`: Utilitário para envio de notificações.
+- `parse_utils.py`: Funções auxiliares para limpeza e extração de texto
+- `models.py`: Modelos de dados base (Pydantic) compartilhados
+- `send_mail.py`: Utilitário para envio de notificações
+- `logging_config.py`: Configuração centralizada de Loguru
+- `monitoring.py`: Monitoramento de saúde e alertas de anomalias
+- `exceptions.py`: Exceções customizadas para tratamento de erros
+- `rate_limiter.py`: Decorator para rate limiting de requisições
+- `data_quality.py`: Verificações de qualidade de dados
 
+
+## 🧪 Testes e Validação
+
+### Executar Testes
+```bash
+# Rodar todos os testes unitários
+uv run pytest scrapers/tests/unit -v
+
+# Rodar com relatório de cobertura
+uv run pytest scrapers/tests --cov=scrapers --cov-report=html
+
+# Rodar testes de integração
+uv run pytest scrapers/tests/integration -v
+```
+
+### Type Checking
+```bash
+# Verificar tipos com MyPy
+uv run mypy --ignore-missing-imports scrapers/
+
+# MyPy também roda automaticamente em pre-commit
+uv run pre-commit run mypy --all-files
+```
+
+### Linting e Formatação
+```bash
+# Verificar e corrigir com Ruff
+uv run ruff check --fix scrapers/
+uv run ruff format --line-length 120 scrapers/
+
+# Executar todos os pre-commit hooks
+uv run pre-commit run --all-files
+```
 
 ## 📚 Documentação
 
@@ -150,6 +243,7 @@ Módulo de utilitários compartilhados entre os scrapers.
 - **Python 3.11+**
 - **UV** - Gerenciamento de dependências
 - **Pydantic** - Validação de dados
+- **Pydantic Settings** - Validação de variáveis de ambiente
 
 ### GratisTorrent Scraper
 - **BeautifulSoup4** - Parsing de HTML
@@ -159,6 +253,13 @@ Módulo de utilitários compartilhados entre os scrapers.
 ### Comando Torrents Scraper
 - **Scrapling** - Stealth scraping com bypass Cloudflare
 - **DiskCache** - Cache em disco persistente
+
+### Logging, Monitoramento e Qualidade
+- **Loguru** - Logging centralizado com rotação de arquivos
+- **MyPy** - Type checking estático
+- **Ruff** - Linting e formatação
+- **Pytest** - Framework de testes
+- **Pre-commit** - Git hooks para validação automática
 
 ## 📝 Licença
 

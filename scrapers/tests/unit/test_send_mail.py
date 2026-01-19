@@ -1,7 +1,8 @@
 """Tests for send_mail utility module."""
 
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
+
 from scrapers.utils.send_mail import send_email
 
 
@@ -34,7 +35,9 @@ class TestSendEmailMissingCredentials:
 
     def test_send_email_empty_password_string(self):
         """Test send_email returns False when EMAIL_PW is empty string."""
-        with patch.dict(os.environ, {"EMAIL": "test@example.com", "EMAIL_PW": ""}, clear=True):
+        with patch.dict(
+            os.environ, {"EMAIL": "test@example.com", "EMAIL_PW": ""}, clear=True
+        ):
             result = send_email("subject", "body")
             assert result is False
 
@@ -48,7 +51,9 @@ class TestSendEmailSuccess:
         mock_smtp_instance = MagicMock()
         mock_smtp.return_value = mock_smtp_instance
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("Test Subject", "Test Body")
 
             assert result is True
@@ -63,7 +68,9 @@ class TestSendEmailSuccess:
         mock_smtp_instance = MagicMock()
         mock_smtp.return_value = mock_smtp_instance
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("Test Subject", "Test Body", to="recipient@example.com")
 
             assert result is True
@@ -79,7 +86,9 @@ class TestSendEmailSuccess:
         mock_smtp.return_value = mock_smtp_instance
 
         html_body = "<html><body><h1>Hello</h1></body></html>"
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("HTML Test", html_body)
 
             assert result is True
@@ -92,7 +101,9 @@ class TestSendEmailSuccess:
         mock_smtp.return_value = mock_smtp_instance
 
         special_subject = "Scraper Report - Data Quality [2024-11-22]"
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email(special_subject, "Body")
 
             assert result is True
@@ -104,7 +115,9 @@ class TestSendEmailSuccess:
         mock_smtp_instance = MagicMock()
         mock_smtp.return_value = mock_smtp_instance
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("", "")
 
             assert result is True
@@ -117,7 +130,9 @@ class TestSendEmailSuccess:
         mock_smtp.return_value = mock_smtp_instance
 
         large_body = "x" * 10000  # 10KB body
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("Large Email", large_body)
 
             assert result is True
@@ -132,7 +147,9 @@ class TestSendEmailExceptionHandling:
         """Test send_email handles SMTP connection errors."""
         mock_smtp.side_effect = Exception("SMTP connection failed")
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("subject", "body")
 
             assert result is False
@@ -142,7 +159,9 @@ class TestSendEmailExceptionHandling:
         """Test send_email handles authentication errors."""
         mock_smtp.side_effect = Exception("Authentication failed: Invalid credentials")
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "wrong_password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "wrong_password"}
+        ):
             result = send_email("subject", "body")
 
             assert result is False
@@ -154,7 +173,9 @@ class TestSendEmailExceptionHandling:
         mock_smtp.return_value = mock_smtp_instance
         mock_smtp_instance.send.side_effect = Exception("Send operation failed")
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("subject", "body")
 
             assert result is False
@@ -164,7 +185,9 @@ class TestSendEmailExceptionHandling:
         """Test send_email handles network timeout."""
         mock_smtp.side_effect = TimeoutError("Connection timeout")
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("subject", "body")
 
             assert result is False
@@ -176,7 +199,9 @@ class TestSendEmailExceptionHandling:
         mock_smtp.return_value = mock_smtp_instance
         mock_smtp_instance.send.side_effect = RuntimeError("Unexpected error")
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email("subject", "body")
 
             assert result is False
@@ -191,7 +216,9 @@ class TestSendEmailIntegration:
         mock_smtp_instance = MagicMock()
         mock_smtp.return_value = mock_smtp_instance
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "secret_password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "secret_password"}
+        ):
             result = send_email("subject", "body")
 
             assert result is True
@@ -204,7 +231,9 @@ class TestSendEmailIntegration:
         mock_smtp_instance = MagicMock()
         mock_smtp.return_value = mock_smtp_instance
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result1 = send_email("Subject 1", "Body 1")
             result2 = send_email("Subject 2", "Body 2")
             result3 = send_email("Subject 3", "Body 3")
@@ -223,7 +252,9 @@ class TestSendEmailIntegration:
         unicode_subject = "Relatório de Filmes 📽️ - Dezembro/2024"
         unicode_body = "Assuntos em alta: Ficção Científica, Ação, Animação 🎬"
 
-        with patch.dict(os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}):
+        with patch.dict(
+            os.environ, {"EMAIL": "sender@example.com", "EMAIL_PW": "password"}
+        ):
             result = send_email(unicode_subject, unicode_body)
 
             assert result is True

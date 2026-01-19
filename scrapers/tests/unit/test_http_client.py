@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+
 from scrapers.gratis_torrent.http_client import collect_movie_links
 
 

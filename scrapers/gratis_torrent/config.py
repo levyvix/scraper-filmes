@@ -3,6 +3,7 @@
 import logging
 import os
 from pathlib import Path
+from typing import Any
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -45,7 +46,8 @@ class GratisTorrentConfig(BaseSettings):
         description='Credential method: "ADC" (Application Default Credentials), "FILE" (service account JSON)',
     )
     GCP_CREDENTIALS_PATH: str | None = Field(
-        default=None, description="Path to GCP service account JSON file (required if METHOD=FILE)"
+        default=None,
+        description="Path to GCP service account JSON file (required if METHOD=FILE)",
     )
     DATASET_ID: str = Field(default="movies_raw", description="BigQuery dataset")
     TABLE_ID: str = Field(default="filmes", description="Main table name")
@@ -57,7 +59,9 @@ class GratisTorrentConfig(BaseSettings):
         default="https://gratistorrent.com/lancamentos/",
         description="Base URL for scraping",
     )
-    REQUEST_TIMEOUT: int = Field(default=40, ge=1, le=300, description="Request timeout in seconds")
+    REQUEST_TIMEOUT: int = Field(
+        default=40, ge=1, le=300, description="Request timeout in seconds"
+    )
 
     # Email Settings (optional)
     EMAIL: str | None = Field(default=None, description="Email for notifications")
@@ -84,15 +88,21 @@ class GratisTorrentConfig(BaseSettings):
         """Validate credential method is one of the supported options."""
         valid_methods = ("ADC", "FILE")
         if v not in valid_methods:
-            raise ValueError(f"GCP_CREDENTIALS_METHOD must be one of {valid_methods}, got {v}")
+            raise ValueError(
+                f"GCP_CREDENTIALS_METHOD must be one of {valid_methods}, got {v}"
+            )
         return v
 
-    def __init__(self, **data):
+    def __init__(self, **data: Any) -> None:
         """Initialize config and log environment variable setup."""
         super().__init__(**data)
         # Log which source provided the values
-        gcp_project_source = "env var" if os.environ.get("GCP_PROJECT_ID") else ".env or default"
-        credentials_method_source = "env var" if os.environ.get("GCP_CREDENTIALS_METHOD") else "default"
+        gcp_project_source = (
+            "env var" if os.environ.get("GCP_PROJECT_ID") else ".env or default"
+        )
+        credentials_method_source = (
+            "env var" if os.environ.get("GCP_CREDENTIALS_METHOD") else "default"
+        )
         logger.info(
             f"GCP Configuration loaded: project_id from {gcp_project_source}, "
             f"credentials_method={self.GCP_CREDENTIALS_METHOD} from {credentials_method_source}"
@@ -120,4 +130,4 @@ class GratisTorrentConfig(BaseSettings):
 
 
 # Singleton instance for backward compatibility
-Config = GratisTorrentConfig()  # type: ignore
+Config = GratisTorrentConfig()

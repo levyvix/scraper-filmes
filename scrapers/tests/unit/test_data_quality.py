@@ -1,18 +1,19 @@
 """Tests for data quality validation module."""
 
 import pytest
-from scrapers.utils.data_quality import DataQualityChecker
-from scrapers.utils.models import Movie
+
 from scrapers.tests.fixtures.test_data import (
-    VALID_MOVIE_COMPLETE,
-    VALID_MOVIE_MINIMAL,
-    PARTIAL_MOVIE_NO_YEAR,
     BOUNDARY_MOVIE_RATING_0,
     BOUNDARY_MOVIE_RATING_10,
     BOUNDARY_MOVIE_YEAR_1888,
+    PARTIAL_MOVIE_NO_YEAR,
+    VALID_MOVIE_COMPLETE,
+    VALID_MOVIE_MINIMAL,
     VALID_MOVIES,
     get_invalid_movie_data,
 )
+from scrapers.utils.data_quality import DataQualityChecker
+from scrapers.utils.models import Movie
 
 
 class TestDataQualityCheckerInit:
@@ -121,7 +122,9 @@ class TestCheckMovieFailures:
 
     def test_year_too_recent_fails(self):
         """Test movie with year after 2030 fails."""
-        movie = Movie(titulo_original="Future", link="https://example.com/future", ano=2031)
+        movie = Movie(
+            titulo_original="Future", link="https://example.com/future", ano=2031
+        )
         checker = DataQualityChecker(min_fields_filled=0.0)
         result = checker.check_movie(movie)
         assert result is False
@@ -310,7 +313,9 @@ class TestQualityCheckerEdgeCases:
 
     def test_movie_with_imdb_as_float(self):
         """Test movie where IMDB is a float."""
-        movie = Movie(titulo_original="Movie", link="https://example.com/movie", imdb=8.5)
+        movie = Movie(
+            titulo_original="Movie", link="https://example.com/movie", imdb=8.5
+        )
         checker = DataQualityChecker(min_fields_filled=0.0)
         result = checker.check_movie(movie)
         assert result is True
@@ -356,14 +361,18 @@ class TestQualityCheckerEdgeCases:
 
     def test_none_imdb_does_not_fail(self):
         """Test that None IMDB value is acceptable."""
-        movie = Movie(titulo_original="Movie", link="https://example.com/movie", imdb=None)
+        movie = Movie(
+            titulo_original="Movie", link="https://example.com/movie", imdb=None
+        )
         checker = DataQualityChecker(min_fields_filled=0.0)
         result = checker.check_movie(movie)
         assert result is True
 
     def test_none_year_does_not_fail(self):
         """Test that None year value is acceptable."""
-        movie = Movie(titulo_original="Movie", link="https://example.com/movie", ano=None)
+        movie = Movie(
+            titulo_original="Movie", link="https://example.com/movie", ano=None
+        )
         checker = DataQualityChecker(min_fields_filled=0.0)
         result = checker.check_movie(movie)
         assert result is True

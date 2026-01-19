@@ -1,12 +1,13 @@
 """Tests for custom exceptions module."""
 
 import pytest
+
 from scrapers.utils.exceptions import (
-    ScraperException,
-    ParsingException,
-    ValidationException,
-    FetchException,
     BigQueryException,
+    FetchException,
+    ParsingException,
+    ScraperException,
+    ValidationException,
 )
 
 

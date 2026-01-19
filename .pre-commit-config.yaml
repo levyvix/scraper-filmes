@@ -18,3 +18,10 @@ repos:
         exclude: ^scrapers/tests/test_suite\.py$
       - id: ruff-format
         exclude: ^scrapers/tests/test_suite\.py$
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-requests]
+        exclude: ^(scrapers/tests/test_suite\.py|build/|dist/)
