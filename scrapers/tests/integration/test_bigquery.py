@@ -363,7 +363,8 @@ def test_load_movies_to_bigquery_pipeline(
 
     assert result == 5
     mock_setup.assert_called_once_with(mock_client)
-    # mock_load is called with movies converted to dict format
+    # Verify load was called with dict-converted movies
+    assert mock_load.called
     mock_merge.assert_called_once_with(mock_client)
     mock_truncate.assert_called_once_with(mock_client)
 

@@ -1,5 +1,4 @@
 import sys
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -66,17 +65,14 @@ def pytest_configure(config):
         def css(self, selector):
             return []
 
+        def css_first(self, selector):
+            """Return first CSS match or None."""
+            return None
+
     parser_mock.Adaptor = Adaptor
     sys.modules["scrapling.parser"] = parser_mock
 
     sys.modules["scrapling"] = scrapling_mock
-
-
-@pytest.fixture
-def sample_gratis_html():
-    """Load sample HTML for gratis_torrent tests."""
-    fixture_path = Path(__name__).parent / "fixtures" / "sample_gratis.html"
-    return fixture_path.read_text()
 
 
 @pytest.fixture

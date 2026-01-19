@@ -1,7 +1,5 @@
 """HTML fixtures for GratisTorrent scraper tests."""
 
-from bs4 import BeautifulSoup
-
 # Complete movie page with all fields
 COMPLETE_MOVIE_PAGE_HTML = """
 <html>
@@ -121,44 +119,3 @@ BROKEN_LISTING_PAGE_HTML = """
     </body>
 </html>
 """
-
-
-# Helper functions to get parsed objects
-def get_complete_movie_soup() -> BeautifulSoup:
-    """Return parsed complete movie page."""
-    return BeautifulSoup(COMPLETE_MOVIE_PAGE_HTML, "html.parser")
-
-
-def get_minimal_movie_soup() -> BeautifulSoup:
-    """Return parsed minimal movie page."""
-    return BeautifulSoup(MINIMAL_MOVIE_PAGE_HTML, "html.parser")
-
-
-def get_special_chars_movie_soup() -> BeautifulSoup:
-    """Return parsed special characters movie page."""
-    return BeautifulSoup(SPECIAL_CHARS_MOVIE_PAGE_HTML, "html.parser")
-
-
-def get_malformed_movie_soup() -> BeautifulSoup:
-    """Return parsed malformed movie page."""
-    return BeautifulSoup(MALFORMED_MOVIE_PAGE_HTML, "html.parser")
-
-
-def get_listing_with_links_soup() -> BeautifulSoup:
-    """Return parsed listing page with multiple links."""
-    return BeautifulSoup(LISTING_PAGE_WITH_LINKS_HTML, "html.parser")
-
-
-def get_listing_with_duplicates_soup() -> BeautifulSoup:
-    """Return parsed listing page with duplicate links."""
-    return BeautifulSoup(LISTING_PAGE_WITH_DUPLICATES_HTML, "html.parser")
-
-
-def get_empty_listing_soup() -> BeautifulSoup:
-    """Return parsed empty listing page."""
-    return BeautifulSoup(EMPTY_LISTING_PAGE_HTML, "html.parser")
-
-
-def get_broken_listing_soup() -> BeautifulSoup:
-    """Return parsed broken listing page."""
-    return BeautifulSoup(BROKEN_LISTING_PAGE_HTML, "html.parser")

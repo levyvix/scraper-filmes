@@ -3,7 +3,6 @@
 from typing import Any
 
 from bs4 import BeautifulSoup
-from diskcache import Cache
 from loguru import logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -20,8 +19,6 @@ from scrapers.utils.constants import (
 )
 from scrapers.utils.data_quality import DataQualityChecker
 from scrapers.utils.exceptions import FetchException, ScraperException
-
-cache = Cache("movie_cache")
 
 
 def scrape_movie_links() -> list[str]:
@@ -81,7 +78,6 @@ def scrape_movie_details(url: str) -> Movie | None:
         raise ScraperException(f"Failed to scrape {url}") from e
 
 
-# @cache.memoize(expire=3600)
 def scrape_all_movies() -> list[dict[str, Any]]:
     """
     Scrape all movies from the main page.

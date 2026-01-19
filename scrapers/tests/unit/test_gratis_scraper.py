@@ -165,7 +165,7 @@ class TestScrapeAllMovies:
 
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
-    @patch("scrapers.utils.data_quality.DataQualityChecker")
+    @patch("scrapers.gratis_torrent.scraper.DataQualityChecker")
     def test_scrape_all_movies_details_none(
         self, mock_quality_checker_cls, mock_scrape_details, mock_scrape_links, caplog
     ):  # Use caplog fixture
@@ -187,7 +187,7 @@ class TestScrapeAllMovies:
 
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_links")
     @patch("scrapers.gratis_torrent.scraper.scrape_movie_details")
-    @patch("scrapers.utils.data_quality.DataQualityChecker")
+    @patch("scrapers.gratis_torrent.scraper.DataQualityChecker")
     def test_scrape_all_movies_scraper_exception(
         self, mock_quality_checker_cls, mock_scrape_details, mock_scrape_links, caplog
     ):  # Use caplog fixture
